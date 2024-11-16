@@ -358,7 +358,7 @@ public class ToyVpnConnection implements Runnable {
         return vpnInterface;
     }
 
-    private final String getTag() {
+    private String getTag() {
         return ToyVpnConnection.class.getSimpleName() + "[" + mConnectionId + "]";
     }
 }
