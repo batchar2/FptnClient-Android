@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.filantrop.pvnclient.vpn;
+package com.filantrop.pvnclient;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -30,20 +30,17 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
-import com.filantrop.pvnclient.R;
-
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ToyVpnService extends VpnService implements Handler.Callback {
-    private static final String TAG = ToyVpnService.class.getSimpleName();
+public class CustomVpnService extends VpnService implements Handler.Callback {
+    private static final String TAG = CustomVpnService.class.getSimpleName();
 
     public static final String ACTION_CONNECT = "com.example.android.toyvpn.START";
     public static final String ACTION_DISCONNECT = "com.example.android.toyvpn.STOP";
 
+    //Handler - очередь обрабатываемых в потоке сообщений.
     private Handler mHandler;
 
     private static class Connection extends Pair<Thread, ParcelFileDescriptor> {
@@ -52,11 +49,16 @@ public class ToyVpnService extends VpnService implements Handler.Callback {
         }
     }
 
+    // Подключающийся поток. Ссылка обнуляется если подключение успешно.
+    // Видимо, чтобы потушить поток с неудавшимся соединением
     private final AtomicReference<Thread> mConnectingThread = new AtomicReference<>();
+
+    // Удачно подключившийся поток становится mConnection
     private final AtomicReference<Connection> mConnection = new AtomicReference<>();
 
     private final AtomicInteger mNextConnectionId = new AtomicInteger(1);
 
+    // Отложенный Intent для запуска из нотификации Activity для конфигурации VPN
     private PendingIntent mConfigureIntent;
 
     @Override
@@ -67,7 +69,7 @@ public class ToyVpnService extends VpnService implements Handler.Callback {
         }
 
         // Create the intent to "configure" the connection (just start ToyVpnClient).
-        mConfigureIntent = PendingIntent.getActivity(this, 0, new Intent(this, ToyVpnClient.class),
+        mConfigureIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),
                 PendingIntent.FLAG_MUTABLE);
     }
 
@@ -103,21 +105,15 @@ public class ToyVpnService extends VpnService implements Handler.Callback {
         mHandler.sendEmptyMessage(R.string.connecting);
 
         // Extract information from the shared preferences.
-        final SharedPreferences prefs = getSharedPreferences(ToyVpnClient.Prefs.NAME, MODE_PRIVATE);
-        final String server = prefs.getString(ToyVpnClient.Prefs.SERVER_ADDRESS, "");
-        final byte[] secret = prefs.getString(ToyVpnClient.Prefs.SHARED_SECRET, "").getBytes();
-        final boolean allow = prefs.getBoolean(ToyVpnClient.Prefs.ALLOW, true);
-        final Set<String> packages =
-                prefs.getStringSet(ToyVpnClient.Prefs.PACKAGES, Collections.emptySet());
-        final int port = prefs.getInt(ToyVpnClient.Prefs.SERVER_PORT, 0);
-        final String proxyHost = prefs.getString(ToyVpnClient.Prefs.PROXY_HOSTNAME, "");
-        final int proxyPort = prefs.getInt(ToyVpnClient.Prefs.PROXY_PORT, 0);
-        startConnection(new ToyVpnConnection(
-                this, mNextConnectionId.getAndIncrement(), server, port, secret,
-                proxyHost, proxyPort, allow, packages));
+        final SharedPreferences prefs = getSharedPreferences(MainActivity.Prefs.NAME, MODE_PRIVATE);
+        final String server = prefs.getString(MainActivity.Prefs.SERVER_ADDRESS, "");
+        final byte[] secret = prefs.getString(MainActivity.Prefs.SHARED_SECRET, "").getBytes();
+        final int port = prefs.getInt(MainActivity.Prefs.SERVER_PORT, 0);
+        startConnection(new CustomVpnConnection(
+                this, mNextConnectionId.getAndIncrement(), server, port, secret));
     }
 
-    private void startConnection(final ToyVpnConnection connection) {
+    private void startConnection(final CustomVpnConnection connection) {
         // Replace any existing connecting thread with the  new one.
         final Thread thread = new Thread(connection, "ToyVpnThread");
         setConnectingThread(thread);
@@ -125,6 +121,7 @@ public class ToyVpnService extends VpnService implements Handler.Callback {
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(mConfigureIntent);
         connection.setOnEstablishListener(tunInterface -> {
+            // Вот для этого и нужен handler, чтобы из потока соединения присылать на UI сообщения
             mHandler.sendEmptyMessage(R.string.connected);
 
             mConnectingThread.compareAndSet(thread, null);
@@ -159,6 +156,7 @@ public class ToyVpnService extends VpnService implements Handler.Callback {
         stopForeground(true);
     }
 
+    // Выводит в уведомления
     private void updateForegroundNotification(final int message) {
         final String NOTIFICATION_CHANNEL_ID = "ToyVpn";
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(
