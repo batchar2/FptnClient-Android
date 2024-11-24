@@ -89,7 +89,7 @@ public class OkHttpClientWrapper {
         this.client = builder.build();
     }
 
-    private String getAuthToken(String host, int port) {
+    public String getAuthToken(String host, int port) {
         try {
             JSONObject json = new JSONObject();
             json.put("username", username);

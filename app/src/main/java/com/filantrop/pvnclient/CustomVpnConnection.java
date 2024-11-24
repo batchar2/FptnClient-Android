@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import com.filantrop.pvnclient.exception.PVNClientException;
 import com.filantrop.pvnclient.websocket.OkHttpClientWrapper;
 
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -71,6 +72,9 @@ public class CustomVpnConnection implements Runnable {
     public void run() {
         try {
             Log.i(getTag(), "Starting");
+            String token = okHttpClientWrapper.getAuthToken(serverName, serverPort);
+            String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
+
 
             // todo: Add ConnectivityManager for check Internet
             for (int attempt = 0; attempt < 10; ++attempt) {
@@ -94,7 +98,7 @@ public class CustomVpnConnection implements Runnable {
         boolean connected = false;
         // Create a DatagramChannel as the VPN tunnel.
         try {
-            //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
+
 
             // VPNService используется только, чтобы собрать весь трафик с устройства,
             // весь обмен идет по webSocket, поэтому значения фиксированные
@@ -152,7 +156,6 @@ public class CustomVpnConnection implements Runnable {
                     Log.e(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
-
         } catch (PVNClientException e) {
             Log.e(getTag(), "Cannot use socket", e);
         } finally {
