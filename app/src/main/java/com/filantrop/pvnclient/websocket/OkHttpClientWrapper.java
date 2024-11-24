@@ -89,7 +89,7 @@ public class OkHttpClientWrapper {
         this.client = builder.build();
     }
 
-    public String getAuthToken(String host, int port) {
+    private String getAuthToken(String host, int port) {
         try {
             JSONObject json = new JSONObject();
             json.put("username", username);
@@ -103,7 +103,7 @@ public class OkHttpClientWrapper {
 
             try (Response response = client.newCall(request).execute()) {
                 if (response.code() == 200 && response.body() != null) {
-                    JSONObject jsonResponse = new JSONObject(response.body().toString());
+                    JSONObject jsonResponse = new JSONObject(response.body().string());
                     if (jsonResponse.has("access_token")) {
                         String token = jsonResponse.getString("access_token");
                         Log.i(getTag(), "Login successful.");
@@ -134,7 +134,7 @@ public class OkHttpClientWrapper {
 
             try (Response response = client.newCall(request).execute()) {
                 if (response.code() == 200 && response.body() != null) {
-                    JSONObject jsonResponse = new JSONObject(response.body().toString());
+                    JSONObject jsonResponse = new JSONObject(response.body().string());
                     if (jsonResponse.has("dns")) {
                         String dnsServer = jsonResponse.getString("dns");
                         Log.i(getTag(), "DNS server: " + dnsServer);
@@ -182,7 +182,7 @@ public class OkHttpClientWrapper {
     }
 
     private String getTag() {
-        return OkHttpClientWrapper.class.getCanonicalName();
+        return this.getClass().getCanonicalName();
     }
 
     public void send(ByteBuffer buffer, int length) {

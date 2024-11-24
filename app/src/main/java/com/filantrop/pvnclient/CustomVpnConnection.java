@@ -1,6 +1,7 @@
 package com.filantrop.pvnclient;
 
 import android.app.PendingIntent;
+import android.net.IpPrefix;
 import android.net.VpnService;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
@@ -8,12 +9,16 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.filantrop.pvnclient.exception.PVNClientException;
+import com.filantrop.pvnclient.websocket.CustomWebSocketListener;
 import com.filantrop.pvnclient.websocket.OkHttpClientWrapper;
+
+import org.fptn.protocol.Protocol;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 import okhttp3.WebSocket;
@@ -72,9 +77,6 @@ public class CustomVpnConnection implements Runnable {
     public void run() {
         try {
             Log.i(getTag(), "Starting");
-            String token = okHttpClientWrapper.getAuthToken(serverName, serverPort);
-            String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
-
 
             // todo: Add ConnectivityManager for check Internet
             for (int attempt = 0; attempt < 10; ++attempt) {
@@ -98,22 +100,26 @@ public class CustomVpnConnection implements Runnable {
         boolean connected = false;
         // Create a DatagramChannel as the VPN tunnel.
         try {
-
+            //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
 
             // VPNService используется только, чтобы собрать весь трафик с устройства,
             // весь обмен идет по webSocket, поэтому значения фиксированные
-            // fakeIP
+
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
+            builder.addRoute("172.20.0.1", 32);
+            builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
+            builder.addRoute("0.0.0.0", 0);
+            // builder.setMtu();
+            //add fakeIP
+   /*          builder.addAddress("10.10.0.1", 32);
+            builder.addDnsServer(dnsServer);
 
-            //builder.setMtu();
+            builder.addRoute(dnsServer, 32);
+            builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
+            builder.addRoute("0.0.0.0", 0);
+            //builder.addSearchDomain();*/
 
-            //builder.addRoute("172.20.0.1", 32);
-            //builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
-            //builder.addRoute("0.0.0.0", 0);
-
-            //builder.addDnsServer(dnsServer);
-            //builder.addSearchDomain();
 
             // Create a new interface using the builder and save the parameters.
             builder.setSession(serverName).setConfigureIntent(mConfigureIntent);
@@ -130,23 +136,14 @@ public class CustomVpnConnection implements Runnable {
             connected = true;
 
             // Packets received need to be written to this output stream.
-            FileOutputStream out = new FileOutputStream(vpnInterface.getFileDescriptor());
-            okHttpClientWrapper.startWebSocket(serverName, serverPort, new WebSocketListener() {
-                @Override
-                public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
-                    Log.d(getTag(), "WebSocketListener.onMessage()");
-                    try {
-                        out.write(bytes.toByteArray());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
+            okHttpClientWrapper.startWebSocket(serverName, serverPort, new CustomWebSocketListener(outputStream));
 
             // Packets to be sent are queued in this input stream.
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
             ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
             while (!Thread.interrupted()) {
+                Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
                 try {
                     int length = inputStream.read(buffer.array());
                     if (length > 0) {
@@ -172,6 +169,6 @@ public class CustomVpnConnection implements Runnable {
     }
 
     private String getTag() {
-        return CustomVpnConnection.class.getCanonicalName() + "[" + connectionId + "]";
+        return this.getClass().getCanonicalName() + "[" + connectionId + "]";
     }
 }

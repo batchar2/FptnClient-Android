@@ -21,8 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CustomVpnService extends VpnService implements Handler.Callback {
-    private static final String TAG = CustomVpnService.class.getSimpleName();
-
     public static final String ACTION_CONNECT = "com.example.android.toyvpn.START";
     public static final String ACTION_DISCONNECT = "com.example.android.toyvpn.STOP";
 
@@ -137,7 +135,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 oldConnection.first.interrupt();
                 oldConnection.second.close();
             } catch (IOException e) {
-                Log.e(TAG, "Closing VPN interface", e);
+                Log.e(getTag(), "Closing VPN interface", e);
             }
         }
     }
@@ -162,5 +160,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 .setContentText(getString(message))
                 .setContentIntent(mConfigureIntent)
                 .build());
+    }
+
+    private String getTag() {
+        return this.getClass().getCanonicalName();
     }
 }

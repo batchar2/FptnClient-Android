@@ -7,22 +7,6 @@ import android.net.VpnService;
 import android.os.Bundle;
 import android.widget.EditText;
 
-/*
-
-1) Авторизация
-Перед началом надо авторизоваться, вернется jwt токен
-https://github.com/batchar2/fptn/blob/android/src/android/app/src/main/java/org/fptn/client/service/websocket/WebSocketClient.java#L58
-
-этот токен нужно прикрепить к http заголовку для вебсокета и фейковый IP адрес клиента (этот же IP-адрес надо указать для TUN интерфейса), просто захардкодь этот адрес и не заморачивайся
-https://github.com/batchar2/fptn/blob/android/src/android/app/src/main/java/org/fptn/client/service/websocket/WebSocketClient.java#L104
-
-2) Пакеты в протобафе выпустить на устройство
-Сервер будет отправлять IP пакеты в протобафе через вебсокет. Их нужно достать и "выпустить" через тун в сеть устройства
-
-От клиента на сервер IP пакеты нужно запаковать в протобаф и через вебсокет отправить
-
-*/
-
 public class MainActivity extends Activity {
     public interface Prefs {
         String NAME = "connection";
