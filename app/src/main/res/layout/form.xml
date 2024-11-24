@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2011 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2011 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,24 +14,59 @@
 -->
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    <LinearLayout android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="3mm">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="3dp">
 
-        <TextView style="@style/item" android:text="@string/address"/>
-        <EditText style="@style/item" android:id="@+id/address"/>
+        <TextView
+            style="@style/item"
+            android:text="@string/address" />
 
-        <TextView style="@style/item" android:text="@string/port"/>
-        <EditText style="@style/item" android:id="@+id/port" android:inputType="number"/>
+        <EditText
+            android:id="@+id/serverAddressEditText"
+            style="@style/item" />
 
-        <TextView style="@style/item" android:text="@string/secret"/>
-        <EditText style="@style/item" android:id="@+id/secret" android:password="true"/>
+        <TextView
+            style="@style/item"
+            android:text="@string/port" />
 
-        <Button style="@style/item" android:id="@+id/connect" android:text="@string/connect"/>
-        <Button style="@style/item" android:id="@+id/disconnect" android:text="@string/disconnect"/>
+        <EditText
+            android:id="@+id/serverPortEditText"
+            style="@style/item"
+            android:inputType="number" />
+
+        <TextView
+            style="@style/item"
+            android:text="@string/username" />
+
+        <EditText
+            android:id="@+id/usernameEditText"
+            style="@style/item"
+            android:inputType="text" />
+
+        <TextView
+            style="@style/item"
+            android:text="@string/password" />
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            style="@style/item"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/connect"
+            style="@style/item"
+            android:text="@string/connect" />
+
+        <Button
+            android:id="@+id/disconnect"
+            style="@style/item"
+            android:text="@string/disconnect" />
 
     </LinearLayout>
 </ScrollView>

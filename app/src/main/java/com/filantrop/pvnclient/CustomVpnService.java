@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2011 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.filantrop.pvnclient;
 
 import android.app.Notification;
@@ -29,6 +13,8 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
+
+import com.filantrop.pvnclient.exception.PVNClientException;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,8 +54,10 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             mHandler = new Handler(this);
         }
 
-        // Create the intent to "configure" the connection (just start ToyVpnClient).
-        mConfigureIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),
+        // Создаем PendingIntent (Отложенное намерение) чтобы в Нотификации
+        // была доступна кнопка конфигурации (при нажатии вызовет MainActivity)
+        mConfigureIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class),
                 PendingIntent.FLAG_MUTABLE);
     }
 
@@ -99,18 +87,23 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     }
 
     private void connect() {
-        // Become a foreground service. Background services can be VPN services too, but they can
-        // be killed by background check before getting a chance to receive onRevoke().
+        // Переводим VPNService на передний план - чтобы повысить приоритет
         updateForegroundNotification(R.string.connecting);
         mHandler.sendEmptyMessage(R.string.connecting);
 
-        // Extract information from the shared preferences.
+        // Достаем параметры для подключения из SharedPreferences
         final SharedPreferences prefs = getSharedPreferences(MainActivity.Prefs.NAME, MODE_PRIVATE);
         final String server = prefs.getString(MainActivity.Prefs.SERVER_ADDRESS, "");
-        final byte[] secret = prefs.getString(MainActivity.Prefs.SHARED_SECRET, "").getBytes();
+        final String username = prefs.getString(MainActivity.Prefs.USERNAME, "");
+        final String password = prefs.getString(MainActivity.Prefs.PASSWORD, "");
+
         final int port = prefs.getInt(MainActivity.Prefs.SERVER_PORT, 0);
-        startConnection(new CustomVpnConnection(
-                this, mNextConnectionId.getAndIncrement(), server, port, secret));
+        try {
+            startConnection(new CustomVpnConnection(
+                    this, mNextConnectionId.getAndIncrement(), server, port, username, password));
+        } catch (PVNClientException e) {
+            mHandler.sendEmptyMessage(R.string.error);
+        }
     }
 
     private void startConnection(final CustomVpnConnection connection) {

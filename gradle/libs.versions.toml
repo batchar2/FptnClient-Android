@@ -14,6 +14,8 @@ monitor = "1.7.2"
 activity = "1.9.3"
 protobufPlugin = "0.9.4"
 protobuf = "4.26.1"
+okhttp = "4.12.0"
+lombock = "1.18.36"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,6 +31,8 @@ androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "m
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

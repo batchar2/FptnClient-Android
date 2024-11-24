@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.activity)
     implementation(libs.protobuf.javalite)
+    compileOnly(libs.lombock)
+    implementation(libs.okhttp)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

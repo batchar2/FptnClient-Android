@@ -3,17 +3,13 @@
 
     <string name="address">Server Address:</string>
     <string name="port">Server Port:</string>
-    <string name="secret">Shared Secret:</string>
+    <string name="password">Password:</string>
+    <string name="username">Username:</string>
     <string name="connect">Connect!</string>
     <string name="disconnect">Disconnect!</string>
 
     <string name="connecting">CustomVPN is connecting...</string>
     <string name="connected">CustomVPN is connected!</string>
     <string name="disconnected">CustomVPN is disconnected!</string>
-    <string name="incomplete_proxy_settings">
-        Incomplete proxy settings. For HTTP proxy we require both hostname and port settings.
-    </string>
-    <string name="unknown_package_names">
-        Some of the specified package names do not correspond to any installed packages.
-    </string>
+    <string name="error">Error on connecting occurs!</string>
 </resources>
