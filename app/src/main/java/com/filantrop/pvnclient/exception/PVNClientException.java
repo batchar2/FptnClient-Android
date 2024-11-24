@@ -1,20 +1,35 @@
 package com.filantrop.pvnclient.exception;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-
-@Builder
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class PVNClientException extends RuntimeException {
-    private final Exception exception;
-    private final String errorMessage;
+    private Exception exception;
+    private String errorMessage;
+
+    private PVNClientException(Exception exception, String errorMessage) {
+        this.exception = exception;
+        this.errorMessage = errorMessage;
+    }
 
     public static PVNClientException fromException(Exception e) {
-        return PVNClientException.builder().errorMessage(e.getMessage()).exception(e).build();
+        return new PVNClientException(e, e.getMessage());
     }
 
     public static PVNClientException fromMessage(String message) {
-        return PVNClientException.builder().errorMessage(message).exception(null).build();
+        return new PVNClientException(null, message);
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        this.exception = exception;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

@@ -5,16 +5,19 @@ import android.net.VpnService;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.filantrop.pvnclient.exception.PVNClientException;
 import com.filantrop.pvnclient.websocket.OkHttpClientWrapper;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
+
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 public class CustomVpnConnection implements Runnable {
     /**
@@ -69,11 +72,10 @@ public class CustomVpnConnection implements Runnable {
         try {
             Log.i(getTag(), "Starting");
 
-            final SocketAddress serverAddress = new InetSocketAddress(serverName, serverPort);
             // todo: Add ConnectivityManager for check Internet
             for (int attempt = 0; attempt < 10; ++attempt) {
                 // Reset the counter if we were connected.
-                if (startConnection(serverAddress)) {
+                if (startConnection()) {
                     attempt = 0;
                 }
 
@@ -86,47 +88,28 @@ public class CustomVpnConnection implements Runnable {
         }
     }
 
-    private boolean startConnection(SocketAddress server)
+    private boolean startConnection()
             throws IOException, InterruptedException, IllegalArgumentException {
         ParcelFileDescriptor vpnInterface = null;
         boolean connected = false;
         // Create a DatagramChannel as the VPN tunnel.
-        try (DatagramChannel tunnel = DatagramChannel.open()) {
-
-            // Protect the tunnel before connecting to avoid loopback.
-            if (!service.protect(tunnel.socket())) {
-                throw new IllegalStateException("Cannot protect the tunnel");
-            }
-
-            // Connect to the server.
-            tunnel.connect(server);
-
-            // For simplicity, we use the same thread for both reading and
-            // writing. Here we put the tunnel into non-blocking mode.
-            tunnel.configureBlocking(false);
-
-            String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
-            /*okHttpClientWrapper.startWebSocket(serverName, serverPort, new WebSocketListener() {
-                @Override
-                public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
-                    super.onMessage(webSocket, bytes);
-                }
-            });*/
+        try {
+            //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
 
             // VPNService используется только, чтобы собрать весь трафик с устройства,
             // весь обмен идет по webSocket, поэтому значения фиксированные
+            // fakeIP
             VpnService.Builder builder = service.new Builder();
+            builder.addAddress("10.10.0.1", 32);
 
             //builder.setMtu();
-            builder.addAddress("10.10.0.1", 32);
-            //builder.addRoute();
-            builder.addDnsServer(dnsServer);
-            //builder.addSearchDomain();
 
-            /*            builder.addAddress("10.10.0.1", 32);
-            builder.addRoute("172.20.0.1", 32);
-            builder.excludeRoute(new IpPrefix(InetAddress.getByName(vpnHost), 32));
-            builder.addRoute("0.0.0.0", 0);*/
+            //builder.addRoute("172.20.0.1", 32);
+            //builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
+            //builder.addRoute("0.0.0.0", 0);
+
+            //builder.addDnsServer(dnsServer);
+            //builder.addSearchDomain();
 
             // Create a new interface using the builder and save the parameters.
             builder.setSession(serverName).setConfigureIntent(mConfigureIntent);
@@ -142,44 +125,41 @@ public class CustomVpnConnection implements Runnable {
             // Now we are connected. Set the flag.
             connected = true;
 
-            // Packets to be sent are queued in this input stream.
-            FileInputStream in = new FileInputStream(vpnInterface.getFileDescriptor());
-
             // Packets received need to be written to this output stream.
             FileOutputStream out = new FileOutputStream(vpnInterface.getFileDescriptor());
-
-            // Allocate the buffer for a single packet.
-            ByteBuffer packet = ByteBuffer.allocate(MAX_PACKET_SIZE);
-
-            // We keep forwarding packets till something goes wrong.
-            while (true) {
-                // Read the outgoing packet from the input stream.
-                int length = in.read(packet.array());
-                if (length > 0) {
-                    // Write the outgoing packet to the tunnel.
-                    packet.limit(length);
-                    tunnel.write(packet);
-                    packet.clear();
-                }
-
-                // Read the incoming packet from the tunnel.
-                length = tunnel.read(packet);
-                if (length > 0) {
-                    // Ignore control messages, which start with zero.
-                    if (packet.get(0) != 0) {
-                        // Write the incoming packet to the output stream.
-                        out.write(packet.array(), 0, length);
+            okHttpClientWrapper.startWebSocket(serverName, serverPort, new WebSocketListener() {
+                @Override
+                public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
+                    Log.d(getTag(), "WebSocketListener.onMessage()");
+                    try {
+                        out.write(bytes.toByteArray());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                    packet.clear();
                 }
+            });
 
+            // Packets to be sent are queued in this input stream.
+            FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
+            ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
+            while (!Thread.interrupted()) {
+                try {
+                    int length = inputStream.read(buffer.array());
+                    if (length > 0) {
+                        okHttpClientWrapper.send(buffer, length);
+                    }
+                } catch (Exception e) {
+                    Log.e(getTag(), "Error reading data from VPN interface: " + e.getMessage());
+                }
             }
-        } catch (SocketException e) {
+
+        } catch (PVNClientException e) {
             Log.e(getTag(), "Cannot use socket", e);
         } finally {
             if (vpnInterface != null) {
                 try {
                     vpnInterface.close();
+                    okHttpClientWrapper.stopWebSocket();
                 } catch (IOException e) {
                     Log.e(getTag(), "Unable to close interface", e);
                 }
@@ -189,6 +169,6 @@ public class CustomVpnConnection implements Runnable {
     }
 
     private String getTag() {
-        return CustomVpnConnection.class.getSimpleName() + "[" + connectionId + "]";
+        return CustomVpnConnection.class.getCanonicalName() + "[" + connectionId + "]";
     }
 }

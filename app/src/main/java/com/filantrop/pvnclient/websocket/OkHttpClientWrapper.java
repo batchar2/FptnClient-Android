@@ -3,11 +3,14 @@ package com.filantrop.pvnclient.websocket;
 import android.util.Log;
 
 import com.filantrop.pvnclient.exception.PVNClientException;
+import com.google.protobuf.ByteString;
 
+import org.fptn.protocol.Protocol;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -169,15 +172,33 @@ public class OkHttpClientWrapper {
     public void stopWebSocket() {
         if (webSocket != null) {
             webSocket.close(1000, "stopWebSocket");
+            webSocket = null;
         }
     }
 
     private boolean isValid(String token) {
         //todo: Add token validation
-        return true;
+        return token != null;
     }
 
     private String getTag() {
-        return OkHttpClientWrapper.class.getSimpleName();
+        return OkHttpClientWrapper.class.getCanonicalName();
+    }
+
+    public void send(ByteBuffer buffer, int length) {
+        if (webSocket != null) {
+            ByteString payload = ByteString.copyFrom(buffer, length);
+
+            Protocol.IPPacket packet = Protocol.IPPacket.newBuilder()
+                    .setPayload(payload)
+                    .build();
+            Protocol.Message msg = Protocol.Message.newBuilder()
+                    .setProtocolVersion(1)
+                    .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
+                    .setPacket(packet)
+                    .build();
+
+            webSocket.send(okio.ByteString.of(msg.toByteArray()));
+        }
     }
 }
