@@ -29,48 +29,54 @@ public class CustomWebSocketListener extends WebSocketListener {
 
     @Override
     public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+        Log.d(getTag(), "=== WebSocketListener.onClosing ===");
         super.onClosed(webSocket, code, reason);
     }
 
     @Override
     public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+        Log.d(getTag(), "=== WebSocketListener.onClosing ===");
         super.onClosing(webSocket, code, reason);
     }
 
     @Override
     public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
+        Log.d(getTag(), "=== WebSocketListener.onFailure ===");
         super.onFailure(webSocket, t, response);
     }
 
     @Override
     public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+        Log.d(getTag(), "=== WebSocketListener.onMessage(text) ===");
         super.onMessage(webSocket, text);
     }
 
     @Override
     public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
         // Вообще не вызывается
-        Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
-        Log.d(getTag(), "WebSocketListener.onMessage()");
+        //Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
         try {
             Protocol.Message message = Protocol.Message.parseFrom(bytes.toByteArray());
             if (message.getMsgType() == Protocol.MessageType.MSG_IP_PACKET) {
+                Log.d(getTag(), "========================================================================================================");
+                Log.d(getTag(), "=== WebSocketListener.recv(bytes) ===" + message.toString());
                 byte[] rawData = message.getPacket().getPayload().toByteArray();
                 Log.i(getTag(), "+Read get packet TunInterface: " + rawData.length);
                 outputStream.write(rawData);
             } else {
                 Log.i(getTag(), "Received a non-IP packet message type.");
             }
-            outputStream.write(bytes.toByteArray());
+//            outputStream.write(bytes.toByteArray());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Log.e(getTag(), "onMessage.error: " + e.getMessage());
+            //throw new RuntimeException(e);
         }
     }
 
     @Override
     public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
         // Вызывается в другом потоке
-        Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
+        Log.i(getTag(), "=== OnOpen Thread: ===" + Thread.currentThread().getId());
         super.onOpen(webSocket, response);
     }
 

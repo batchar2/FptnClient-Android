@@ -110,17 +110,6 @@ public class CustomVpnConnection implements Runnable {
             builder.addRoute("172.20.0.1", 32);
             builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
             builder.addRoute("0.0.0.0", 0);
-            // builder.setMtu();
-            //add fakeIP
-   /*          builder.addAddress("10.10.0.1", 32);
-            builder.addDnsServer(dnsServer);
-
-            builder.addRoute(dnsServer, 32);
-            builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
-            builder.addRoute("0.0.0.0", 0);
-            //builder.addSearchDomain();*/
-
-
             // Create a new interface using the builder and save the parameters.
             builder.setSession(serverName).setConfigureIntent(mConfigureIntent);
 
@@ -143,7 +132,7 @@ public class CustomVpnConnection implements Runnable {
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
             ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
             while (!Thread.interrupted()) {
-                Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
+//                Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
                 try {
                     int length = inputStream.read(buffer.array());
                     if (length > 0) {

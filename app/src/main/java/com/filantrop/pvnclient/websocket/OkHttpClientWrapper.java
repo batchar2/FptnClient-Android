@@ -163,7 +163,8 @@ public class OkHttpClientWrapper {
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), WEBSOCKET_URL, host, port))
                 .addHeader("Authorization", "Bearer " + token)
-                //todo: ClientIP? Зачем?
+                // todo: ClientIP? Why?
+                // Answer: The server needs to know the client's virtual interface for simplicity.
                 .addHeader("ClientIP", "10.10.0.1")
                 .build();
         webSocket = client.newWebSocket(request, webSocketListener);
@@ -188,7 +189,6 @@ public class OkHttpClientWrapper {
     public void send(ByteBuffer buffer, int length) {
         if (webSocket != null) {
             ByteString payload = ByteString.copyFrom(buffer, length);
-
             Protocol.IPPacket packet = Protocol.IPPacket.newBuilder()
                     .setPayload(payload)
                     .build();
@@ -197,7 +197,8 @@ public class OkHttpClientWrapper {
                     .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
                     .setPacket(packet)
                     .build();
-
+            Log.d(getTag(), "========================================================================================================");
+            Log.d(getTag(), "=== send (bytes) === " + msg.toString() );
             webSocket.send(okio.ByteString.of(msg.toByteArray()));
         }
     }

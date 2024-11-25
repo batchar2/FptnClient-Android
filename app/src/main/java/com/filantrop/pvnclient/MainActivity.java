@@ -31,11 +31,11 @@ public class MainActivity extends Activity {
         // Разделяемые настройки - доступны по идее из любого места приложения
         final SharedPreferences prefs = getSharedPreferences(Prefs.NAME, MODE_PRIVATE);
 
-        serverAddress.setText(prefs.getString(Prefs.SERVER_ADDRESS, ""));
+        serverAddress.setText(prefs.getString(Prefs.SERVER_ADDRESS, "185.215.187.165"));
         username.setText(prefs.getString(Prefs.USERNAME, ""));
         password.setText(prefs.getString(Prefs.PASSWORD, ""));
 
-        int serverPortPrefValue = prefs.getInt(Prefs.SERVER_PORT, 0);
+        int serverPortPrefValue = prefs.getInt(Prefs.SERVER_PORT, 443);
         serverPort.setText(String.valueOf(serverPortPrefValue == 0 ? "" : serverPortPrefValue));
 
         findViewById(R.id.connect).setOnClickListener(v -> {
