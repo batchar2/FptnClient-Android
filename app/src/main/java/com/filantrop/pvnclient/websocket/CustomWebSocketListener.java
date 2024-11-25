@@ -58,10 +58,10 @@ public class CustomWebSocketListener extends WebSocketListener {
         try {
             Protocol.Message message = Protocol.Message.parseFrom(bytes.toByteArray());
             if (message.getMsgType() == Protocol.MessageType.MSG_IP_PACKET) {
-                Log.d(getTag(), "========================================================================================================");
-                Log.d(getTag(), "=== WebSocketListener.recv(bytes) ===" + message.toString());
+//                Log.d(getTag(), "========================================================================================================");
+//                Log.d(getTag(), "=== WebSocketListener.recv(bytes) ===" + message.toString());
                 byte[] rawData = message.getPacket().getPayload().toByteArray();
-                Log.i(getTag(), "+Read get packet TunInterface: " + rawData.length);
+//                Log.i(getTag(), "+Read get packet TunInterface: " + rawData.length);
                 outputStream.write(rawData);
             } else {
                 Log.i(getTag(), "Received a non-IP packet message type.");

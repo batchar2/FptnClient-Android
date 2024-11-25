@@ -188,7 +188,10 @@ public class OkHttpClientWrapper {
 
     public void send(ByteBuffer buffer, int length) {
         if (webSocket != null) {
-            ByteString payload = ByteString.copyFrom(buffer, length);
+            byte[] copyBuffer = new byte[length];
+            System.arraycopy(buffer.array(), 0, copyBuffer, 0, length);
+            ByteString payload = ByteString.copyFrom(copyBuffer);
+
             Protocol.IPPacket packet = Protocol.IPPacket.newBuilder()
                     .setPayload(payload)
                     .build();
@@ -197,9 +200,10 @@ public class OkHttpClientWrapper {
                     .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
                     .setPacket(packet)
                     .build();
-            Log.d(getTag(), "========================================================================================================");
-            Log.d(getTag(), "=== send (bytes) === " + msg.toString() );
+//            Log.d(getTag(), "========================================================================================================");
+//            Log.d(getTag(), "=== send (bytes) === " + msg.toString() );
             webSocket.send(okio.ByteString.of(msg.toByteArray()));
+//            Log.d(getTag(), "=== send (bytes) === " + msg.toString() );
         }
     }
 }
