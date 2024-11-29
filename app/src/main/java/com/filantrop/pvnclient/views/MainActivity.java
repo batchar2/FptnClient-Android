@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient;
+package com.filantrop.pvnclient.views;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,6 +7,9 @@ import android.net.VpnService;
 import android.os.Bundle;
 import android.widget.EditText;
 
+import com.filantrop.pvnclient.R;
+import com.filantrop.pvnclient.services.CustomVpnService;
+
 public class MainActivity extends Activity {
     public interface Prefs {
         String NAME = "connection";
@@ -14,7 +17,6 @@ public class MainActivity extends Activity {
         String SERVER_PORT = "server.port";
         String USERNAME = "username";
         String PASSWORD = "password";
-
     }
 
     @Override

@@ -13,26 +13,57 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_vpn"
         android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.Light"
         tools:targetApi="31">
+<!--        <activity-->
+<!--            android:name=".views.TestActivity"-->
+<!--            android:exported="false" />-->
+<!--        <activity-->
+<!--            android:name=".views.LoginActivity"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity> -->
         <activity
-            android:name=".MainActivity"
+            android:name=".views.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".views.HomeActivity"
+            android:exported="true">
+        </activity>
+<!--            />-->
+<!--        <activity-->
+<!--            android:name=".views.LoginActivity"-->
+<!--            android:exported="true">-->
+<!--            -->
+<!--        </activity>-->
 
+
+        <!-- <activity -->
+        <!-- android:name=".views.LoginActivity" -->
+        <!-- android:exported="true"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
         <service
-            android:name=".CustomVpnService"
+            android:name=".services.CustomVpnService"
             android:exported="false"
             android:foregroundServiceType="specialUse"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="vpn" />
+
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>

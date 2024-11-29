@@ -1,8 +1,8 @@
-package com.filantrop.pvnclient.websocket;
+package com.filantrop.pvnclient.services.websocket;
 
 import android.util.Log;
 
-import com.filantrop.pvnclient.exception.PVNClientException;
+import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.google.protobuf.ByteString;
 
 import org.fptn.protocol.Protocol;

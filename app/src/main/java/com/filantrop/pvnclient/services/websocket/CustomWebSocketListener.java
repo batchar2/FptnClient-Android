@@ -1,11 +1,9 @@
-package com.filantrop.pvnclient.websocket;
+package com.filantrop.pvnclient.services.websocket;
 
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.filantrop.pvnclient.CustomVpnConnection;
 
 import org.fptn.protocol.Protocol;
 

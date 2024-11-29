@@ -55,6 +55,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+
+    implementation(libs.activity.ktx)         // Activity KTX
+    implementation(libs.viewmodel.ktx)        // ViewModel KTX
+    implementation(libs.livedata.ktx)         // LiveData KTX
+    implementation(libs.runtime.ktx)          // Lifecycle Runtime KTX
 }
 java {
     toolchain {

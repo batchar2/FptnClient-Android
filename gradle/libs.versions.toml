@@ -16,6 +16,10 @@ protobufPlugin = "0.9.4"
 protobuf = "4.26.1"
 okhttp = "4.12.0"
 lombock = "1.18.36"
+androidxRoom = "2.6.1"
+#androidxLifecycle = "2.6.1"
+lifecycle = "2.6.1"
+activity-ktx = "1.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +37,15 @@ protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
+
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidxRoom" }
+
+activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity-ktx" }
+viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
+runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

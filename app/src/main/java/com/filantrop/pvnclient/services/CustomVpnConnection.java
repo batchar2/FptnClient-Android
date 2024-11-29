@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient;
+package com.filantrop.pvnclient.services;
 
 import android.app.PendingIntent;
 import android.net.IpPrefix;
@@ -6,24 +6,15 @@ import android.net.VpnService;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
+import com.filantrop.pvnclient.services.exception.PVNClientException;
+import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
+import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
 
-import com.filantrop.pvnclient.exception.PVNClientException;
-import com.filantrop.pvnclient.websocket.CustomWebSocketListener;
-import com.filantrop.pvnclient.websocket.OkHttpClientWrapper;
-
-import org.fptn.protocol.Protocol;
-
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
-import okio.ByteString;
 
 public class CustomVpnConnection implements Runnable {
     /**

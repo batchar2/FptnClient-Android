@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient;
+package com.filantrop.pvnclient.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,7 +14,9 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
-import com.filantrop.pvnclient.exception.PVNClientException;
+import com.filantrop.pvnclient.views.MainActivity;
+import com.filantrop.pvnclient.R;
+import com.filantrop.pvnclient.services.exception.PVNClientException;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;

@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.exception;
+package com.filantrop.pvnclient.services.exception;
 
 public class PVNClientException extends RuntimeException {
     private Exception exception;
