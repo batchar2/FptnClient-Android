@@ -27,15 +27,16 @@ public class FptnServerViewModel extends AndroidViewModel {
     public LiveData<List<FptnServer>> getAllServersLiveData() {
         return fptnServerRepo.getAllServersLiveData();
     }
-    public void parseAndSaveFptnLink(String url) {
+    public boolean parseAndSaveFptnLink(String url) {
         if (url.startsWith("fptn://")) {
             String preparedUrl = url.substring(7);  // Remove first 7 characters
 
-            byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
-            String jsonString = new String(decodedBytes);
 
-            FptnServerRepo fptnServerRepo = new FptnServerRepo(getApplication());
             try {
+                byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
+                String jsonString = new String(decodedBytes);
+
+                FptnServerRepo fptnServerRepo = new FptnServerRepo(getApplication());
                 JSONObject jsonObject = new JSONObject(jsonString);
                 String username = jsonObject.getString("username");
                 String password = jsonObject.getString("password");
@@ -46,13 +47,14 @@ public class FptnServerViewModel extends AndroidViewModel {
                     String host = serverObject.getString("host");
                     int port = serverObject.getInt("port");
                     fptnServerRepo.insert(new FptnServer(name, username, password, host, port));
-
                     Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
                 }
+                return true;
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
     public void deleteServers() {

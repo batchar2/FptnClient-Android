@@ -1,10 +1,12 @@
 package com.filantrop.pvnclient.views;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
@@ -32,24 +34,28 @@ public class LoginActivity extends AppCompatActivity {
 
     private final String TAG = "LoginActivity";
 
-    private FptnServerViewModel fptnViewModel;
-
-    private FptnServerRepo fptnServerRepo = null;
+    private FptnServerViewModel fptnViewModel = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_layout);
-        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+        intializeVariable();
     }
 
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_link_input);
         final String fptnLink = linkInput.getText().toString();
-        fptnViewModel.parseAndSaveFptnLink(fptnLink);
+        if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
+            // go to home layout
+            Intent intent = new Intent(this, HomeActivity.class);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getApplicationContext(), "Invalid link format or saving failed", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void intializeVariable() {
-//        recyclerView = findViewById(R.id.rec)
+        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
     }
 }

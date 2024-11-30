@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.views;
+package com.filantrop.pvnclient.wtmp.model;
 
 import android.os.Bundle;
 

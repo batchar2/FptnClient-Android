@@ -14,7 +14,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
-import com.filantrop.pvnclient.views.MainActivity;
+import com.filantrop.pvnclient.wtmp.model.MainActivity;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 

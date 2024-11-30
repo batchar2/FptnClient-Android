@@ -29,7 +29,8 @@ public class FptnServer implements Parcelable {
 
     protected FptnServer(Parcel in) {
         id = in.readInt();
-        name = in.readString();
+        username = in.readString();
+        password = in.readString();
         host = in.readString();
         if (in.readByte() == 0) {
             port = null;
@@ -58,6 +59,8 @@ public class FptnServer implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel parcel, int flags) {
         parcel.writeString(name);
+        parcel.writeString(username);
+        parcel.writeString(password);
         parcel.writeString(host);
         parcel.writeInt(port);
     }
