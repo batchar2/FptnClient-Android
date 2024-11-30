@@ -1,4 +1,5 @@
 plugins {
+    id("kotlin-kapt")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.protobuf)
@@ -59,11 +60,17 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
 
+    kapt(libs.androidx.room.compiler)
+
     implementation(libs.activity.ktx)         // Activity KTX
     implementation(libs.viewmodel.ktx)        // ViewModel KTX
     implementation(libs.livedata.ktx)         // LiveData KTX
     implementation(libs.runtime.ktx)          // Lifecycle Runtime KTX
 }
+kapt {
+    correctErrorTypes=true
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)

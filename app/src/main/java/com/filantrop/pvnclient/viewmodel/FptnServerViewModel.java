@@ -1,6 +1,7 @@
 package com.filantrop.pvnclient.viewmodel;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -9,21 +10,49 @@ import androidx.lifecycle.LiveData;
 import com.filantrop.pvnclient.database.model.FptnServer;
 import com.filantrop.pvnclient.repository.FptnServerRepo;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.Base64;
 import java.util.List;
 
 public class FptnServerViewModel extends AndroidViewModel {
+    private final String TAG = "FptnServerViewModel";
     private FptnServerRepo fptnServerRepo;
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
         fptnServerRepo = new FptnServerRepo(application);
     }
-
     public LiveData<List<FptnServer>> getAllServersLiveData() {
         return fptnServerRepo.getAllServersLiveData();
     }
-    public void setServers(String urlBase64) {
-//        fptnServerRepo.insert(FptnServer());
+    public void parseAndSaveFptnLink(String url) {
+        if (url.startsWith("fptn://")) {
+            String preparedUrl = url.substring(7);  // Remove first 7 characters
+
+            byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
+            String jsonString = new String(decodedBytes);
+
+            FptnServerRepo fptnServerRepo = new FptnServerRepo(getApplication());
+            try {
+                JSONObject jsonObject = new JSONObject(jsonString);
+                String username = jsonObject.getString("username");
+                String password = jsonObject.getString("password");
+                JSONArray serversArray = jsonObject.getJSONArray("servers");
+                for (int i = 0; i < serversArray.length(); i++) {
+                    JSONObject serverObject = serversArray.getJSONObject(i);
+                    String name = serverObject.getString("name");
+                    String host = serverObject.getString("host");
+                    int port = serverObject.getInt("port");
+                    fptnServerRepo.insert(new FptnServer(name, username, password, host, port));
+
+                    Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void deleteServers() {

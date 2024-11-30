@@ -10,11 +10,11 @@ import com.filantrop.pvnclient.database.model.FptnServer;
 @Dao
 public interface FptnServerDAO {
     @Insert
-    void insert(FptnServer server);
+    public void insert(FptnServer server);
 
     @Query("SELECT * FROM fptn_server_table")
-    LiveData<FptnServer> getAllServers();
+    public LiveData<FptnServer> getAllServers();
 
     @Query("DELETE FROM fptn_server_table")
-    void deleteAll();
+    public void deleteAll();
 }
