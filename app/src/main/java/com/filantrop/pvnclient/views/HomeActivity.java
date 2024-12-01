@@ -1,6 +1,9 @@
 package com.filantrop.pvnclient.views;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +27,18 @@ import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
+
+    public static String MSG_INTENT_FILTER = "fptn_home_activity";
+
+    public static String MG_TYPE = "type";
+    public static String MSG_PAYLOAD = "payload";
+
+    public static String MSG_TYPE_CONNECTION = "connecting";
+    public static String MSG_TYPE_CONNECTED_SUCCESS = "connected_success";
+    public static String MSG_TYPE_CONNECTED_FAILED = "connected_failed";
+    public static String MSG_TYPE_DISSCONNECTED = "dicconnected";
+    public static String MSG_TYPE_SPEED_DOWNLOAD = "speed_download";
+    public static String MSG_TYPE_SPEED_UPLOAD = "speed_upload";
 
     private enum ConnectionStatus {
         NONE,
@@ -37,9 +53,16 @@ public class HomeActivity extends AppCompatActivity {
         String PASSWORD = "password";
     }
 
+
     private ConnectionStatus connectionStatus;
 
     private RecyclerView recyclerView;
+    private View downloadTextView;
+    private View statusTextView;
+    private View uploadTextView;
+
+
+
     private FptnServerAdaptor adaptor;
     private List<FptnServer> fptnServerList;
     private FptnServerViewModel fptnViewModel = null;
@@ -52,6 +75,20 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.home_layout);
         intializeVariable();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(messageReceiver, new IntentFilter(MSG_INTENT_FILTER));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(messageReceiver);
+    }
+
     private void intializeVariable() {
         connectionStatus = ConnectionStatus.NONE;
         adaptor = new FptnServerAdaptor(this, fptnServerList);
@@ -71,6 +108,15 @@ public class HomeActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
         recyclerView.setAdapter(adaptor);
+
+
+        downloadTextView = findViewById(R.id.downloadTextView);
+        statusTextView = findViewById(R.id.statusTextView);
+        uploadTextView = findViewById(R.id.uploadTextView);
+
+        hideView(downloadTextView);
+        hideView(statusTextView);
+        hideView(uploadTextView);
     }
 
     public void onClickToStartStop(View v) {
@@ -96,14 +142,15 @@ public class HomeActivity extends AppCompatActivity {
                 }
 
                 connectionStatus = ConnectionStatus.CONNECTED;
-                recyclerView.setVisibility(View.GONE); // HIDE
+                hideView(recyclerView); // HIDE
+//                showView(statusTextView);
             } else {
                 Toast.makeText(this, "Server list is empty! Please login!", Toast.LENGTH_SHORT).show();
             }
         } else if (connectionStatus == ConnectionStatus.CONNECTED) {
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
             connectionStatus = ConnectionStatus.NONE;
-            recyclerView.setVisibility(View.VISIBLE); // SHOW
+            showView(recyclerView); // SHOW
         }
     }
 
@@ -117,5 +164,37 @@ public class HomeActivity extends AppCompatActivity {
 
     private Intent getServiceIntent() {
         return new Intent(this, CustomVpnService.class);
+    }
+
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String msgType = intent.getStringExtra(MG_TYPE);
+            String msgPayload = intent.getStringExtra(MSG_PAYLOAD);
+            if (msgType.equals(MSG_TYPE_CONNECTION)) {
+                //
+            } else if (msgType.equals(MSG_TYPE_CONNECTED_SUCCESS)) {
+
+            } else if (msgType.equals(MSG_TYPE_CONNECTED_FAILED)) {
+
+            } else if (msgType.equals(MSG_TYPE_DISSCONNECTED)) {
+
+            } else if (msgType.equals(MSG_TYPE_SPEED_DOWNLOAD)) {
+
+            } else if (msgType.equals(MSG_TYPE_SPEED_UPLOAD)) {
+
+            }
+        }
+    };
+
+    private void hideView(View view) {
+        if (view != null) {
+            view.setVisibility(View.GONE);
+        }
+    }
+    private void showView(View view) {
+        if (view != null) {
+            view.setVisibility(View.VISIBLE);
+        }
     }
 }

@@ -1,6 +1,11 @@
 package com.filantrop.pvnclient.services;
 
+import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
+
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.net.IpPrefix;
 import android.net.ProxyInfo;
 import android.net.RouteInfo;
@@ -144,6 +149,7 @@ public class CustomVpnConnection implements Runnable {
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
             okHttpClientWrapper.startWebSocket(serverHost, serverPort, new CustomWebSocketListener(outputStream));
 
+
             // Packets to be sent are queued in this input stream.
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
             ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
@@ -176,4 +182,5 @@ public class CustomVpnConnection implements Runnable {
     private String getTag() {
         return this.getClass().getCanonicalName() + "[" + connectionId + "]";
     }
+
 }

@@ -1,5 +1,9 @@
 package com.filantrop.pvnclient.services;
 
+import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

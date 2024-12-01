@@ -13,22 +13,55 @@
         android:layout_height="150dp"
         android:layout_marginTop="150dp"
         android:background="@drawable/toggle_button"
+        android:onClick="onClickToStartStop"
         android:text=""
         android:textOff=""
         android:textOn=""
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:onClick="onClickToStartStop"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/downloadTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Download: 10Mb/s"
+        app:layout_constraintEnd_toStartOf="@+id/statusTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toggleButton"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Connecting..."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toggleButton"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/uploadTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Uload: 10mb/s"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/statusTextView"
+        app:layout_constraintTop_toBottomOf="@+id/toggleButton"
+        tools:ignore="MissingConstraints" />
 
     <ScrollView
-        android:scrollbars="vertical"
-        android:fadeScrollbars="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="150dp"
+        android:fadeScrollbars="true"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toggleButton"
         tools:ignore="MissingConstraints">
 
@@ -43,6 +76,8 @@
             app:layout_constraintTop_toBottomOf="@+id/toggleButton"
             tools:ignore="MissingConstraints" />
     </ScrollView>
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
