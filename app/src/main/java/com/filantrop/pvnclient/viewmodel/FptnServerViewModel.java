@@ -30,8 +30,6 @@ public class FptnServerViewModel extends AndroidViewModel {
     public boolean parseAndSaveFptnLink(String url) {
         if (url.startsWith("fptn://")) {
             String preparedUrl = url.substring(7);  // Remove first 7 characters
-
-
             try {
                 byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
                 String jsonString = new String(decodedBytes);

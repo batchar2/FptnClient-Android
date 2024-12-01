@@ -49,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
         fptnViewModel.getAllServersLiveData().observe(this, new Observer<List<FptnServer>>() {
             @Override
             public void onChanged(List<FptnServer> servers) {
-                if(servers != null) { // miss login
+                if(servers != null && !servers.isEmpty()) { // miss login
                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                     startActivity(intent);
                 }

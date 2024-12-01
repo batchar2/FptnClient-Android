@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "fptn_server_table")
+@Entity(tableName = "server_table")
 public class FptnServer implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private int id;

@@ -14,7 +14,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
-import com.filantrop.pvnclient.wtmp.model.MainActivity;
+import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 
@@ -57,7 +57,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         // Создаем PendingIntent (Отложенное намерение) чтобы в Нотификации
         // была доступна кнопка конфигурации (при нажатии вызовет MainActivity)
         mConfigureIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class),
+                new Intent(this, HomeActivity.class),
                 PendingIntent.FLAG_MUTABLE);
     }
 
@@ -92,12 +92,12 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         mHandler.sendEmptyMessage(R.string.connecting);
 
         // Достаем параметры для подключения из SharedPreferences
-        final SharedPreferences prefs = getSharedPreferences(MainActivity.Prefs.NAME, MODE_PRIVATE);
-        final String server = prefs.getString(MainActivity.Prefs.SERVER_ADDRESS, "");
-        final String username = prefs.getString(MainActivity.Prefs.USERNAME, "");
-        final String password = prefs.getString(MainActivity.Prefs.PASSWORD, "");
+        final SharedPreferences prefs = getSharedPreferences(HomeActivity.Prefs.NAME, MODE_PRIVATE);
+        final String server = prefs.getString(HomeActivity.Prefs.SERVER_ADDRESS, "");
+        final String username = prefs.getString(HomeActivity.Prefs.USERNAME, "");
+        final String password = prefs.getString(HomeActivity.Prefs.PASSWORD, "");
 
-        final int port = prefs.getInt(MainActivity.Prefs.SERVER_PORT, 0);
+        final int port = prefs.getInt(HomeActivity.Prefs.SERVER_PORT, 0);
         try {
             startConnection(new CustomVpnConnection(
                     this, mNextConnectionId.getAndIncrement(), server, port, username, password));

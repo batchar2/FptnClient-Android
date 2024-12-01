@@ -2,7 +2,10 @@ package com.filantrop.pvnclient.services;
 
 import android.app.PendingIntent;
 import android.net.IpPrefix;
+import android.net.ProxyInfo;
+import android.net.RouteInfo;
 import android.net.VpnService;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
@@ -14,7 +17,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class CustomVpnConnection implements Runnable {
     /**
@@ -33,7 +42,7 @@ public class CustomVpnConnection implements Runnable {
     private final VpnService service;
     private final int connectionId;
 
-    private final String serverName;
+    private final String serverHost;
     private final int serverPort;
 
     private final OkHttpClientWrapper okHttpClientWrapper;
@@ -42,12 +51,12 @@ public class CustomVpnConnection implements Runnable {
     private OnEstablishListener mOnEstablishListener;
 
     public CustomVpnConnection(final VpnService service, final int connectionId,
-                               final String serverName, final int serverPort,
+                               final String serverHost, final int serverPort,
                                final String username, final String password) {
         this.service = service;
         this.connectionId = connectionId;
 
-        this.serverName = serverName;
+        this.serverHost = serverHost;
         this.serverPort = serverPort;
 
         this.okHttpClientWrapper = new OkHttpClientWrapper(username, password);
@@ -92,17 +101,19 @@ public class CustomVpnConnection implements Runnable {
         // Create a DatagramChannel as the VPN tunnel.
         try {
             //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
-
-            // VPNService используется только, чтобы собрать весь трафик с устройства,
-            // весь обмен идет по webSocket, поэтому значения фиксированные
-
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
-            builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverName), 32));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
+                builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
+                builder.excludeRoute(new IpPrefix(InetAddress.getByName("172.16.0.0"), 12));
+                builder.excludeRoute(new IpPrefix(InetAddress.getByName("192.168.0.0"), 16));
+            } else {
+                builder.addRoute(InetAddress.getByName(serverHost), 32);
+            }
             builder.addRoute("0.0.0.0", 0);
-            // Create a new interface using the builder and save the parameters.
-            builder.setSession(serverName).setConfigureIntent(mConfigureIntent);
+            builder.setSession(serverHost).setConfigureIntent(mConfigureIntent);
 
             synchronized (service) {
                 vpnInterface = builder.establish();
@@ -117,7 +128,7 @@ public class CustomVpnConnection implements Runnable {
 
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            okHttpClientWrapper.startWebSocket(serverName, serverPort, new CustomWebSocketListener(outputStream));
+            okHttpClientWrapper.startWebSocket(serverHost, serverPort, new CustomWebSocketListener(outputStream));
 
             // Packets to be sent are queued in this input stream.
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());

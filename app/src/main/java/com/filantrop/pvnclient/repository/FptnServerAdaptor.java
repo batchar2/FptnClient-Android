@@ -30,7 +30,7 @@ public class FptnServerAdaptor extends RecyclerView.Adapter<FptnServerAdaptor.Fp
     @NonNull
     @Override
     public FptnServerViewHodler onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.each_server_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_server_item, parent, false);
         return new FptnServerViewHodler(view);
     }
 

@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.filantrop.pvnclient.database.dao.FptnServerDAO;
 import com.filantrop.pvnclient.database.model.FptnServer;
 
-@Database(entities = {FptnServer.class}, version = 1, exportSchema = false)
+@Database(entities = {FptnServer.class}, version = 6, exportSchema = false)
 public abstract class FptnDatabase extends RoomDatabase {
     public abstract FptnServerDAO fptnServerDAO();
 

@@ -14,9 +14,9 @@ public interface FptnServerDAO {
     @Insert
     public void insert(FptnServer server);
 
-    @Query("SELECT * FROM fptn_server_table")
+    @Query("SELECT * FROM server_table")
     public LiveData<List<FptnServer>> getAllServers();
 
-    @Query("DELETE FROM fptn_server_table")
+    @Query("DELETE FROM server_table")
     public void deleteAll();
 }

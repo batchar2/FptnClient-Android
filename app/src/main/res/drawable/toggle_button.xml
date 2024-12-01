@@ -2,10 +2,10 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:state_checked="false"
-        android:drawable="@drawable/toggle_button_off"
+        android:drawable="@drawable/toggle_button_on"
         />
     <item
         android:state_checked="true"
-        android:drawable="@drawable/toggle_button_on"
+        android:drawable="@drawable/toggle_button_off"
         />
 </selector>
