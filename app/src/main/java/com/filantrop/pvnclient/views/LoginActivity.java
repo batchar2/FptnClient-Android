@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -57,5 +58,15 @@ public class LoginActivity extends AppCompatActivity {
 
     private void intializeVariable() {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+        fptnViewModel.getAllServersLiveData().observe(this, new Observer<List<FptnServer>>() {
+            @Override
+            public void onChanged(List<FptnServer> servers) {
+                if(servers != null) {
+                    // miss login
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 }

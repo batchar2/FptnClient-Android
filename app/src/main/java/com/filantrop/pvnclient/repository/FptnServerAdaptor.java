@@ -1,5 +1,6 @@
 package com.filantrop.pvnclient.repository;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +16,15 @@ import java.util.List;
 
 public class FptnServerAdaptor extends RecyclerView.Adapter<FptnServerAdaptor.FptnServerViewHodler> {
     private List<FptnServer> fptnServerList;
+    private Context context;
 
+    public FptnServerAdaptor(Context context, List<FptnServer> fptnServerList) {
+        this.context = context;
+        this.fptnServerList = fptnServerList;
+    }
     public void setFptnServerList(List<FptnServer> fptnServerList) {
         this.fptnServerList = fptnServerList;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -43,8 +50,7 @@ public class FptnServerAdaptor extends RecyclerView.Adapter<FptnServerAdaptor.Fp
         return fptnServerList.size();
     }
 
-
-    public class FptnServerViewHodler extends  RecyclerView.ViewHolder {
+    public class FptnServerViewHodler extends RecyclerView.ViewHolder {
         private TextView name;
         private TextView host;
         private TextView port;

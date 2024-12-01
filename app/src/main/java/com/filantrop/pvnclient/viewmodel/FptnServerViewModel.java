@@ -57,6 +57,10 @@ public class FptnServerViewModel extends AndroidViewModel {
         return false;
     }
 
+    public FptnServerRepo getFptnServerRepo() {
+        return fptnServerRepo;
+    }
+
     public void deleteServers() {
         fptnServerRepo.deleteAll();
     }
