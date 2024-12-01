@@ -71,6 +71,7 @@ public class OkHttpClientWrapper {
                 }
         };
 
+
         // Install the all-trusting trust manager
         final SSLContext sslContext;
         try {
@@ -87,6 +88,15 @@ public class OkHttpClientWrapper {
         builder.hostnameVerifier((hostname, session) -> true);
 
         this.client = builder.build();
+    }
+
+    public void stop() {
+        stopWebSocket();
+        if (client != null) {
+            client.dispatcher().executorService().shutdown();
+            client.connectionPool().evictAll();
+//            client.close();
+        }
     }
 
     private String getAuthToken(String host, int port) {
@@ -159,7 +169,6 @@ public class OkHttpClientWrapper {
         if (!isValid(token)) {
             token = getAuthToken(host, port);
         }
-
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), WEBSOCKET_URL, host, port))
                 .addHeader("Authorization", "Bearer " + token)

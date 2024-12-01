@@ -23,12 +23,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CustomVpnService extends VpnService implements Handler.Callback {
-    public static final String ACTION_CONNECT = "com.example.android.toyvpn.START";
-    public static final String ACTION_DISCONNECT = "com.example.android.toyvpn.STOP";
+    public static final String ACTION_CONNECT = "com.example.android.fptn.START";
+    public static final String ACTION_DISCONNECT = "com.example.android.fptn.STOP";
 
     //Handler - очередь обрабатываемых в потоке сообщений.
     private Handler mHandler;
 
+    private boolean isRunning = false;
     private static class Connection extends Pair<Thread, ParcelFileDescriptor> {
         public Connection(Thread thread, ParcelFileDescriptor pfd) {
             super(thread, pfd);
@@ -64,9 +65,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_DISCONNECT.equals(intent.getAction())) {
+            isRunning = false;
             disconnect();
             return START_NOT_STICKY;
         } else {
+            isRunning = true;
             connect();
             return START_STICKY;
         }
@@ -114,11 +117,16 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(mConfigureIntent);
         connection.setOnEstablishListener(tunInterface -> {
-            // Вот для этого и нужен handler, чтобы из потока соединения присылать на UI сообщения
-            mHandler.sendEmptyMessage(R.string.connected);
+            if (isRunning) {
+                // Вот для этого и нужен handler, чтобы из потока соединения присылать на UI сообщения
+                mHandler.sendEmptyMessage(R.string.connected);
 
-            mConnectingThread.compareAndSet(thread, null);
-            setConnection(new Connection(thread, tunInterface));
+                mConnectingThread.compareAndSet(thread, null);
+                setConnection(new Connection(thread, tunInterface));
+            } else {
+                connection.stop();
+                thread.interrupt();
+            }
         });
         thread.start();
     }
@@ -151,17 +159,17 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     // Выводит в уведомления
     private void updateForegroundNotification(final int message) {
-        final String NOTIFICATION_CHANNEL_ID = "ToyVpn";
+        final String NOTIFICATION_CHANNEL_ID = "FptnVPN";
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(
                 NOTIFICATION_SERVICE);
         mNotificationManager.createNotificationChannel(new NotificationChannel(
                 NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID,
                 NotificationManager.IMPORTANCE_DEFAULT));
-        startForeground(1, new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_vpn)
-                .setContentText(getString(message))
-                .setContentIntent(mConfigureIntent)
-                .build());
+//        startForeground(1, new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+//                .setSmallIcon(R.drawable.ic_vpn)
+//                .setContentText(getString(message))
+//                .setContentIntent(mConfigureIntent)
+//                .build());
     }
 
     private String getTag() {

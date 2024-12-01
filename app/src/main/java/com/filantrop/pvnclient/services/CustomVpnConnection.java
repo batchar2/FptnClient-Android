@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CustomVpnConnection implements Runnable {
     /**
@@ -50,9 +51,12 @@ public class CustomVpnConnection implements Runnable {
     private PendingIntent mConfigureIntent;
     private OnEstablishListener mOnEstablishListener;
 
+    private static AtomicBoolean isRunning = new AtomicBoolean(false);
+
     public CustomVpnConnection(final VpnService service, final int connectionId,
                                final String serverHost, final int serverPort,
                                final String username, final String password) {
+        isRunning.set(true);
         this.service = service;
         this.connectionId = connectionId;
 
@@ -73,6 +77,13 @@ public class CustomVpnConnection implements Runnable {
         mOnEstablishListener = listener;
     }
 
+    public void stop() {
+        isRunning.set(false);
+        okHttpClientWrapper.stop();
+        mOnEstablishListener = null; // FIXME
+//        mOnEstablishListener.
+    }
+
     @Override
     public void run() {
         try {
@@ -81,10 +92,12 @@ public class CustomVpnConnection implements Runnable {
             // todo: Add ConnectivityManager for check Internet
             for (int attempt = 0; attempt < 10; ++attempt) {
                 // Reset the counter if we were connected.
+                if (isRunning.get() == false) {
+                    break;
+                }
                 if (startConnection()) {
                     attempt = 0;
                 }
-
                 // Sleep for a while. This also checks if we got interrupted.
                 Thread.sleep(3000);
             }
@@ -104,6 +117,7 @@ public class CustomVpnConnection implements Runnable {
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
+            builder.addDnsServer("172.20.0.1"); // FIXME!
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
