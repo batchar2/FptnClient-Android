@@ -12,11 +12,11 @@ import java.util.List;
 @Dao
 public interface FptnServerDAO {
     @Insert
-    public void insert(FptnServer server);
+    void insert(FptnServer server);
 
     @Query("SELECT * FROM server_table")
-    public LiveData<List<FptnServer>> getAllServers();
+    LiveData<List<FptnServer>> getAllServers();
 
     @Query("DELETE FROM server_table")
-    public void deleteAll();
+    void deleteAll();
 }

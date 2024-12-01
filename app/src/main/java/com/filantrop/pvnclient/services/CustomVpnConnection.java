@@ -1,14 +1,7 @@
 package com.filantrop.pvnclient.services;
 
-import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
-
 import android.app.PendingIntent;
-import android.content.Intent;
 import android.net.IpPrefix;
-import android.net.ProxyInfo;
-import android.net.RouteInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
@@ -22,13 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CustomVpnConnection implements Runnable {
@@ -85,8 +72,7 @@ public class CustomVpnConnection implements Runnable {
     public void stop() {
         isRunning.set(false);
         okHttpClientWrapper.stop();
-        mOnEstablishListener = null; // FIXME
-//        mOnEstablishListener.
+        mOnEstablishListener = null;
     }
 
     @Override

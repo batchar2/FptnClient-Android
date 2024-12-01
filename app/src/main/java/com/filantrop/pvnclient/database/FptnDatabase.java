@@ -31,7 +31,6 @@ public abstract class FptnDatabase extends RoomDatabase {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
-            // new PopulateDb(instance).execute();
         }
     };
 }

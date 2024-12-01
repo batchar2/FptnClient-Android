@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_layour"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:background="@drawable/application_background"
-    android:padding="16dp"
-    >
+    android:gravity="center"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,50 +16,46 @@
         <ImageView
             android:layout_width="160dp"
             android:layout_height="160dp"
-            android:src="@drawable/icon_account_circle_100"
-            />
+            android:src="@drawable/icon_account_circle_100" />
 
         <TextView
+            android:id="@+id/fptn_login_html_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:autoLink="none"
-            android:textSize="16sp"
-            android:text="html"
-            android:padding="8dp"
             android:layout_marginTop="32dp"
-            android:linksClickable="true"
+            android:autoLink="none"
             android:clickable="true"
-            android:id="@+id/fptn_login_html_label"
-            />
+            android:linksClickable="true"
+            android:padding="8dp"
+            android:text="html"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
 
         <EditText
+            android:id="@+id/fptn_login_link_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Paste your key..."
+            android:background="@drawable/rounde_corner"
+            android:hint="@string/paste_your_key"
+            android:inputType="text"
+            android:padding="10dp"
             android:textColor="@color/white"
             android:textColorHint="@color/hint"
-            android:textSize="16sp"
-            android:background="@drawable/rounde_corner"
-            android:padding="10dp"
-            android:inputType="text"
-            android:id="@+id/fptn_login_link_input"
-            />
+            android:textSize="16sp" />
 
         <Button
+            android:id="@+id/fptn_login_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Login"
-            android:backgroundTint="@color/white"
-            android:background="@drawable/rounde_corner"
-            android:textColor="@color/text"
-            android:padding="18dp"
-            android:onClick="onLogin"
             android:layout_marginTop="32dp"
-            android:textSize="18sp"
-            android:id="@+id/fptn_login_button"
-            />
+            android:background="@drawable/rounde_corner"
+            android:backgroundTint="@color/white"
+            android:onClick="onLogin"
+            android:padding="18dp"
+            android:text="Login"
+            android:textColor="@color/text"
+            android:textSize="18sp" />
 
     </LinearLayout>
 

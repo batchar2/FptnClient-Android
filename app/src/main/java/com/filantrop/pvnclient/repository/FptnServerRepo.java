@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 
 public class FptnServerRepo {
     private FptnServerDAO fptnServerDAO;
-//    private LiveData<List<FptnServer>> allServersLiveData;
+
     private Executor executor = Executors.newSingleThreadExecutor();
 
     public FptnServerRepo(Application application) {
@@ -22,26 +22,15 @@ public class FptnServerRepo {
     }
 
     public LiveData<List<FptnServer>> getAllServersLiveData() {
-//        allServersLiveData = ;
         return fptnServerDAO.getAllServers();
     }
 
     public void insert(FptnServer fptnServer) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                fptnServerDAO.insert(fptnServer);
-            }
-        });
+        executor.execute(() -> fptnServerDAO.insert(fptnServer));
     }
 
     public void deleteAll() {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                fptnServerDAO.deleteAll();
-            }
-        });
+        executor.execute(() -> fptnServerDAO.deleteAll());
     }
 
 }

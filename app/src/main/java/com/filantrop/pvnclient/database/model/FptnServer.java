@@ -1,6 +1,5 @@
 package com.filantrop.pvnclient.database.model;
 
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,7 +7,10 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import lombok.Data;
+
 @Entity(tableName = "server_table")
+@Data
 public class FptnServer implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -63,53 +65,5 @@ public class FptnServer implements Parcelable {
         parcel.writeString(password);
         parcel.writeString(host);
         parcel.writeInt(port);
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
     }
 }

@@ -7,9 +7,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-<!--    android:roundIcon="@drawable/ic_vpn"-->
-<!--    android:icon="@drawable/ic_vpn"-->
-
     <application
         android:allowBackup="true"
         android:icon="@drawable/vpn_icon"
@@ -19,19 +16,21 @@
         android:theme="@style/Theme.FptnClient"
         tools:targetApi="31">
         <activity
-            android:label=""
             android:name=".views.LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:label="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:label=""
             android:name=".views.HomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:label="">
+
         </activity>
+
         <service
             android:name=".services.CustomVpnService"
             android:exported="false"

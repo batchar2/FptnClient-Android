@@ -17,16 +17,18 @@ import java.util.Base64;
 import java.util.List;
 
 public class FptnServerViewModel extends AndroidViewModel {
-    private final String TAG = "FptnServerViewModel";
-    private FptnServerRepo fptnServerRepo;
+    private final String TAG = FptnServerViewModel.class.getName();
+    private final FptnServerRepo fptnServerRepo;
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
         fptnServerRepo = new FptnServerRepo(application);
     }
+
     public LiveData<List<FptnServer>> getAllServersLiveData() {
         return fptnServerRepo.getAllServersLiveData();
     }
+
     public boolean parseAndSaveFptnLink(String url) {
         if (url.startsWith("fptn://")) {
             String preparedUrl = url.substring(7);  // Remove first 7 characters
@@ -53,10 +55,6 @@ public class FptnServerViewModel extends AndroidViewModel {
             }
         }
         return false;
-    }
-
-    public FptnServerRepo getFptnServerRepo() {
-        return fptnServerRepo;
     }
 
     public void deleteServers() {

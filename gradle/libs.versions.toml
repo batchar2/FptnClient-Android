@@ -16,12 +16,13 @@ protobufPlugin = "0.9.4"
 protobuf = "4.26.1"
 okhttp = "4.12.0"
 lombock = "1.18.36"
-androidxRoom = "2.6.1"
-lifecycle = "2.6.1"
-activity-ktx = "1.5.1"
+roomRuntime = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomRuntime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -37,17 +38,8 @@ protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidxRoom" }
-
-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity-ktx" }
-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
-
 [plugins]
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
+

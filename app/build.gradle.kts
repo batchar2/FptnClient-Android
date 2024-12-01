@@ -1,5 +1,4 @@
 plugins {
-    id("kotlin-kapt")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.protobuf)
@@ -41,7 +40,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -51,26 +49,22 @@ dependencies {
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.activity)
     implementation(libs.protobuf.javalite)
-    compileOnly(libs.lombock)
     implementation(libs.okhttp)
+
+    // add lombok
+    compileOnly(libs.lombock)
+    annotationProcessor(libs.lombock)
+
+    //adding ORM Room
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    testImplementation(libs.androidx.room.testing)
+
+    //for tests (but we have no tests! yet?)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.runtime)
-
-    kapt(libs.androidx.room.compiler)
-
-    implementation(libs.activity.ktx)         // Activity KTX
-    implementation(libs.viewmodel.ktx)        // ViewModel KTX
-    implementation(libs.livedata.ktx)         // LiveData KTX
-    implementation(libs.runtime.ktx)          // Lifecycle Runtime KTX
 }
-kapt {
-    correctErrorTypes=true
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)

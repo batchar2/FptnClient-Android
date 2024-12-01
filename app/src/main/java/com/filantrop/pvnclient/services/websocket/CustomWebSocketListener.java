@@ -17,7 +17,6 @@ import okio.ByteString;
 
 public class CustomWebSocketListener extends WebSocketListener {
 
-
     private final FileOutputStream outputStream;
 
     public CustomWebSocketListener(FileOutputStream outputStream) {
