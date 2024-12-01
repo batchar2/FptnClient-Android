@@ -25,41 +25,43 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#2A2A2A"
+            android:textColor="@color/white"
             android:autoLink="none"
-            android:linksClickable="true"
             android:textSize="16sp"
-            android:text=""
+            android:text="html"
             android:padding="8dp"
             android:layout_marginTop="32dp"
-            android:clickable="true" />
+            android:linksClickable="true"
+            android:clickable="true"
+            android:id="@+id/fptn_login_html_label"
+            />
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Paste your key..."
-            android:textColor="@color/gray"
-            android:textColorHint="@color/gray"
+            android:textColor="@color/white"
+            android:textColorHint="@color/hint"
             android:textSize="16sp"
             android:background="@drawable/rounde_corner"
             android:padding="10dp"
             android:inputType="text"
-            android:id="@+id/fptn_link_input"
+            android:id="@+id/fptn_login_link_input"
             />
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login"
-            android:backgroundTint="@color/blue"
+            android:backgroundTint="@color/white"
             android:background="@drawable/rounde_corner"
-            android:textColor="@color/white"
+            android:textColor="@color/text"
             android:padding="18dp"
             android:onClick="onLogin"
             android:layout_marginTop="32dp"
             android:textSize="18sp"
-            android:id="@+id/login_button"
+            android:id="@+id/fptn_login_button"
             />
 
     </LinearLayout>

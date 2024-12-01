@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_vpn"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light"
+        android:theme="@style/Theme.FptnClient"
         tools:targetApi="31">
 <!--        <activity-->
 <!--            android:name=".views.TestActivity"-->
@@ -28,6 +28,7 @@
 <!--            </intent-filter>-->
 <!--        </activity> -->
         <activity
+            android:label=""
             android:name=".views.LoginActivity"
             android:exported="true">
             <intent-filter>
@@ -36,6 +37,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:label=""
             android:name=".views.HomeActivity"
             android:exported="true">
         </activity>
