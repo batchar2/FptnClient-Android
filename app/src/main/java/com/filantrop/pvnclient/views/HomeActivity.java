@@ -8,6 +8,10 @@ import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -24,6 +28,7 @@ import com.filantrop.pvnclient.repository.FptnServerAdaptor;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -57,10 +62,13 @@ public class HomeActivity extends AppCompatActivity {
     private ConnectionStatus connectionStatus;
 
     private RecyclerView recyclerView;
+
+    private AutoCompleteTextView autoCompleteTextView;
     private View downloadTextView;
     private View statusTextView;
     private View uploadTextView;
 
+    private Spinner spinnerServers;
 
 
     private FptnServerAdaptor adaptor;
@@ -91,32 +99,34 @@ public class HomeActivity extends AppCompatActivity {
 
     private void intializeVariable() {
         connectionStatus = ConnectionStatus.NONE;
-        adaptor = new FptnServerAdaptor(this, fptnServerList);
-        adaptor.setFptnServerList(fptnServerList);
+        adaptor = new FptnServerAdaptor(HomeActivity.this, fptnServerList);
+//        adaptor.setFptnServerList(fptnServerList);
 
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
         fptnViewModel.getAllServersLiveData().observe(this, new Observer<List<FptnServer>>() {
             @Override
             public void onChanged(List<FptnServer> servers) {
+                List<FptnServer> newServers = new ArrayList<>();
+                if (servers != null) {
+                    newServers.add(new FptnServer("Auto", "Auto", "Auto", "", 0));
+                    newServers.addAll(servers);
+                }
                 if(servers != null && !servers.isEmpty()) {
-                    fptnServerList = servers;
+                    fptnServerList = newServers ;
                     adaptor.setFptnServerList(fptnServerList);
                 }
             }
         });
-        recyclerView = findViewById(R.id.servers_list_recycler_view);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
-        recyclerView.setAdapter(adaptor);
 
+        spinnerServers = findViewById(R.id.home_server_spinner);
+        spinnerServers.setAdapter((SpinnerAdapter) adaptor);
 
         downloadTextView = findViewById(R.id.downloadTextView);
-        statusTextView = findViewById(R.id.statusTextView);
         uploadTextView = findViewById(R.id.uploadTextView);
 
-        hideView(downloadTextView);
-        hideView(statusTextView);
-        hideView(uploadTextView);
+//        hideView(downloadTextView);
+//        hideView(statusTextView);
+//        hideView(uploadTextView);
     }
 
     public void onClickToStartStop(View v) {
@@ -142,7 +152,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
 
                 connectionStatus = ConnectionStatus.CONNECTED;
-                hideView(recyclerView); // HIDE
+//                hideView(recyclerView); // HIDE
 //                showView(statusTextView);
             } else {
                 Toast.makeText(this, "Server list is empty! Please login!", Toast.LENGTH_SHORT).show();
