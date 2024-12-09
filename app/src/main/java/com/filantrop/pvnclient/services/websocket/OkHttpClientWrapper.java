@@ -1,6 +1,14 @@
 package com.filantrop.pvnclient.services.websocket;
 
+import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
+
+import android.content.Intent;
+import android.net.VpnService;
 import android.util.Log;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.google.protobuf.ByteString;
@@ -40,16 +48,24 @@ public class OkHttpClientWrapper {
 
     private final OkHttpClient client;
 
+    private final VpnService service;
     private final String username;
     private final String password;
+
+    private final String host;
+
+    private int port;
 
     private String token;
 
     private WebSocket webSocket;
 
-    public OkHttpClientWrapper(String username, String password) {
+    public OkHttpClientWrapper(final VpnService service, String username, String password, String host, int port) {
+        this.service = service;
         this.username = username;
         this.password = password;
+        this.host = host;
+        this.port = port;
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
@@ -99,7 +115,7 @@ public class OkHttpClientWrapper {
         }
     }
 
-    private String getAuthToken(String host, int port) {
+    public String getAuthToken() {
         try {
             JSONObject json = new JSONObject();
             json.put("username", username);
@@ -134,7 +150,7 @@ public class OkHttpClientWrapper {
         return null;
     }
 
-    public String getDNSServer(String host, int port) {
+    public String getDNSServer() {
         try {
             String url = String.format(Locale.getDefault(), DNS_URL_PATTERN, host, port);
             Request request = new Request.Builder()
@@ -165,9 +181,9 @@ public class OkHttpClientWrapper {
         return null;
     }
 
-    public void startWebSocket(String host, int port, WebSocketListener webSocketListener) {
+    public void startWebSocket(WebSocketListener webSocketListener) {
         if (!isValid(token)) {
-            token = getAuthToken(host, port);
+            token = getAuthToken();
         }
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), WEBSOCKET_URL, host, port))
@@ -209,10 +225,16 @@ public class OkHttpClientWrapper {
                     .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
                     .setPacket(packet)
                     .build();
-//            Log.d(getTag(), "========================================================================================================");
-//            Log.d(getTag(), "=== send (bytes) === " + msg.toString() );
             webSocket.send(okio.ByteString.of(msg.toByteArray()));
-//            Log.d(getTag(), "=== send (bytes) === " + msg.toString() );
         }
+    }
+
+    private void sendMsgToUI(String type, String msg) {
+        Intent intent = new Intent(MSG_INTENT_FILTER);
+        intent.putExtra(MG_TYPE, type);
+        intent.putExtra(MSG_PAYLOAD, msg);
+//        service.sendBroadcast(intent);
+
+        LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
     }
 }

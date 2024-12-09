@@ -1,5 +1,6 @@
 package com.filantrop.pvnclient.views;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,11 +8,12 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -19,17 +21,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServer;
 import com.filantrop.pvnclient.repository.FptnServerAdaptor;
 import com.filantrop.pvnclient.services.CustomVpnService;
+import com.filantrop.pvnclient.utils.CountUpTimer;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -38,16 +42,16 @@ public class HomeActivity extends AppCompatActivity {
     public static String MG_TYPE = "type";
     public static String MSG_PAYLOAD = "payload";
 
-    public static String MSG_TYPE_CONNECTION = "connecting";
+    public static String MSG_TYPE_CONNECTING = "connecting";
     public static String MSG_TYPE_CONNECTED_SUCCESS = "connected_success";
     public static String MSG_TYPE_CONNECTED_FAILED = "connected_failed";
     public static String MSG_TYPE_DISSCONNECTED = "dicconnected";
     public static String MSG_TYPE_SPEED_DOWNLOAD = "speed_download";
     public static String MSG_TYPE_SPEED_UPLOAD = "speed_upload";
 
-    private enum ConnectionStatus {
+    private enum ConnectionState {
         NONE,
-        CONNECTION,
+        CONNECTING,
         CONNECTED;
     }
     public interface Prefs {
@@ -59,7 +63,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-    private ConnectionStatus connectionStatus;
+    private ConnectionState connectionState;
 
     private RecyclerView recyclerView;
 
@@ -67,6 +71,10 @@ public class HomeActivity extends AppCompatActivity {
     private View downloadTextView;
     private View statusTextView;
     private View uploadTextView;
+
+    private TextView timerTextView;
+
+    private CountUpTimer timer;
 
     private Spinner spinnerServers;
 
@@ -97,8 +105,9 @@ public class HomeActivity extends AppCompatActivity {
         unregisterReceiver(messageReceiver);
     }
 
+    @SuppressLint("InlinedApi")
     private void intializeVariable() {
-        connectionStatus = ConnectionStatus.NONE;
+        connectionState = ConnectionState.NONE;
         adaptor = new FptnServerAdaptor(HomeActivity.this, fptnServerList);
 //        adaptor.setFptnServerList(fptnServerList);
 
@@ -124,16 +133,24 @@ public class HomeActivity extends AppCompatActivity {
         downloadTextView = findViewById(R.id.downloadTextView);
         uploadTextView = findViewById(R.id.uploadTextView);
 
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(messageReceiver, new IntentFilter(MSG_INTENT_FILTER));
+
+
+        timerTextView = findViewById(R.id.homeTextViewTime);
+
+//        );;
+        //        registerReceiver(messageReceiver, new IntentFilter(MSG_INTENT_FILTER), Context.RECEIVER_NOT_EXPORTED);
+
 //        hideView(downloadTextView);
 //        hideView(statusTextView);
 //        hideView(uploadTextView);
     }
 
     public void onClickToStartStop(View v) {
-        if (connectionStatus == ConnectionStatus.NONE) {
+        if (connectionState == ConnectionState.NONE) {
             if (!fptnServerList.isEmpty()) {
-                final FptnServer server = fptnServerList.get(0); // first for DEMO
-
+                final FptnServer server = fptnServerList.get(1); // first for DEMO
                 final SharedPreferences prefs = getSharedPreferences(HomeActivity.Prefs.NAME, MODE_PRIVATE);
                 prefs.edit()
                         .putString(HomeActivity.Prefs.SERVER_ADDRESS, server.getHost())
@@ -151,16 +168,17 @@ public class HomeActivity extends AppCompatActivity {
                     onActivityResult(0, RESULT_OK, null);
                 }
 
-                connectionStatus = ConnectionStatus.CONNECTED;
+                connectionState = ConnectionState.CONNECTED;
 //                hideView(recyclerView); // HIDE
 //                showView(statusTextView);
             } else {
                 Toast.makeText(this, "Server list is empty! Please login!", Toast.LENGTH_SHORT).show();
             }
-        } else if (connectionStatus == ConnectionStatus.CONNECTED) {
+        } else if (connectionState == ConnectionState.CONNECTED) {
+            stopTimer();
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
-            connectionStatus = ConnectionStatus.NONE;
-            showView(recyclerView); // SHOW
+            connectionState = ConnectionState.NONE;
+//            showView(recyclerView); // SHOW
         }
     }
 
@@ -179,16 +197,23 @@ public class HomeActivity extends AppCompatActivity {
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            TextView status = findViewById(R.id.homeTextViewConnectionStatus);
+
             String msgType = intent.getStringExtra(MG_TYPE);
             String msgPayload = intent.getStringExtra(MSG_PAYLOAD);
-            if (msgType.equals(MSG_TYPE_CONNECTION)) {
-                //
+
+            if (msgType.equals(MSG_TYPE_CONNECTING)) {
+                status.setText("Connecting...");
+                connectionState = ConnectionState.CONNECTING;
             } else if (msgType.equals(MSG_TYPE_CONNECTED_SUCCESS)) {
-
+                connectionState = ConnectionState.CONNECTED;
+                status.setText("Running");
+                startTimer();
             } else if (msgType.equals(MSG_TYPE_CONNECTED_FAILED)) {
-
+                status.setText("Fail: " + msgPayload);
+                connectionState = ConnectionState.NONE;
             } else if (msgType.equals(MSG_TYPE_DISSCONNECTED)) {
-
+                connectionState = ConnectionState.NONE;
             } else if (msgType.equals(MSG_TYPE_SPEED_DOWNLOAD)) {
 
             } else if (msgType.equals(MSG_TYPE_SPEED_UPLOAD)) {
@@ -205,6 +230,35 @@ public class HomeActivity extends AppCompatActivity {
     private void showView(View view) {
         if (view != null) {
             view.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    private void startTimer() {
+        long duration = 3600000 * 24 * 7; // 7 days FIXME
+        timer = new CountUpTimer() {
+            @Override
+            public void onTick(int second) {
+                int hours = second / 3600;
+                int minutes = (second % 3600) / 60;
+                int seconds = second % 60;
+
+                // Format and display the time as HH:MM:SS
+                String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+                timerTextView.setText(time);
+            }
+
+            @Override
+            public void onFinish() {
+                timerTextView.setText("00:00:00");
+            }
+        };
+        timer.start();
+    }
+
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
         }
     }
 }

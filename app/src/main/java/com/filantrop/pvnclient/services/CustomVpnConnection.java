@@ -1,11 +1,21 @@
 package com.filantrop.pvnclient.services;
 
+import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTED_FAILED;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTED_SUCCESS;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTING;
+
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.net.IpPrefix;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
@@ -55,7 +65,7 @@ public class CustomVpnConnection implements Runnable {
         this.serverHost = serverHost;
         this.serverPort = serverPort;
 
-        this.okHttpClientWrapper = new OkHttpClientWrapper(username, password);
+        this.okHttpClientWrapper = new OkHttpClientWrapper(service, username, password, serverHost, serverPort);
     }
 
     /**
@@ -104,6 +114,13 @@ public class CustomVpnConnection implements Runnable {
         boolean connected = false;
         // Create a DatagramChannel as the VPN tunnel.
         try {
+            String token = okHttpClientWrapper.getAuthToken();
+            if (token == null) {
+                sendMsgToUI(MSG_TYPE_CONNECTED_FAILED, "Auth error!");
+            } else {
+                sendMsgToUI(MSG_TYPE_CONNECTING, "");
+            }
+
             //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
@@ -122,6 +139,11 @@ public class CustomVpnConnection implements Runnable {
 
             synchronized (service) {
                 vpnInterface = builder.establish();
+                if (vpnInterface == null) {
+                    sendMsgToUI(MSG_TYPE_CONNECTED_FAILED, "");
+                } else {
+                    sendMsgToUI(MSG_TYPE_CONNECTED_SUCCESS, "");
+                }
                 if (mOnEstablishListener != null) {
                     mOnEstablishListener.onEstablish(vpnInterface);
                 }
@@ -133,8 +155,7 @@ public class CustomVpnConnection implements Runnable {
 
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            okHttpClientWrapper.startWebSocket(serverHost, serverPort, new CustomWebSocketListener(outputStream));
-
+            okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(outputStream));
 
             // Packets to be sent are queued in this input stream.
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
@@ -163,6 +184,15 @@ public class CustomVpnConnection implements Runnable {
             }
         }
         return connected;
+    }
+
+    private void sendMsgToUI(String type, String msg) {
+        Intent intent = new Intent(MSG_INTENT_FILTER);
+        intent.putExtra(MG_TYPE, type);
+        intent.putExtra(MSG_PAYLOAD, msg);
+//        service.sendBroadcast(intent);
+
+        LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
     }
 
     private String getTag() {

@@ -4,3 +4,4 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.protobuf) apply false
 }
+val defaultTargetSdkVersion by extra(34)

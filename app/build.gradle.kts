@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.filantrop.pvnclient"
-        minSdk = 28
-        targetSdk = 34
+        minSdk = 26
+        targetSdkVersion(rootProject.extra["defaultTargetSdkVersion"] as Int)
         versionCode = 1
         versionName = "1.0"
 
