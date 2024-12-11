@@ -37,7 +37,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
 
 public class OkHttpClientWrapper {
     public static final MediaType JSON = MediaType.get("application/json");
@@ -181,7 +180,7 @@ public class OkHttpClientWrapper {
         return null;
     }
 
-    public void startWebSocket(WebSocketListener webSocketListener) {
+    public void startWebSocket(CustomWebSocketListener webSocketListener) {
         if (!isValid(token)) {
             token = getAuthToken();
         }

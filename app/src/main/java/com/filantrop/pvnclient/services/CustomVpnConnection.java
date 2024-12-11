@@ -6,6 +6,9 @@ import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
 import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTED_FAILED;
 import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTED_SUCCESS;
 import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTING;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_DISSCONNECTED;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_SPEED_DOWNLOAD;
+import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_SPEED_UPLOAD;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -20,12 +23,17 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
 import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
+import com.filantrop.pvnclient.services.websocket.WebSocketMessageCallback;
+import com.filantrop.pvnclient.utils.DataRateCalculator;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CustomVpnConnection implements Runnable {
@@ -55,6 +63,12 @@ public class CustomVpnConnection implements Runnable {
 
     private static AtomicBoolean isRunning = new AtomicBoolean(false);
 
+    private DataRateCalculator downloadRate;
+    private DataRateCalculator uploadRate;
+
+    private ScheduledExecutorService scheduler;
+
+
     public CustomVpnConnection(final VpnService service, final int connectionId,
                                final String serverHost, final int serverPort,
                                final String username, final String password) {
@@ -66,6 +80,9 @@ public class CustomVpnConnection implements Runnable {
         this.serverPort = serverPort;
 
         this.okHttpClientWrapper = new OkHttpClientWrapper(service, username, password, serverHost, serverPort);
+
+        this.downloadRate = new DataRateCalculator(1000);
+        this.uploadRate = new DataRateCalculator(1000);
     }
 
     /**
@@ -153,9 +170,33 @@ public class CustomVpnConnection implements Runnable {
             // Now we are connected. Set the flag.
             connected = true;
 
+
+            scheduler = Executors.newSingleThreadScheduledExecutor();
+            scheduler.scheduleWithFixedDelay(() -> {
+                // Get download and upload speeds
+                String downloadSpeed = downloadRate.getFormatString();
+                String uploadSpeed = uploadRate.getFormatString();
+                sendMsgToUI(MSG_TYPE_SPEED_DOWNLOAD, String.valueOf(downloadSpeed));
+                sendMsgToUI(MSG_TYPE_SPEED_UPLOAD, String.valueOf(uploadSpeed));
+            }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
+
+
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(outputStream));
+//            okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(outputStream));
+
+            WebSocketMessageCallback callback = new WebSocketMessageCallback() {
+                @Override
+                public void onMessageReceived(byte[] data) {
+                    try {
+                        downloadRate.update(data.length);
+                        outputStream.write(data);
+                    } catch (Exception e) {
+                        Log.w(getTag(), "onMessageReceived: " + new String(data));
+                    }
+                }
+            };
+            okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(callback));
 
             // Packets to be sent are queued in this input stream.
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
@@ -165,12 +206,14 @@ public class CustomVpnConnection implements Runnable {
                 try {
                     int length = inputStream.read(buffer.array());
                     if (length > 0) {
+                        uploadRate.update(length); // speed
                         okHttpClientWrapper.send(buffer, length);
                     }
                 } catch (Exception e) {
                     Log.e(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
+            sendMsgToUI(MSG_TYPE_DISSCONNECTED, "");
         } catch (PVNClientException e) {
             Log.e(getTag(), "Cannot use socket", e);
         } finally {
@@ -190,8 +233,6 @@ public class CustomVpnConnection implements Runnable {
         Intent intent = new Intent(MSG_INTENT_FILTER);
         intent.putExtra(MG_TYPE, type);
         intent.putExtra(MSG_PAYLOAD, msg);
-//        service.sendBroadcast(intent);
-
         LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
     }
 

@@ -47,32 +47,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/homeTextViewLabelStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Status:"
-        android:textColor="@color/gray"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toggleButton" />
-
-    <TextView
         android:id="@+id/homeTextViewConnectionStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="20dp"
         android:text="Disconnected"
         android:textColor="@color/yellow"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewLabelStatus" />
+        app:layout_constraintTop_toBottomOf="@+id/toggleButton" />
 
     <ImageView
-        android:id="@+id/imageView4"
+        android:id="@+id/homeDownloadImageView"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
@@ -84,11 +70,11 @@
 
     <TextView
         android:id="@+id/downloadTextView"
-        android:layout_width="80dp"
+        android:layout_width="100dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
         android:gravity="end|center_vertical"
-        android:text="100 Mb/s"
+        android:text="0 Mb/s"
         android:textSize="16sp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toStartOf="@+id/textView2"
@@ -96,18 +82,18 @@
 
     <TextView
         android:id="@+id/uploadTextView"
-        android:layout_width="80dp"
+        android:layout_width="100dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
         android:gravity="start|center_vertical"
-        android:text="10 Mb/s"
+        android:text="0 Mb/s"
         android:textSize="16sp"
         android:textColor="@color/white"
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
 
     <ImageView
-        android:id="@+id/imageView3"
+        android:id="@+id/homeUploadImageView"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"

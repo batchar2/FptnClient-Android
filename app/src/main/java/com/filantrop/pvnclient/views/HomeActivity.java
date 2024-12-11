@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -68,16 +69,19 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
 
     private AutoCompleteTextView autoCompleteTextView;
-    private View downloadTextView;
-    private View statusTextView;
-    private View uploadTextView;
+    private TextView downloadTextView;
+    private TextView statusTextView;
+    private TextView uploadTextView;
 
+    private TextView homeTextViewTimeLabel;
     private TextView timerTextView;
 
     private CountUpTimer timer;
 
     private Spinner spinnerServers;
 
+    private View homeDownloadImageView;
+    private View homeUploadImageView;
 
     private FptnServerAdaptor adaptor;
     private List<FptnServer> fptnServerList;
@@ -127,24 +131,48 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        homeTextViewTimeLabel = findViewById(R.id.homeTextViewTimeLabel);
         spinnerServers = findViewById(R.id.home_server_spinner);
         spinnerServers.setAdapter((SpinnerAdapter) adaptor);
 
         downloadTextView = findViewById(R.id.downloadTextView);
+        homeDownloadImageView = findViewById(R.id.homeDownloadImageView);
+
         uploadTextView = findViewById(R.id.uploadTextView);
+        homeUploadImageView = findViewById(R.id.homeUploadImageView);
+        homeDownloadImageView = findViewById(R.id.homeDownloadImageView);
+
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(messageReceiver, new IntentFilter(MSG_INTENT_FILTER));
 
-
         timerTextView = findViewById(R.id.homeTextViewTime);
 
-//        );;
-        //        registerReceiver(messageReceiver, new IntentFilter(MSG_INTENT_FILTER), Context.RECEIVER_NOT_EXPORTED);
+        // hide
+        hideRunningUiItems();
+    }
 
-//        hideView(downloadTextView);
-//        hideView(statusTextView);
-//        hideView(uploadTextView);
+
+    private void hideRunningUiItems() {
+        hideView(homeTextViewTimeLabel);
+        hideView(downloadTextView);
+        hideView(uploadTextView);
+        hideView(timerTextView);
+        hideView(homeDownloadImageView);
+        hideView(homeUploadImageView);
+
+        timerTextView.setText("00:00:00");
+        downloadTextView.setText("0 Mb/s");
+        uploadTextView.setText("0 Mb/s");
+    }
+
+    private void showRunningUiItems() {
+        showView(homeTextViewTimeLabel);
+        showView(downloadTextView);
+        showView(uploadTextView);
+        showView(timerTextView);
+        showView(homeDownloadImageView);
+        showView(homeUploadImageView);
     }
 
     public void onClickToStartStop(View v) {
@@ -168,16 +196,14 @@ public class HomeActivity extends AppCompatActivity {
                     onActivityResult(0, RESULT_OK, null);
                 }
 
-                connectionState = ConnectionState.CONNECTED;
-//                hideView(recyclerView); // HIDE
-//                showView(statusTextView);
+//                connectionState = ConnectionState.CONNECTED;
             } else {
                 Toast.makeText(this, "Server list is empty! Please login!", Toast.LENGTH_SHORT).show();
             }
         } else if (connectionState == ConnectionState.CONNECTED) {
             stopTimer();
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
-            connectionState = ConnectionState.NONE;
+//            connectionState = ConnectionState.NONE;
 //            showView(recyclerView); // SHOW
         }
     }
@@ -206,18 +232,25 @@ public class HomeActivity extends AppCompatActivity {
                 status.setText("Connecting...");
                 connectionState = ConnectionState.CONNECTING;
             } else if (msgType.equals(MSG_TYPE_CONNECTED_SUCCESS)) {
+                // show
                 connectionState = ConnectionState.CONNECTED;
+                showRunningUiItems();
                 status.setText("Running");
                 startTimer();
             } else if (msgType.equals(MSG_TYPE_CONNECTED_FAILED)) {
                 status.setText("Fail: " + msgPayload);
                 connectionState = ConnectionState.NONE;
+                status.setText("Disconnected");
+                hideRunningUiItems();
             } else if (msgType.equals(MSG_TYPE_DISSCONNECTED)) {
                 connectionState = ConnectionState.NONE;
-            } else if (msgType.equals(MSG_TYPE_SPEED_DOWNLOAD)) {
-
-            } else if (msgType.equals(MSG_TYPE_SPEED_UPLOAD)) {
-
+                status.setText("Disconnected");
+                hideRunningUiItems();
+                stopTimer();
+            } else if (msgType.equals(MSG_TYPE_SPEED_DOWNLOAD) && connectionState == ConnectionState.CONNECTED) {
+                downloadTextView.setText(msgPayload);
+            } else if (msgType.equals(MSG_TYPE_SPEED_UPLOAD) && connectionState == ConnectionState.CONNECTED) {
+                uploadTextView.setText(msgPayload);
             }
         }
     };
@@ -233,32 +266,34 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-
     private void startTimer() {
         long duration = 3600000 * 24 * 7; // 7 days FIXME
-        timer = new CountUpTimer() {
-            @Override
-            public void onTick(int second) {
-                int hours = second / 3600;
-                int minutes = (second % 3600) / 60;
-                int seconds = second % 60;
+        if (timer == null) {
+            timer = new CountUpTimer() {
+                @Override
+                public void onTick(int second) {
+                    int hours = second / 3600;
+                    int minutes = (second % 3600) / 60;
+                    int seconds = second % 60;
 
-                // Format and display the time as HH:MM:SS
-                String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
-                timerTextView.setText(time);
-            }
+                    // Format and display the time as HH:MM:SS
+                    String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+                    timerTextView.setText(time);
+                }
 
-            @Override
-            public void onFinish() {
-                timerTextView.setText("00:00:00");
-            }
-        };
-        timer.start();
+                @Override
+                public void onFinish() {
+                    timerTextView.setText("00:00:00");
+                }
+            };
+            timer.start();
+        }
     }
 
     private void stopTimer() {
         if (timer != null) {
             timer.cancel();
         }
+        timer = null;
     }
 }

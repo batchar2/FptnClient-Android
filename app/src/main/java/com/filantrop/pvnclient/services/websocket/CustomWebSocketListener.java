@@ -17,11 +17,13 @@ import okio.ByteString;
 
 public class CustomWebSocketListener extends WebSocketListener {
 
-    private final FileOutputStream outputStream;
+//    private final FileOutputStream outputStream;
+    private final WebSocketMessageCallback messageCallback;;
 
-    public CustomWebSocketListener(FileOutputStream outputStream) {
+    public CustomWebSocketListener(WebSocketMessageCallback messageCallback) { //FileOutputStream outputStream) {
         super();
-        this.outputStream = outputStream;
+        this.messageCallback = messageCallback;
+//        this.outputStream = outputStream;
     }
 
     @Override
@@ -50,23 +52,17 @@ public class CustomWebSocketListener extends WebSocketListener {
 
     @Override
     public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
-        // Вообще не вызывается
-        //Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
         try {
             Protocol.Message message = Protocol.Message.parseFrom(bytes.toByteArray());
             if (message.getMsgType() == Protocol.MessageType.MSG_IP_PACKET) {
-//                Log.d(getTag(), "========================================================================================================");
-//                Log.d(getTag(), "=== WebSocketListener.recv(bytes) ===" + message.toString());
                 byte[] rawData = message.getPacket().getPayload().toByteArray();
-//                Log.i(getTag(), "+Read get packet TunInterface: " + rawData.length);
-                outputStream.write(rawData);
+                messageCallback.onMessageReceived(rawData);
+//                outputStream.write(rawData);
             } else {
                 Log.i(getTag(), "Received a non-IP packet message type.");
             }
-//            outputStream.write(bytes.toByteArray());
         } catch (IOException e) {
             Log.e(getTag(), "onMessage.error: " + e.getMessage());
-            //throw new RuntimeException(e);
         }
     }
 

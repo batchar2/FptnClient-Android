@@ -10,9 +10,9 @@
     <string name="connect">Connect!</string>
     <string name="disconnect">Disconnect!</string>
 
-    <string name="connecting">CustomVPN is connecting...</string>
-    <string name="connected">CustomVPN is connected!</string>
-    <string name="disconnected">CustomVPN is disconnected!</string>
+    <string name="connecting">FptnVPN is connecting...</string>
+    <string name="connected">FptnVPN is connected!</string>
+    <string name="disconnected">FptnVPN is disconnected!</string>
     <string name="error">Error on connecting occurs!</string>
     <string name="paste_your_key">Paste your key...</string>
 </resources>
