@@ -7,26 +7,33 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.filantrop.pvnclient.database.model.FptnServer;
-import com.filantrop.pvnclient.repository.FptnServerRepo;
+import com.filantrop.pvnclient.database.model.FptnServerDto;
+import com.filantrop.pvnclient.enums.ConnectionState;
+import com.filantrop.pvnclient.repository.FptnServerRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class FptnServerViewModel extends AndroidViewModel {
     private final String TAG = FptnServerViewModel.class.getName();
-    private final FptnServerRepo fptnServerRepo;
+
+    @Getter
+    @Setter
+    private ConnectionState connectionState;
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
-        fptnServerRepo = new FptnServerRepo(application);
     }
 
-    public LiveData<List<FptnServer>> getAllServersLiveData() {
-        return fptnServerRepo.getAllServersLiveData();
+    public LiveData<List<FptnServerDto>> getAllServersLiveData() {
+        return new FptnServerRepository(getApplication()).getAllServersLiveData();
     }
 
     public boolean parseAndSaveFptnLink(String url) {
@@ -35,20 +42,27 @@ public class FptnServerViewModel extends AndroidViewModel {
             try {
                 byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
                 String jsonString = new String(decodedBytes);
-
-                FptnServerRepo fptnServerRepo = new FptnServerRepo(getApplication());
                 JSONObject jsonObject = new JSONObject(jsonString);
                 String username = jsonObject.getString("username");
                 String password = jsonObject.getString("password");
+
+                List<FptnServerDto> serverDtoList = new ArrayList<>();
                 JSONArray serversArray = jsonObject.getJSONArray("servers");
                 for (int i = 0; i < serversArray.length(); i++) {
                     JSONObject serverObject = serversArray.getJSONObject(i);
                     String name = serverObject.getString("name");
                     String host = serverObject.getString("host");
                     int port = serverObject.getInt("port");
-                    fptnServerRepo.insert(new FptnServer(name, username, password, host, port));
+
+                    serverDtoList.add(new FptnServerDto(name, username, password, host, port));
                     Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
                 }
+
+                if (!serverDtoList.isEmpty()) {
+                    FptnServerRepository fptnServerRepository = new FptnServerRepository(getApplication());
+                    fptnServerRepository.insertAll(serverDtoList);
+                }
+
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -57,7 +71,4 @@ public class FptnServerViewModel extends AndroidViewModel {
         return false;
     }
 
-    public void deleteServers() {
-        fptnServerRepo.deleteAll();
-    }
 }

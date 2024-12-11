@@ -1,5 +1,8 @@
 package com.filantrop.pvnclient.views;
 
+import static com.filantrop.pvnclient.enums.IntentFields.MSG_PAYLOAD;
+import static com.filantrop.pvnclient.enums.IntentFields.MSG_TYPE;
+
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,25 +11,22 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.filantrop.pvnclient.R;
-import com.filantrop.pvnclient.database.model.FptnServer;
-import com.filantrop.pvnclient.repository.FptnServerAdaptor;
+import com.filantrop.pvnclient.database.model.FptnServerDto;
+import com.filantrop.pvnclient.enums.ConnectionState;
+import com.filantrop.pvnclient.enums.IntentMessageType;
+import com.filantrop.pvnclient.enums.SharedPreferencesFields;
+import com.filantrop.pvnclient.repository.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.utils.CountUpTimer;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
@@ -37,40 +37,11 @@ import java.util.Locale;
 
 
 public class HomeActivity extends AppCompatActivity {
-
     public static String MSG_INTENT_FILTER = "fptn_home_activity";
 
-    public static String MG_TYPE = "type";
-    public static String MSG_PAYLOAD = "payload";
+    private FptnServerViewModel fptnViewModel;
 
-    public static String MSG_TYPE_CONNECTING = "connecting";
-    public static String MSG_TYPE_CONNECTED_SUCCESS = "connected_success";
-    public static String MSG_TYPE_CONNECTED_FAILED = "connected_failed";
-    public static String MSG_TYPE_DISSCONNECTED = "dicconnected";
-    public static String MSG_TYPE_SPEED_DOWNLOAD = "speed_download";
-    public static String MSG_TYPE_SPEED_UPLOAD = "speed_upload";
-
-    private enum ConnectionState {
-        NONE,
-        CONNECTING,
-        CONNECTED;
-    }
-    public interface Prefs {
-        String NAME = "connection";
-        String SERVER_ADDRESS = "server.address";
-        String SERVER_PORT = "server.port";
-        String USERNAME = "username";
-        String PASSWORD = "password";
-    }
-
-
-    private ConnectionState connectionState;
-
-    private RecyclerView recyclerView;
-
-    private AutoCompleteTextView autoCompleteTextView;
     private TextView downloadTextView;
-    private TextView statusTextView;
     private TextView uploadTextView;
 
     private TextView homeTextViewTimeLabel;
@@ -78,22 +49,17 @@ public class HomeActivity extends AppCompatActivity {
 
     private CountUpTimer timer;
 
-    private Spinner spinnerServers;
-
     private View homeDownloadImageView;
     private View homeUploadImageView;
 
-    private FptnServerAdaptor adaptor;
-    private List<FptnServer> fptnServerList;
-    private FptnServerViewModel fptnViewModel = null;
-
-    View serverListView;
+    private Spinner spinnerServers;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
-        intializeVariable();
+
+        initializeVariable();
     }
 
     @Override
@@ -110,38 +76,28 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @SuppressLint("InlinedApi")
-    private void intializeVariable() {
-        connectionState = ConnectionState.NONE;
-        adaptor = new FptnServerAdaptor(HomeActivity.this, fptnServerList);
-//        adaptor.setFptnServerList(fptnServerList);
-
+    private void initializeVariable() {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-        fptnViewModel.getAllServersLiveData().observe(this, new Observer<List<FptnServer>>() {
-            @Override
-            public void onChanged(List<FptnServer> servers) {
-                List<FptnServer> newServers = new ArrayList<>();
-                if (servers != null) {
-                    newServers.add(new FptnServer("Auto", "Auto", "Auto", "", 0));
-                    newServers.addAll(servers);
-                }
-                if(servers != null && !servers.isEmpty()) {
-                    fptnServerList = newServers ;
-                    adaptor.setFptnServerList(fptnServerList);
-                }
+        fptnViewModel.setConnectionState(ConnectionState.NONE); // todo: статус подключения надо получать из сервиса!
+
+        fptnViewModel.getAllServersLiveData().observe(this, servers -> {
+            if (servers != null && !servers.isEmpty()) {
+                List<FptnServerDto> fixedServers = new ArrayList<>();
+                fixedServers.add(new FptnServerDto("Auto", "Auto", "Auto", "", 0));
+                fixedServers.addAll(servers);
+                ((FptnServerAdapter) spinnerServers.getAdapter()).setFptnServerDtoList(fixedServers);
             }
         });
 
-        homeTextViewTimeLabel = findViewById(R.id.homeTextViewTimeLabel);
         spinnerServers = findViewById(R.id.home_server_spinner);
-        spinnerServers.setAdapter((SpinnerAdapter) adaptor);
+        spinnerServers.setAdapter(new FptnServerAdapter());
 
+        homeTextViewTimeLabel = findViewById(R.id.homeTextViewTimeLabel);
         downloadTextView = findViewById(R.id.downloadTextView);
         homeDownloadImageView = findViewById(R.id.homeDownloadImageView);
-
         uploadTextView = findViewById(R.id.uploadTextView);
         homeUploadImageView = findViewById(R.id.homeUploadImageView);
         homeDownloadImageView = findViewById(R.id.homeDownloadImageView);
-
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(messageReceiver, new IntentFilter(MSG_INTENT_FILTER));
@@ -176,15 +132,23 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
-        if (connectionState == ConnectionState.NONE) {
-            if (!fptnServerList.isEmpty()) {
-                final FptnServer server = fptnServerList.get(1); // first for DEMO
-                final SharedPreferences prefs = getSharedPreferences(HomeActivity.Prefs.NAME, MODE_PRIVATE);
+        if (fptnViewModel.getConnectionState() == ConnectionState.NONE) {
+            List<FptnServerDto> fptnServerDtoList = ((FptnServerAdapter) spinnerServers.getAdapter()).getFptnServerDtoList();
+            if (fptnServerDtoList != null && !fptnServerDtoList.isEmpty()) {
+                // todo: выбор наилучшего сервера. сейчас для простоты первый
+                FptnServerDto server = fptnServerDtoList.get(1);
+                int selectedPosition = spinnerServers.getSelectedItemPosition();
+                if (selectedPosition > 1) {
+                    server = fptnServerDtoList.get(selectedPosition);
+                }
+
+                //TODO: отойти от sharedPref - передавать всю инфу в intent
+                final SharedPreferences prefs = getSharedPreferences(SharedPreferencesFields.NAME, MODE_PRIVATE);
                 prefs.edit()
-                        .putString(HomeActivity.Prefs.SERVER_ADDRESS, server.getHost())
-                        .putInt(HomeActivity.Prefs.SERVER_PORT, server.getPort())
-                        .putString(HomeActivity.Prefs.USERNAME, server.getUsername())
-                        .putString(HomeActivity.Prefs.PASSWORD, server.getPassword())
+                        .putString(SharedPreferencesFields.SERVER_ADDRESS, server.getHost())
+                        .putInt(SharedPreferencesFields.SERVER_PORT, server.getPort())
+                        .putString(SharedPreferencesFields.USERNAME, server.getUsername())
+                        .putString(SharedPreferencesFields.PASSWORD, server.getPassword())
                         .apply();
                 // Запрос на предоставление приложению возможности запускать впн Intent != null, если приложению еще не предоставлялся доступ
                 Intent intent = VpnService.prepare(HomeActivity.this);
@@ -200,7 +164,7 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Server list is empty! Please login!", Toast.LENGTH_SHORT).show();
             }
-        } else if (connectionState == ConnectionState.CONNECTED) {
+        } else if (fptnViewModel.getConnectionState() == ConnectionState.CONNECTED) {
             stopTimer();
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
 //            connectionState = ConnectionState.NONE;
@@ -220,36 +184,38 @@ public class HomeActivity extends AppCompatActivity {
         return new Intent(this, CustomVpnService.class);
     }
 
-    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             TextView status = findViewById(R.id.homeTextViewConnectionStatus);
 
-            String msgType = intent.getStringExtra(MG_TYPE);
+            String msgTypeAsString = intent.getStringExtra(MSG_TYPE);
             String msgPayload = intent.getStringExtra(MSG_PAYLOAD);
 
-            if (msgType.equals(MSG_TYPE_CONNECTING)) {
+            // todo: переделать на state machine. ну или хотя бы переделать на switch а лучше на enum
+            IntentMessageType msgType = IntentMessageType.valueOf(msgTypeAsString);
+            if (msgType.equals(IntentMessageType.CONNECTING)) {
                 status.setText("Connecting...");
-                connectionState = ConnectionState.CONNECTING;
-            } else if (msgType.equals(MSG_TYPE_CONNECTED_SUCCESS)) {
+                fptnViewModel.setConnectionState(ConnectionState.CONNECTING);
+            } else if (msgType.equals(IntentMessageType.CONNECTED_SUCCESS)) {
                 // show
-                connectionState = ConnectionState.CONNECTED;
+                fptnViewModel.setConnectionState(ConnectionState.CONNECTED);
                 showRunningUiItems();
                 status.setText("Running");
                 startTimer();
-            } else if (msgType.equals(MSG_TYPE_CONNECTED_FAILED)) {
+            } else if (msgType.equals(IntentMessageType.CONNECTED_FAILED)) {
                 status.setText("Fail: " + msgPayload);
-                connectionState = ConnectionState.NONE;
+                fptnViewModel.setConnectionState(ConnectionState.NONE);
                 status.setText("Disconnected");
                 hideRunningUiItems();
-            } else if (msgType.equals(MSG_TYPE_DISSCONNECTED)) {
-                connectionState = ConnectionState.NONE;
+            } else if (msgType.equals(IntentMessageType.DISCONNECTED)) {
+                fptnViewModel.setConnectionState(ConnectionState.NONE);
                 status.setText("Disconnected");
                 hideRunningUiItems();
                 stopTimer();
-            } else if (msgType.equals(MSG_TYPE_SPEED_DOWNLOAD) && connectionState == ConnectionState.CONNECTED) {
+            } else if (msgType.equals(IntentMessageType.SPEED_DOWNLOAD) && fptnViewModel.getConnectionState() == ConnectionState.CONNECTED) {
                 downloadTextView.setText(msgPayload);
-            } else if (msgType.equals(MSG_TYPE_SPEED_UPLOAD) && connectionState == ConnectionState.CONNECTED) {
+            } else if (msgType.equals(IntentMessageType.SPEED_UPLOAD) && fptnViewModel.getConnectionState() == ConnectionState.CONNECTED) {
                 uploadTextView.setText(msgPayload);
             }
         }
@@ -260,6 +226,7 @@ public class HomeActivity extends AppCompatActivity {
             view.setVisibility(View.GONE);
         }
     }
+
     private void showView(View view) {
         if (view != null) {
             view.setVisibility(View.VISIBLE);

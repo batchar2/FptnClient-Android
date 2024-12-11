@@ -15,50 +15,46 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
-import com.filantrop.pvnclient.database.model.FptnServer;
+import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 
 import java.util.List;
 
-//
 public class LoginActivity extends AppCompatActivity {
-    private final String TAG = "LoginActivity";
-    private FptnServerViewModel fptnViewModel = null;
+    private FptnServerViewModel fptnViewModel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_layout);
-        intializeVariable();
+
+        initializeVariable();
+    }
+
+    private void initializeVariable() {
+        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+        fptnViewModel.getAllServersLiveData().observe(this, servers -> {
+            if (servers != null && !servers.isEmpty()) { // miss login
+                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Show HTML
+        String html = "<div style=\"text-align:center;\">Use the Telegram <a href=\"https://t.me/fptn_bot\">bot</a> to get your key.</div>";
+        TextView label = findViewById(R.id.fptn_login_html_label);
+        label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
+        label.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
         final String fptnLink = linkInput.getText().toString();
         if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
-            // go to home layout
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
         } else {
             Toast.makeText(getApplicationContext(), "Invalid link format or saving failed", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void intializeVariable() {
-        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-        fptnViewModel.getAllServersLiveData().observe(this, new Observer<List<FptnServer>>() {
-            @Override
-            public void onChanged(List<FptnServer> servers) {
-                if(servers != null && !servers.isEmpty()) { // miss login
-                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    startActivity(intent);
-                }
-            }
-        });
-        // Show HTML
-        String html = "<div style=\"text-align:center;\">Use the Telegram <a href=\"https://t.me/fptn_bot\">bot</a> to get your key.</div>";
-        TextView label = findViewById(R.id.fptn_login_html_label);
-        label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
-        label.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

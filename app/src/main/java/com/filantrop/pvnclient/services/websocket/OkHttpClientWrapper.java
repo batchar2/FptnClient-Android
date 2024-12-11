@@ -1,14 +1,7 @@
 package com.filantrop.pvnclient.services.websocket;
 
-import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
-
-import android.content.Intent;
 import android.net.VpnService;
 import android.util.Log;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.google.protobuf.ByteString;
@@ -228,12 +221,4 @@ public class OkHttpClientWrapper {
         }
     }
 
-    private void sendMsgToUI(String type, String msg) {
-        Intent intent = new Intent(MSG_INTENT_FILTER);
-        intent.putExtra(MG_TYPE, type);
-        intent.putExtra(MSG_PAYLOAD, msg);
-//        service.sendBroadcast(intent);
-
-        LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
-    }
 }

@@ -1,10 +1,5 @@
 package com.filantrop.pvnclient.services;
 
-import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
-
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -21,6 +16,7 @@ import android.widget.Toast;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
+import com.filantrop.pvnclient.enums.SharedPreferencesFields;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,6 +64,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        //todo: вот тут из интента брать данные для подключения
         if (intent != null && ACTION_DISCONNECT.equals(intent.getAction())) {
             isRunning = false;
             disconnect();
@@ -99,12 +96,13 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         mHandler.sendEmptyMessage(R.string.connecting);
 
         // Достаем параметры для подключения из SharedPreferences
-        final SharedPreferences prefs = getSharedPreferences(HomeActivity.Prefs.NAME, MODE_PRIVATE);
-        final String server = prefs.getString(HomeActivity.Prefs.SERVER_ADDRESS, "");
-        final String username = prefs.getString(HomeActivity.Prefs.USERNAME, "");
-        final String password = prefs.getString(HomeActivity.Prefs.PASSWORD, "");
+        //TODO: отойти от sharedPref - передавать всю инфу в intent
+        final SharedPreferences prefs = getSharedPreferences(SharedPreferencesFields.NAME, MODE_PRIVATE);
+        final String server = prefs.getString(SharedPreferencesFields.SERVER_ADDRESS, "");
+        final String username = prefs.getString(SharedPreferencesFields.USERNAME, "");
+        final String password = prefs.getString(SharedPreferencesFields.PASSWORD, "");
 
-        final int port = prefs.getInt(HomeActivity.Prefs.SERVER_PORT, 0);
+        final int port = prefs.getInt(SharedPreferencesFields.SERVER_PORT, 0);
         try {
             startConnection(new CustomVpnConnection(
                     this, mNextConnectionId.getAndIncrement(), server, port, username, password));

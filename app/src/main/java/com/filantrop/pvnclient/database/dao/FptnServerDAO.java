@@ -5,17 +5,17 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
 
-import com.filantrop.pvnclient.database.model.FptnServer;
+import com.filantrop.pvnclient.database.model.FptnServerDto;
 
 import java.util.List;
 
 @Dao
 public interface FptnServerDAO {
     @Insert
-    void insert(FptnServer server);
+    void insert(FptnServerDto server);
 
     @Query("SELECT * FROM server_table")
-    LiveData<List<FptnServer>> getAllServers();
+    LiveData<List<FptnServerDto>> getAllServers();
 
     @Query("DELETE FROM server_table")
     void deleteAll();

@@ -1,14 +1,14 @@
 package com.filantrop.pvnclient.services;
 
-import static com.filantrop.pvnclient.views.HomeActivity.MG_TYPE;
+import static com.filantrop.pvnclient.enums.IntentFields.MSG_PAYLOAD;
+import static com.filantrop.pvnclient.enums.IntentFields.MSG_TYPE;
+import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTED_FAILED;
+import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTED_SUCCESS;
+import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTING;
+import static com.filantrop.pvnclient.enums.IntentMessageType.DISCONNECTED;
+import static com.filantrop.pvnclient.enums.IntentMessageType.SPEED_DOWNLOAD;
+import static com.filantrop.pvnclient.enums.IntentMessageType.SPEED_UPLOAD;
 import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_PAYLOAD;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTED_FAILED;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTED_SUCCESS;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_CONNECTING;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_DISSCONNECTED;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_SPEED_DOWNLOAD;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_TYPE_SPEED_UPLOAD;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -20,6 +20,7 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.filantrop.pvnclient.enums.IntentMessageType;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
 import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
@@ -133,9 +134,9 @@ public class CustomVpnConnection implements Runnable {
         try {
             String token = okHttpClientWrapper.getAuthToken();
             if (token == null) {
-                sendMsgToUI(MSG_TYPE_CONNECTED_FAILED, "Auth error!");
+                sendMsgToUI(CONNECTED_FAILED, "Auth error!");
             } else {
-                sendMsgToUI(MSG_TYPE_CONNECTING, "");
+                sendMsgToUI(CONNECTING, "");
             }
 
             //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
@@ -157,9 +158,9 @@ public class CustomVpnConnection implements Runnable {
             synchronized (service) {
                 vpnInterface = builder.establish();
                 if (vpnInterface == null) {
-                    sendMsgToUI(MSG_TYPE_CONNECTED_FAILED, "");
+                    sendMsgToUI(CONNECTED_FAILED, "");
                 } else {
-                    sendMsgToUI(MSG_TYPE_CONNECTED_SUCCESS, "");
+                    sendMsgToUI(CONNECTED_SUCCESS, "");
                 }
                 if (mOnEstablishListener != null) {
                     mOnEstablishListener.onEstablish(vpnInterface);
@@ -176,8 +177,8 @@ public class CustomVpnConnection implements Runnable {
                 // Get download and upload speeds
                 String downloadSpeed = downloadRate.getFormatString();
                 String uploadSpeed = uploadRate.getFormatString();
-                sendMsgToUI(MSG_TYPE_SPEED_DOWNLOAD, String.valueOf(downloadSpeed));
-                sendMsgToUI(MSG_TYPE_SPEED_UPLOAD, String.valueOf(uploadSpeed));
+                sendMsgToUI(SPEED_DOWNLOAD, String.valueOf(downloadSpeed));
+                sendMsgToUI(SPEED_UPLOAD, String.valueOf(uploadSpeed));
             }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
 
 
@@ -213,7 +214,7 @@ public class CustomVpnConnection implements Runnable {
                     Log.e(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
-            sendMsgToUI(MSG_TYPE_DISSCONNECTED, "");
+            sendMsgToUI(DISCONNECTED, "");
         } catch (PVNClientException e) {
             Log.e(getTag(), "Cannot use socket", e);
         } finally {
@@ -229,9 +230,9 @@ public class CustomVpnConnection implements Runnable {
         return connected;
     }
 
-    private void sendMsgToUI(String type, String msg) {
+    private void sendMsgToUI(IntentMessageType type, String msg) {
         Intent intent = new Intent(MSG_INTENT_FILTER);
-        intent.putExtra(MG_TYPE, type);
+        intent.putExtra(MSG_TYPE, type.name());
         intent.putExtra(MSG_PAYLOAD, msg);
         LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
     }
