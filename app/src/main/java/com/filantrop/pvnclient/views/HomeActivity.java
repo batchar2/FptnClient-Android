@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.utils.CountUpTimer;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
-import com.google.common.util.concurrent.FutureCallback;
+import com.filantrop.pvnclient.views.callback.DBFutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -88,19 +87,11 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.setConnectionState(ConnectionState.NONE); // todo: статус подключения надо получать из сервиса!
 
         ListenableFuture<List<FptnServerDto>> allServersFuture = fptnViewModel.getAllServers();
-        Futures.addCallback(allServersFuture, new FutureCallback<List<FptnServerDto>>() {
-            @Override
-            public void onSuccess(List<FptnServerDto> result) {
-                List<FptnServerDto> fixedServers = new ArrayList<>();
-                fixedServers.add(new FptnServerDto("Auto", "Auto", "Auto", "", 0));
-                fixedServers.addAll(result);
-                ((FptnServerAdapter) spinnerServers.getAdapter()).setFptnServerDtoList(fixedServers);
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Log.e(TAG, "Failed to load servers from DB", t);
-            }
+        Futures.addCallback(allServersFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
+            List<FptnServerDto> fixedServers = new ArrayList<>();
+            fixedServers.add(new FptnServerDto("Auto", "Auto", "Auto", "", 0));
+            fixedServers.addAll(result);
+            ((FptnServerAdapter) spinnerServers.getAdapter()).setFptnServerDtoList(fixedServers);
         }, this.getMainExecutor());
 
         spinnerServers = findViewById(R.id.home_server_spinner);

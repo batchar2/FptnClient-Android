@@ -1,5 +1,6 @@
 package com.filantrop.pvnclient.services;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -30,6 +31,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     private Handler mHandler;
 
     private boolean isRunning = false;
+
     private static class Connection extends Pair<Thread, ParcelFileDescriptor> {
         public Connection(Thread thread, ParcelFileDescriptor pfd) {
             super(thread, pfd);
@@ -120,7 +122,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         connection.setConfigureIntent(mConfigureIntent);
         connection.setOnEstablishListener(tunInterface -> {
             if (isRunning) {
-                // Вот для этого и нужен handler, чтобы из потока соединения присылать на UI сообщения
+                // Этот вызов из потока соединения вызывается
                 mHandler.sendEmptyMessage(R.string.connected);
 
                 mConnectingThread.compareAndSet(thread, null);
@@ -166,12 +168,15 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 NOTIFICATION_SERVICE);
         mNotificationManager.createNotificationChannel(new NotificationChannel(
                 NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID,
-                NotificationManager.IMPORTANCE_DEFAULT));
-//        startForeground(1, new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-//                .setSmallIcon(R.drawable.ic_vpn)
-//                .setContentText(getString(message))
-//                .setContentIntent(mConfigureIntent)
-//                .build());
+                NotificationManager.IMPORTANCE_HIGH));
+        Notification notification = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.vpn_icon)
+                .setContentText(getString(message))
+                .setContentIntent(mConfigureIntent)
+                .build();
+        // айдишник по идее должен быть уникальным,
+        // но пусть будет так - потому что только одна нотификация - пока сервис работает!
+        startForeground(1, notification);
     }
 
     private String getTag() {

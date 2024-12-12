@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -18,7 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
-import com.google.common.util.concurrent.FutureCallback;
+import com.filantrop.pvnclient.views.callback.DBFutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -42,18 +41,10 @@ public class LoginActivity extends AppCompatActivity {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
 
         ListenableFuture<List<FptnServerDto>> allServersListFuture = fptnViewModel.getAllServers();
-        Futures.addCallback(allServersListFuture, new FutureCallback<List<FptnServerDto>>() {
-            @Override
-            public void onSuccess(List<FptnServerDto> result) {
-                if (result != null && !result.isEmpty()) { // miss login
-                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    startActivity(intent);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Log.e(TAG, "Failed to load servers from DB", t);
+        Futures.addCallback(allServersListFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
+            if (result != null && !result.isEmpty()) { // miss login
+                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                startActivity(intent);
             }
         }, this.getMainExecutor());
 
