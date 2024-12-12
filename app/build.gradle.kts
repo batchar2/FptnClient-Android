@@ -57,8 +57,15 @@ dependencies {
 
     //adding ORM Room
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.guava)
     annotationProcessor(libs.androidx.room.compiler)
     testImplementation(libs.androidx.room.testing)
+
+    implementation(libs.guava)
+
+    // To use CallbackToFutureAdapter
+    implementation(libs.androidx.concurrent.futures)
+
 
     //for tests (but we have no tests! yet?)
     testImplementation(libs.junit)

@@ -2,10 +2,9 @@ package com.filantrop.pvnclient.repository;
 
 import android.content.Context;
 
-import androidx.lifecycle.LiveData;
-
 import com.filantrop.pvnclient.database.FptnDatabase;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,8 +19,8 @@ public class FptnServerRepository {
         this.executorService = Executors.newSingleThreadExecutor();
     }
 
-    public LiveData<List<FptnServerDto>> getAllServersLiveData() {
-        return database.fptnServerDAO().getAllServers();
+    public ListenableFuture<List<FptnServerDto>> getAllServersListFuture(){
+        return database.fptnServerDAO().getAllServersListFuture();
     }
 
     public void deleteAll() {

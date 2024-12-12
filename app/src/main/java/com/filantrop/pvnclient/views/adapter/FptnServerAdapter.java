@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.repository;
+package com.filantrop.pvnclient.views.adapter;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
@@ -14,9 +14,9 @@ import java.util.List;
 
 import lombok.Getter;
 
+@Getter
 public class FptnServerAdapter extends BaseAdapter {
 
-    @Getter
     private List<FptnServerDto> fptnServerDtoList;
 
     public void setFptnServerDtoList(List<FptnServerDto> fptnServerDtoList) {

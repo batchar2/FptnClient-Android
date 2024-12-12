@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -26,17 +27,21 @@ import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.IntentMessageType;
 import com.filantrop.pvnclient.enums.SharedPreferencesFields;
-import com.filantrop.pvnclient.repository.FptnServerAdapter;
+import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.utils.CountUpTimer;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-
 public class HomeActivity extends AppCompatActivity {
+    private final String TAG = this.getClass().getName();
+
     public static String MSG_INTENT_FILTER = "fptn_home_activity";
 
     private FptnServerViewModel fptnViewModel;
@@ -72,6 +77,8 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //todo: java.lang.RuntimeException: Unable to destroy activity {com.filantrop.pvnclient/com.filantrop.pvnclient.views.HomeActivity}:
+        // java.lang.IllegalArgumentException: Receiver not registered: com.filantrop.pvnclient.views.HomeActivity$2@c9f7bb4
         unregisterReceiver(messageReceiver);
     }
 
@@ -80,14 +87,21 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
         fptnViewModel.setConnectionState(ConnectionState.NONE); // todo: статус подключения надо получать из сервиса!
 
-        fptnViewModel.getAllServersLiveData().observe(this, servers -> {
-            if (servers != null && !servers.isEmpty()) {
+        ListenableFuture<List<FptnServerDto>> allServersFuture = fptnViewModel.getAllServers();
+        Futures.addCallback(allServersFuture, new FutureCallback<List<FptnServerDto>>() {
+            @Override
+            public void onSuccess(List<FptnServerDto> result) {
                 List<FptnServerDto> fixedServers = new ArrayList<>();
                 fixedServers.add(new FptnServerDto("Auto", "Auto", "Auto", "", 0));
-                fixedServers.addAll(servers);
+                fixedServers.addAll(result);
                 ((FptnServerAdapter) spinnerServers.getAdapter()).setFptnServerDtoList(fixedServers);
             }
-        });
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.e(TAG, "Failed to load servers from DB", t);
+            }
+        }, this.getMainExecutor());
 
         spinnerServers = findViewById(R.id.home_server_spinner);
         spinnerServers.setAdapter(new FptnServerAdapter());

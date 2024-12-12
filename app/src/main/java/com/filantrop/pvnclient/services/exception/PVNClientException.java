@@ -1,5 +1,10 @@
 package com.filantrop.pvnclient.services.exception;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class PVNClientException extends RuntimeException {
     private Exception exception;
     private String errorMessage;
@@ -17,19 +22,4 @@ public class PVNClientException extends RuntimeException {
         return new PVNClientException(null, message);
     }
 
-    public Exception getException() {
-        return exception;
-    }
-
-    public void setException(Exception exception) {
-        this.exception = exception;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
 }
