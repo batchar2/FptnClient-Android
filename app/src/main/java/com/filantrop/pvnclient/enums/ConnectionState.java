@@ -1,7 +1,7 @@
 package com.filantrop.pvnclient.enums;
 
 public enum ConnectionState {
-    NONE,
+    DISCONNECTED,
     CONNECTING,
     CONNECTED
 }

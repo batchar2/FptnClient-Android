@@ -7,13 +7,17 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.VpnService;
+import android.os.Binder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
+import com.filantrop.pvnclient.enums.ConnectionState;
+import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
@@ -23,14 +27,39 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class CustomVpnService extends VpnService implements Handler.Callback {
     public static final String ACTION_CONNECT = "com.example.android.fptn.START";
     public static final String ACTION_DISCONNECT = "com.example.android.fptn.STOP";
+    private final String TAG = this.getClass().getName();
 
     //Handler - очередь обрабатываемых в потоке сообщений.
+    @Getter
     private Handler mHandler;
 
+    @Getter
     private boolean isRunning = false;
+
+    private int lastWhat;
+
+    @Setter
+    private FptnServerViewModel fptnViewModel;
+
+    public void updateConnectionState() {
+        if (fptnViewModel != null) {
+            if (lastWhat == R.string.connected){
+                fptnViewModel.getConnectionStateMutableLiveData().setValue(ConnectionState.CONNECTED);
+            }
+            if (lastWhat == R.string.connecting){
+                fptnViewModel.getConnectionStateMutableLiveData().setValue(ConnectionState.CONNECTING);
+            }
+            if (lastWhat == R.string.disconnected){
+                fptnViewModel.getConnectionStateMutableLiveData().setValue(ConnectionState.DISCONNECTED);
+            }
+        }
+    }
 
     private static class Connection extends Pair<Thread, ParcelFileDescriptor> {
         public Connection(Thread thread, ParcelFileDescriptor pfd) {
@@ -50,8 +79,27 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     // Отложенный Intent для запуска из нотификации Activity для конфигурации VPN
     private PendingIntent mConfigureIntent;
 
+    // Binder given to clients.
+    private final IBinder binder = new LocalBinder();
+
+    /**
+     * Class used for the client Binder.  Because we know this service always
+     * runs in the same process as its clients, we don't need to deal with IPC.
+     */
+    public class LocalBinder extends Binder {
+        public CustomVpnService getService() {
+            return CustomVpnService.this;
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
     @Override
     public void onCreate() {
+        Log.i(TAG, "CustomVpnService.onCreate: " + Thread.currentThread().getId());
         // The handler is only used to show messages.
         if (mHandler == null) {
             mHandler = new Handler(this);
@@ -66,6 +114,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "CustomVpnService.onStartCommand: " + intent.getAction());
         //todo: вот тут из интента брать данные для подключения
         if (intent != null && ACTION_DISCONNECT.equals(intent.getAction())) {
             isRunning = false;
@@ -80,12 +129,17 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "onDestroy: ");
         disconnect();
     }
 
     @Override
     public boolean handleMessage(Message message) {
         Toast.makeText(this, message.what, Toast.LENGTH_SHORT).show();
+
+        lastWhat = message.what;
+        updateConnectionState();
+
         if (message.what != R.string.disconnected) {
             updateForegroundNotification(message.what);
         }

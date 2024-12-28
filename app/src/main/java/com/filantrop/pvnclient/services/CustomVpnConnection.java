@@ -49,9 +49,7 @@ public class CustomVpnConnection implements Runnable {
     /**
      * Maximum packet size is constrained by the MTU
      */
-    private static final int MAX_PACKET_SIZE = 65536;
-
-    private final VpnService service;
+    private static final int MAX_PACKET_SIZE = 65536private final CustomVpnService service;
     private final int connectionId;
 
     private final String serverHost;
@@ -70,7 +68,7 @@ public class CustomVpnConnection implements Runnable {
     private ScheduledExecutorService scheduler;
 
 
-    public CustomVpnConnection(final VpnService service, final int connectionId,
+    public CustomVpnConnection(final CustomVpnService service, final int connectionId,
                                final String serverHost, final int serverPort,
                                final String username, final String password) {
         isRunning.set(true);

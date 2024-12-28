@@ -5,12 +5,16 @@ import static com.filantrop.pvnclient.enums.IntentFields.MSG_TYPE;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -18,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -38,11 +43,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import lombok.Getter;
+
 public class HomeActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
     public static String MSG_INTENT_FILTER = "fptn_home_activity";
 
+    @Getter
     private FptnServerViewModel fptnViewModel;
 
     private TextView downloadTextView;
@@ -58,12 +66,46 @@ public class HomeActivity extends AppCompatActivity {
 
     private Spinner spinnerServers;
 
+    //for service binding
+    private ServiceConnection connection;
+    private CustomVpnService vpnService;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
 
         initializeVariable();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Log.i(TAG, "onServiceConnected: " + name);
+                CustomVpnService.LocalBinder localBinder = (CustomVpnService.LocalBinder) service;
+                vpnService = localBinder.getService();
+                vpnService.setFptnViewModel(fptnViewModel);
+                vpnService.updateConnectionState();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.i(TAG, "onServiceDisconnected: " + name);
+                vpnService.setFptnViewModel(null);
+            }
+        };
+        bindService(getServiceIntent().setAction("ON_BIND"), connection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        unbindService(connection);
     }
 
     @Override
@@ -84,7 +126,7 @@ public class HomeActivity extends AppCompatActivity {
     @SuppressLint("InlinedApi")
     private void initializeVariable() {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-        fptnViewModel.setConnectionState(ConnectionState.NONE); // todo: статус подключения надо получать из сервиса!
+        fptnViewModel.setConnectionState(ConnectionState.DISCONNECTED); // todo: статус подключения надо получать из сервиса!
 
         ListenableFuture<List<FptnServerDto>> allServersFuture = fptnViewModel.getAllServers();
         Futures.addCallback(allServersFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
@@ -111,6 +153,10 @@ public class HomeActivity extends AppCompatActivity {
 
         // hide
         hideRunningUiItems();
+
+        fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
+            Log.i(TAG, "ConnectionStateMutableLiveData: " + connectionState);
+        });
     }
 
 
@@ -137,7 +183,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
-        if (fptnViewModel.getConnectionState() == ConnectionState.NONE) {
+        if (fptnViewModel.getConnectionState() == ConnectionState.DISCONNECTED) {
             List<FptnServerDto> fptnServerDtoList = ((FptnServerAdapter) spinnerServers.getAdapter()).getFptnServerDtoList();
             if (fptnServerDtoList != null && !fptnServerDtoList.isEmpty()) {
                 // todo: выбор наилучшего сервера. сейчас для простоты первый
@@ -210,11 +256,11 @@ public class HomeActivity extends AppCompatActivity {
                 startTimer();
             } else if (msgType.equals(IntentMessageType.CONNECTED_FAILED)) {
                 status.setText("Fail: " + msgPayload);
-                fptnViewModel.setConnectionState(ConnectionState.NONE);
+                fptnViewModel.setConnectionState(ConnectionState.DISCONNECTED);
                 status.setText("Disconnected");
                 hideRunningUiItems();
             } else if (msgType.equals(IntentMessageType.DISCONNECTED)) {
-                fptnViewModel.setConnectionState(ConnectionState.NONE);
+                fptnViewModel.setConnectionState(ConnectionState.DISCONNECTED);
                 status.setText("Disconnected");
                 hideRunningUiItems();
                 stopTimer();

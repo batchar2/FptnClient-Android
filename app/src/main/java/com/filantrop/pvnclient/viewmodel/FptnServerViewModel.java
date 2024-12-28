@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.MutableLiveData;
 
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
@@ -26,6 +27,9 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final static String TAG = FptnServerViewModel.class.getName();
 
     private final FptnServerRepository fptnServerRepository;
+
+    @Getter
+    private MutableLiveData<ConnectionState> connectionStateMutableLiveData = new MutableLiveData<>(ConnectionState.DISCONNECTED);
 
     @Getter
     @Setter
