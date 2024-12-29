@@ -11,6 +11,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -46,7 +47,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     // Подключающийся поток. Ссылка обнуляется если подключение успешно.
     // Видимо, чтобы потушить поток с неудавшимся соединением
-    private final AtomicReference<Thread> mConnectingThread = new AtomicReference<>();
+    private final AtomicReference<CustomVpnConnection> mConnectingThread = new AtomicReference<>();
 
     // Удачно подключившийся поток становится mConnection
     private final AtomicReference<EstablishedConnection> mConnection = new AtomicReference<>();
@@ -139,7 +140,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                     Optional<ConnectionState> connectionState = Arrays.stream(ConnectionState.values()).filter(t -> t == message.obj).findFirst();
                     connectionState.ifPresent(state -> fptnViewModel.getConnectionStateMutableLiveData().postValue(state));
                 }
-            case UNKNOWN:
+                break;
+            case ERROR:
+                fptnViewModel.getErrorTextLiveData().postValue((String) message.obj);
+                break;
+            default:
                 Log.e(TAG, "unexpected message: " + message);
         }
         return true;
@@ -162,29 +167,41 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     }
 
     private void startConnection(final CustomVpnConnection connection) {
-        // Replace any existing connecting thread with the  new one.
-        final Thread thread = new Thread(connection, "ToyVpnThread");
-        setConnectingThread(thread);
+        setConnectingConnection(connection);
 
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(mConfigureIntent);
-        connection.setOnEstablishListener(tunInterface -> {
-            // Если удалось подключиться, обнуляем подключающийся поток и
-            // сохраняем пару подключившийся поток/tunInterface
-            mConnectingThread.compareAndSet(thread, null);
-            setConnection(new EstablishedConnection(thread, tunInterface));
+        connection.setConnectionListener(new CustomVpnConnection.CustomVpnConnectionListener() {
+            @Override
+            public void onEstablish(ParcelFileDescriptor tunInterface) {
+                // Если удалось подключиться, обнуляем подключающийся поток и
+                // сохраняем пару подключившийся поток/tunInterface
+                mConnectingThread.compareAndSet(connection, null);
+                setEstablishedConnection(new EstablishedConnection(connection, tunInterface));
+            }
+
+            @Override
+            public void onException(int connectionId) {
+                Optional.ofNullable(mConnectingThread.get())
+                        .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
+                        .ifPresent(customVpnConnection -> setConnectingConnection(null));
+                Optional.ofNullable(mConnection.get())
+                        .map(pair -> pair.first)
+                        .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
+                        .ifPresent(customVpnConnection -> setEstablishedConnection(null));
+            }
         });
-        thread.start();
+        connection.start();
     }
 
-    private void setConnectingThread(final Thread thread) {
-        final Thread oldThread = mConnectingThread.getAndSet(thread);
+    private void setConnectingConnection(final Thread thread) {
+        final Thread oldThread = mConnectingThread.getAndSet((CustomVpnConnection) thread);
         if (oldThread != null) {
             oldThread.interrupt();
         }
     }
 
-    private void setConnection(final EstablishedConnection establishedConnection) {
+    private void setEstablishedConnection(final EstablishedConnection establishedConnection) {
         final EstablishedConnection oldEstablishedConnection = mConnection.getAndSet(establishedConnection);
         if (oldEstablishedConnection != null) {
             try {
@@ -200,9 +217,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     private void disconnect() {
         // прерываем/обнуляем подключающийся поток (если есть)
-        setConnectingThread(null);
+        setConnectingConnection(null);
         // прерываем/обнуляем установленное соединение
-        setConnection(null);
+        setEstablishedConnection(null);
         // выводим сервис из переднего плана
         stopForeground(true);
     }

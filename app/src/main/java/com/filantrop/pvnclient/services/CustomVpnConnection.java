@@ -1,15 +1,6 @@
 package com.filantrop.pvnclient.services;
 
-import static com.filantrop.pvnclient.enums.IntentFields.MSG_PAYLOAD;
-import static com.filantrop.pvnclient.enums.IntentFields.MSG_TYPE;
-import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTED_FAILED;
-import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTED_SUCCESS;
-import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTING;
-import static com.filantrop.pvnclient.enums.IntentMessageType.DISCONNECTED;
-import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
-
 import android.app.PendingIntent;
-import android.content.Intent;
 import android.net.IpPrefix;
 import android.net.VpnService;
 import android.os.Build;
@@ -17,10 +8,8 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
+import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
-import com.filantrop.pvnclient.enums.IntentMessageType;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
 import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
@@ -35,15 +24,15 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class CustomVpnConnection implements Runnable {
-    /**
-     * Callback interface to let the {@link CustomVpnService} know about new connections
-     * and update the foreground notification with connection status.
-     */
-    public interface OnEstablishListener {
+import lombok.Getter;
+
+public class CustomVpnConnection extends Thread {
+
+    public interface CustomVpnConnectionListener {
         void onEstablish(ParcelFileDescriptor tunInterface);
+
+        void onException(int connectionId);
     }
 
     /**
@@ -52,38 +41,28 @@ public class CustomVpnConnection implements Runnable {
     private static final int MAX_PACKET_SIZE = 65536;
 
     private final CustomVpnService service;
+
+    @Getter
     private final int connectionId;
 
     private final String serverHost;
-    private final int serverPort;
 
     private final OkHttpClientWrapper okHttpClientWrapper;
 
     private PendingIntent mConfigureIntent;
-    private OnEstablishListener mOnEstablishListener;
+    private CustomVpnConnectionListener mCustomVpnConnectionListener;
 
-    private static AtomicBoolean isRunning = new AtomicBoolean(false);
-
-    private DataRateCalculator downloadRate;
-    private DataRateCalculator uploadRate;
-
-    private ScheduledExecutorService scheduler;
-
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
+    private final DataRateCalculator uploadRate = new DataRateCalculator(1000);
 
     public CustomVpnConnection(final CustomVpnService service, final int connectionId,
                                final String serverHost, final int serverPort,
                                final String username, final String password) {
-        isRunning.set(true);
         this.service = service;
         this.connectionId = connectionId;
-
         this.serverHost = serverHost;
-        this.serverPort = serverPort;
-
-        this.okHttpClientWrapper = new OkHttpClientWrapper(service, username, password, serverHost, serverPort);
-
-        this.downloadRate = new DataRateCalculator(1000);
-        this.uploadRate = new DataRateCalculator(1000);
+        this.okHttpClientWrapper = new OkHttpClientWrapper(username, password, serverHost, serverPort);
     }
 
     /**
@@ -93,59 +72,26 @@ public class CustomVpnConnection implements Runnable {
         mConfigureIntent = intent;
     }
 
-    public void setOnEstablishListener(OnEstablishListener listener) {
-        mOnEstablishListener = listener;
-    }
-
-    public void stop() {
-        isRunning.set(false);
-        okHttpClientWrapper.stop();
-        mOnEstablishListener = null;
+    public void setConnectionListener(CustomVpnConnectionListener listener) {
+        mCustomVpnConnectionListener = listener;
     }
 
     @Override
     public void run() {
-        try {
-            Log.i(getTag(), "Starting");
-
-            // todo: Add ConnectivityManager for check Internet
-            for (int attempt = 0; attempt < 10; ++attempt) {
-                // Reset the counter if we were connected.
-                if (isRunning.get() == false) {
-                    break;
-                }
-                if (startConnection()) {
-                    attempt = 0;
-                }
-                // Sleep for a while. This also checks if we got interrupted.
-                Thread.sleep(3000);
-            }
-            Log.i(getTag(), "Giving up");
-        } catch (IOException | InterruptedException | IllegalArgumentException e) {
-            Log.e(getTag(), "Connection failed, exiting", e);
-        } finally {
-            scheduler.shutdown();
-        }
-    }
-
-    private boolean startConnection()
-            throws IOException, InterruptedException, IllegalArgumentException {
         ParcelFileDescriptor vpnInterface = null;
-        boolean connected = false;
-        // Create a DatagramChannel as the VPN tunnel.
         try {
+            sendConnectionStateToUI(ConnectionState.CONNECTING);
+
             String token = okHttpClientWrapper.getAuthToken();
             if (token == null) {
-                sendMsgToUI(CONNECTED_FAILED, "Auth error!");
-            } else {
-                sendMsgToUI(CONNECTING, "");
+                // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
+                throw PVNClientException.fromMessage("Can't get authToken!");
             }
 
-            //String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
-            builder.addDnsServer("172.20.0.1"); // FIXME!
+            builder.addDnsServer("172.20.0.1"); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
@@ -159,22 +105,16 @@ public class CustomVpnConnection implements Runnable {
 
             synchronized (service) {
                 vpnInterface = builder.establish();
-                if (vpnInterface == null) {
-                    sendMsgToUI(CONNECTED_FAILED, "");
-                } else {
-                    sendMsgToUI(CONNECTED_SUCCESS, "");
-                }
-                if (mOnEstablishListener != null) {
-                    mOnEstablishListener.onEstablish(vpnInterface);
+            }
+            if (vpnInterface == null) {
+                throw PVNClientException.fromMessage("Can't get vpn interface");
+            } else {
+                if (mCustomVpnConnectionListener != null) {
+                    mCustomVpnConnectionListener.onEstablish(vpnInterface);
                 }
             }
             Log.i(getTag(), "New interface: " + vpnInterface);
 
-            // Now we are connected. Set the flag.
-            connected = true;
-
-
-            scheduler = Executors.newSingleThreadScheduledExecutor();
             scheduler.scheduleWithFixedDelay(() -> {
                 // Get download and upload speeds
                 String downloadSpeed = downloadRate.getFormatString();
@@ -184,53 +124,58 @@ public class CustomVpnConnection implements Runnable {
                 sendUploadSpeedToUI(uploadSpeed);
             }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
 
-
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-//            okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(outputStream));
-
-            WebSocketMessageCallback callback = new WebSocketMessageCallback() {
-                @Override
-                public void onMessageReceived(byte[] data) {
-                    try {
-                        downloadRate.update(data.length);
-                        outputStream.write(data);
-                    } catch (Exception e) {
-                        Log.w(getTag(), "onMessageReceived: " + new String(data));
-                    }
+            WebSocketMessageCallback callback = data -> {
+                try {
+                    downloadRate.update(data.length);
+                    outputStream.write(data);
+                } catch (Exception e) {
+                    Log.w(getTag(), "onMessageReceived: " + new String(data));
                 }
             };
             okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(callback));
+            sendConnectionStateToUI(ConnectionState.CONNECTED);
 
             // Packets to be sent are queued in this input stream.
+            // todo: вынести в отдельный поток? чтобы не блокировать этот
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
             ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
-            while (!Thread.interrupted()) {
-//                Log.i(getTag(), "Thread: " + Thread.currentThread().getId());
+            while (!isInterrupted()) {
                 try {
                     int length = inputStream.read(buffer.array());
                     if (length > 0) {
-                        uploadRate.update(length); // speed
+                        uploadRate.update(length);
                         okHttpClientWrapper.send(buffer, length);
                     }
                 } catch (Exception e) {
+                    // todo: обрабатывать ли ошибку если не смогли что-то вычитать из интерфейса?
                     Log.e(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
-            sendMsgToUI(DISCONNECTED, "");
-        } catch (PVNClientException e) {
-            Log.e(getTag(), "Cannot use socket", e);
+        } catch (PVNClientException | IOException e) {
+            sendErrorMessageToUI(e.getMessage());
+            if (mCustomVpnConnectionListener != null) {
+                // чтобы обнулить ссылки на это соединение в сервисе
+                mCustomVpnConnectionListener.onException(connectionId);
+                mCustomVpnConnectionListener = null;
+            }
         } finally {
+            sendConnectionStateToUI(ConnectionState.DISCONNECTED);
             if (vpnInterface != null) {
                 try {
                     vpnInterface.close();
-                    okHttpClientWrapper.stopWebSocket();
                 } catch (IOException e) {
                     Log.e(getTag(), "Unable to close interface", e);
                 }
             }
+            okHttpClientWrapper.stopWebSocket();
+            scheduler.shutdown();
         }
-        return connected;
+    }
+
+    private void sendErrorMessageToUI(String msg) {
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
     }
 
     private void sendDownloadSpeedToUI(String msg) {
@@ -241,11 +186,8 @@ public class CustomVpnConnection implements Runnable {
         service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_UPLOAD.getValue(), 0, 0, msg));
     }
 
-    private void sendMsgToUI(IntentMessageType type, String msg) {
-        Intent intent = new Intent(MSG_INTENT_FILTER);
-        intent.putExtra(MSG_TYPE, type.name());
-        intent.putExtra(MSG_PAYLOAD, msg);
-        LocalBroadcastManager.getInstance(service).sendBroadcast(intent);
+    private void sendConnectionStateToUI(ConnectionState connectionState) {
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, connectionState));
     }
 
     private String getTag() {
