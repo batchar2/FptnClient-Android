@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -157,6 +156,16 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
             Log.i(TAG, "ConnectionStateMutableLiveData: " + connectionState);
         });
+
+        fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> {
+            Log.i(TAG, "DownloadSpeed: " + downloadSpeed);
+            downloadTextView.setText(downloadSpeed);
+        });
+
+        fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> {
+            Log.i(TAG, "UploadSpeed: " + uploadSpeed);
+            uploadTextView.setText(uploadSpeed);
+        });
     }
 
 
@@ -264,10 +273,6 @@ public class HomeActivity extends AppCompatActivity {
                 status.setText("Disconnected");
                 hideRunningUiItems();
                 stopTimer();
-            } else if (msgType.equals(IntentMessageType.SPEED_DOWNLOAD) && fptnViewModel.getConnectionState() == ConnectionState.CONNECTED) {
-                downloadTextView.setText(msgPayload);
-            } else if (msgType.equals(IntentMessageType.SPEED_UPLOAD) && fptnViewModel.getConnectionState() == ConnectionState.CONNECTED) {
-                uploadTextView.setText(msgPayload);
             }
         }
     };

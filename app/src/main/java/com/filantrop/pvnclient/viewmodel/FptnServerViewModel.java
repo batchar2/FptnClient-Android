@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.repository.FptnServerRepository;
+import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONArray;
@@ -30,6 +31,10 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     @Getter
     private MutableLiveData<ConnectionState> connectionStateMutableLiveData = new MutableLiveData<>(ConnectionState.DISCONNECTED);
+    @Getter
+    private MutableLiveData<String> downloadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
+    @Getter
+    private MutableLiveData<String> uploadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
 
     @Getter
     @Setter

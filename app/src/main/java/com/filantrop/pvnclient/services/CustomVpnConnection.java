@@ -6,8 +6,6 @@ import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTED_FAILED;
 import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTED_SUCCESS;
 import static com.filantrop.pvnclient.enums.IntentMessageType.CONNECTING;
 import static com.filantrop.pvnclient.enums.IntentMessageType.DISCONNECTED;
-import static com.filantrop.pvnclient.enums.IntentMessageType.SPEED_DOWNLOAD;
-import static com.filantrop.pvnclient.enums.IntentMessageType.SPEED_UPLOAD;
 import static com.filantrop.pvnclient.views.HomeActivity.MSG_INTENT_FILTER;
 
 import android.app.PendingIntent;
@@ -15,11 +13,13 @@ import android.content.Intent;
 import android.net.IpPrefix;
 import android.net.VpnService;
 import android.os.Build;
+import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.filantrop.pvnclient.enums.HandlerMessageTypes;
 import com.filantrop.pvnclient.enums.IntentMessageType;
 import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
@@ -49,7 +49,9 @@ public class CustomVpnConnection implements Runnable {
     /**
      * Maximum packet size is constrained by the MTU
      */
-    private static final int MAX_PACKET_SIZE = 65536private final CustomVpnService service;
+    private static final int MAX_PACKET_SIZE = 65536;
+
+    private final CustomVpnService service;
     private final int connectionId;
 
     private final String serverHost;
@@ -121,6 +123,8 @@ public class CustomVpnConnection implements Runnable {
             Log.i(getTag(), "Giving up");
         } catch (IOException | InterruptedException | IllegalArgumentException e) {
             Log.e(getTag(), "Connection failed, exiting", e);
+        } finally {
+            scheduler.shutdown();
         }
     }
 
@@ -174,9 +178,10 @@ public class CustomVpnConnection implements Runnable {
             scheduler.scheduleWithFixedDelay(() -> {
                 // Get download and upload speeds
                 String downloadSpeed = downloadRate.getFormatString();
+                sendDownloadSpeedToUI(downloadSpeed);
+
                 String uploadSpeed = uploadRate.getFormatString();
-                sendMsgToUI(SPEED_DOWNLOAD, String.valueOf(downloadSpeed));
-                sendMsgToUI(SPEED_UPLOAD, String.valueOf(uploadSpeed));
+                sendUploadSpeedToUI(uploadSpeed);
             }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
 
 
@@ -226,6 +231,14 @@ public class CustomVpnConnection implements Runnable {
             }
         }
         return connected;
+    }
+
+    private void sendDownloadSpeedToUI(String msg) {
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_DOWNLOAD.getValue(), 0, 0, msg));
+    }
+
+    private void sendUploadSpeedToUI(String msg) {
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_UPLOAD.getValue(), 0, 0, msg));
     }
 
     private void sendMsgToUI(IntentMessageType type, String msg) {

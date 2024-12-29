@@ -1,5 +1,8 @@
 package com.filantrop.pvnclient.services;
 
+import static com.filantrop.pvnclient.enums.IntentMessageType.SPEED_DOWNLOAD;
+import static com.filantrop.pvnclient.enums.IntentMessageType.SPEED_UPLOAD;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,6 +20,7 @@ import android.util.Pair;
 import android.widget.Toast;
 
 import com.filantrop.pvnclient.enums.ConnectionState;
+import com.filantrop.pvnclient.enums.HandlerMessageTypes;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
@@ -24,6 +28,7 @@ import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.enums.SharedPreferencesFields;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -49,14 +54,14 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     public void updateConnectionState() {
         if (fptnViewModel != null) {
-            if (lastWhat == R.string.connected){
-                fptnViewModel.getConnectionStateMutableLiveData().setValue(ConnectionState.CONNECTED);
+            if (lastWhat == R.string.connected) {
+                fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTED);
             }
-            if (lastWhat == R.string.connecting){
-                fptnViewModel.getConnectionStateMutableLiveData().setValue(ConnectionState.CONNECTING);
+            if (lastWhat == R.string.connecting) {
+                fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING);
             }
-            if (lastWhat == R.string.disconnected){
-                fptnViewModel.getConnectionStateMutableLiveData().setValue(ConnectionState.DISCONNECTED);
+            if (lastWhat == R.string.disconnected) {
+                fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED);
             }
         }
     }
@@ -135,7 +140,21 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     @Override
     public boolean handleMessage(Message message) {
-        Toast.makeText(this, message.what, Toast.LENGTH_SHORT).show();
+        if (Objects.equals(HandlerMessageTypes.SPEED_UPLOAD.getValue(), message.what)) {
+            if (fptnViewModel != null) {
+                fptnViewModel.getUploadSpeedAsStringLiveData().postValue((String) message.obj);
+            }
+            return true;
+        }
+        if (Objects.equals(HandlerMessageTypes.SPEED_DOWNLOAD.getValue(), message.what)) {
+            if (fptnViewModel != null) {
+                fptnViewModel.getDownloadSpeedAsStringLiveData().postValue((String) message.obj);
+            }
+            return true;
+        }
+
+        // То раздражающее всплывающее сообщение
+        // Toast.makeText(this, message.what, Toast.LENGTH_SHORT).show();
 
         lastWhat = message.what;
         updateConnectionState();
