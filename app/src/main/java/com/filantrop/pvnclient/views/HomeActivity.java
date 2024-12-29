@@ -88,7 +88,7 @@ public class HomeActivity extends AppCompatActivity {
                 CustomVpnService.LocalBinder localBinder = (CustomVpnService.LocalBinder) service;
                 vpnService = localBinder.getService();
                 vpnService.setFptnViewModel(fptnViewModel);
-                vpnService.updateConnectionState();
+                vpnService.updateConnectionStateInViewModel();
             }
 
             @Override

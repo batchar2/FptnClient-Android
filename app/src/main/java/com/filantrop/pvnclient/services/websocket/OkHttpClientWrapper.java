@@ -1,6 +1,5 @@
 package com.filantrop.pvnclient.services.websocket;
 
-import android.net.VpnService;
 import android.util.Log;
 
 import com.filantrop.pvnclient.services.exception.PVNClientException;
@@ -15,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
 
@@ -40,20 +38,17 @@ public class OkHttpClientWrapper {
 
     private final OkHttpClient client;
 
-    private final VpnService service;
     private final String username;
     private final String password;
 
     private final String host;
-
-    private int port;
+    private final int port;
 
     private String token;
 
     private WebSocket webSocket;
 
-    public OkHttpClientWrapper(final VpnService service, String username, String password, String host, int port) {
-        this.service = service;
+    public OkHttpClientWrapper(String username, String password, String host, int port) {
         this.username = username;
         this.password = password;
         this.host = host;
@@ -65,11 +60,11 @@ public class OkHttpClientWrapper {
         final TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {
                     }
 
                     @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {
                     }
 
                     @Override
