@@ -5,10 +5,13 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.MutableLiveData;
 
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.repository.FptnServerRepository;
+import com.filantrop.pvnclient.utils.CountUpTimer;
+import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONArray;
@@ -18,9 +21,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 
 import lombok.Getter;
-import lombok.Setter;
 
 public class FptnServerViewModel extends AndroidViewModel {
     private final static String TAG = FptnServerViewModel.class.getName();
@@ -28,8 +31,17 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final FptnServerRepository fptnServerRepository;
 
     @Getter
-    @Setter
-    private ConnectionState connectionState;
+    private final MutableLiveData<ConnectionState> connectionStateMutableLiveData = new MutableLiveData<>(ConnectionState.DISCONNECTED);
+    @Getter
+    private final MutableLiveData<String> downloadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
+    @Getter
+    private final MutableLiveData<String> uploadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
+    @Getter
+    private final MutableLiveData<String> timerTextLiveData = new MutableLiveData<>("00:00:00");
+    @Getter
+    private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
+
+    private CountUpTimer timer;
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
@@ -72,6 +84,41 @@ public class FptnServerViewModel extends AndroidViewModel {
             Log.e(TAG, "Can't parse fptnLink!", e);
         }
         return false;
+    }
+
+    public void clearErrorTextMessage(){
+        errorTextLiveData.setValue("");
+    }
+
+
+    public void startTimer() {
+        if (timer == null) {
+            timer = new CountUpTimer() {
+                @Override
+                public void onTick(int second) {
+                    int hours = second / 3600;
+                    int minutes = (second % 3600) / 60;
+                    int seconds = second % 60;
+
+                    // Format and display the time as HH:MM:SS
+                    String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+                    timerTextLiveData.postValue(time);
+                }
+
+                @Override
+                public void onFinish() {
+                    timerTextLiveData.postValue("00:00:00");
+                }
+            };
+            timer.start();
+        }
+    }
+
+    public void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }
+        timer = null;
     }
 
 }

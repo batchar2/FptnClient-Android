@@ -37,7 +37,6 @@
         android:layout_height="150dp"
         android:layout_marginTop="150dp"
         android:background="@drawable/toggle_button"
-        android:onClick="onClickToStartStop"
         android:text=""
         android:textOff=""
         android:textOn=""
@@ -115,6 +114,7 @@
         app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
 
     <RelativeLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -138,8 +138,17 @@
             tools:listitem="@layout/home_recycler_server_item" />
     </RelativeLayout>
 
+    <TextView
+        android:id="@+id/errorTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/relativeLayout" />
 
-<!--    <RelativeLayout-->
+
+    <!--    <RelativeLayout-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="wrap_content"-->
 <!--        android:layout_marginTop="20dp"-->

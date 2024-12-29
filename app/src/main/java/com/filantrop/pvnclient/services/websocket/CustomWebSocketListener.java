@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 
 import org.fptn.protocol.Protocol;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import okhttp3.Response;
@@ -17,13 +16,11 @@ import okio.ByteString;
 
 public class CustomWebSocketListener extends WebSocketListener {
 
-//    private final FileOutputStream outputStream;
-    private final WebSocketMessageCallback messageCallback;;
+    private final WebSocketMessageCallback messageCallback;
 
-    public CustomWebSocketListener(WebSocketMessageCallback messageCallback) { //FileOutputStream outputStream) {
+    public CustomWebSocketListener(WebSocketMessageCallback messageCallback) {
         super();
         this.messageCallback = messageCallback;
-//        this.outputStream = outputStream;
     }
 
     @Override
@@ -57,7 +54,6 @@ public class CustomWebSocketListener extends WebSocketListener {
             if (message.getMsgType() == Protocol.MessageType.MSG_IP_PACKET) {
                 byte[] rawData = message.getPacket().getPayload().toByteArray();
                 messageCallback.onMessageReceived(rawData);
-//                outputStream.write(rawData);
             } else {
                 Log.i(getTag(), "Received a non-IP packet message type.");
             }
@@ -68,7 +64,6 @@ public class CustomWebSocketListener extends WebSocketListener {
 
     @Override
     public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
-        // Вызывается в другом потоке
         Log.i(getTag(), "=== OnOpen Thread: ===" + Thread.currentThread().getId());
         super.onOpen(webSocket, response);
     }
