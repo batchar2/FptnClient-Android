@@ -11,9 +11,9 @@ public class DataRateCalculator {
     private final Lock lock = new ReentrantLock();
 
     public DataRateCalculator(long intervalMillis) {
+        this.lastUpdateTime = System.currentTimeMillis();
         this.intervalMillis = intervalMillis;
         this.bytes = 0;
-        this.lastUpdateTime = System.currentTimeMillis();
         this.rate = 0;
     }
 
@@ -53,16 +53,9 @@ public class DataRateCalculator {
             speedStr = String.format("%.2f Gbps", bitsPerSec / 1e9);
         } else if (bitsPerSec >= 1e6) {
             speedStr = String.format("%.2f Mbps", bitsPerSec / 1e6);
-        } else if (bitsPerSec >= 1e3) {
-            speedStr = String.format("%.2f Kbps", bitsPerSec / 1e3);
         } else {
-            speedStr = String.format("%.2f bps", bitsPerSec);
+            speedStr = String.format("%.2f Kbps", bitsPerSec / 1e3);
         }
         return speedStr;
-//        if (speedStr.length() >= 20) {
-//            return speedStr;
-//        } else {
-//            return String.format("%-25s", speedStr);
-//        }
     }
 }

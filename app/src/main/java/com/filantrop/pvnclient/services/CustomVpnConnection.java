@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.util.Pair;
 
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
@@ -21,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +32,7 @@ import lombok.Getter;
 public class CustomVpnConnection extends Thread {
 
     public interface CustomVpnConnectionListener {
+        //todo: разнести на два интерфейса чтобы лямбды красиво были
         void onEstablish(ParcelFileDescriptor tunInterface);
 
         void onException(int connectionId);
@@ -51,6 +54,9 @@ public class CustomVpnConnection extends Thread {
 
     private PendingIntent mConfigureIntent;
     private CustomVpnConnectionListener mCustomVpnConnectionListener;
+
+    @Getter
+    private Instant connectionTime;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
@@ -135,6 +141,7 @@ public class CustomVpnConnection extends Thread {
                 }
             };
             okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(callback));
+            connectionTime = Instant.now();
             sendConnectionStateToUI(ConnectionState.CONNECTED);
 
             // Packets to be sent are queued in this input stream.
@@ -149,8 +156,7 @@ public class CustomVpnConnection extends Thread {
                         okHttpClientWrapper.send(buffer, length);
                     }
                 } catch (Exception e) {
-                    // todo: обрабатывать ли ошибку если не смогли что-то вычитать из интерфейса?
-                    Log.e(getTag(), "Error reading data from VPN interface: " + e.getMessage());
+                    Log.d(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
         } catch (PVNClientException | IOException e) {
@@ -187,7 +193,7 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void sendConnectionStateToUI(ConnectionState connectionState) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, connectionState));
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, Pair.create(connectionState, Instant.now())));
     }
 
     private String getTag() {

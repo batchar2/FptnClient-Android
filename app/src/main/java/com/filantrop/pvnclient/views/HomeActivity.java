@@ -137,11 +137,9 @@ public class HomeActivity extends AppCompatActivity {
                     break;
                 case CONNECTED:
                     connectedStateUiItems();
-                    fptnViewModel.startTimer();
                     break;
                 case DISCONNECTED:
                     disconnectedStateUiItems();
-                    fptnViewModel.stopTimer();
             }
         });
 
