@@ -28,13 +28,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class CustomVpnConnection extends Thread {
 
-    public interface CustomVpnConnectionListener {
-        //todo: разнести на два интерфейса чтобы лямбды красиво были
+    public interface OnEstablishListener {
         void onEstablish(ParcelFileDescriptor tunInterface);
 
+    }
+
+    public interface OnExceptionListener {
         void onException(int connectionId);
     }
 
@@ -53,7 +56,11 @@ public class CustomVpnConnection extends Thread {
     private final OkHttpClientWrapper okHttpClientWrapper;
 
     private PendingIntent mConfigureIntent;
-    private CustomVpnConnectionListener mCustomVpnConnectionListener;
+
+    @Setter
+    private OnEstablishListener onEstablishListener;
+    @Setter
+    private OnExceptionListener onExceptionListener;
 
     @Getter
     private Instant connectionTime;
@@ -76,10 +83,6 @@ public class CustomVpnConnection extends Thread {
      */
     public void setConfigureIntent(PendingIntent intent) {
         mConfigureIntent = intent;
-    }
-
-    public void setConnectionListener(CustomVpnConnectionListener listener) {
-        mCustomVpnConnectionListener = listener;
     }
 
     @Override
@@ -115,8 +118,8 @@ public class CustomVpnConnection extends Thread {
             if (vpnInterface == null) {
                 throw PVNClientException.fromMessage("Can't get vpn interface");
             } else {
-                if (mCustomVpnConnectionListener != null) {
-                    mCustomVpnConnectionListener.onEstablish(vpnInterface);
+                if (onEstablishListener != null) {
+                    onEstablishListener.onEstablish(vpnInterface);
                 }
             }
             Log.i(getTag(), "New interface: " + vpnInterface);
@@ -161,10 +164,10 @@ public class CustomVpnConnection extends Thread {
             }
         } catch (PVNClientException | IOException e) {
             sendErrorMessageToUI(e.getMessage());
-            if (mCustomVpnConnectionListener != null) {
+            if (onEstablishListener != null) {
                 // чтобы обнулить ссылки на это соединение в сервисе
-                mCustomVpnConnectionListener.onException(connectionId);
-                mCustomVpnConnectionListener = null;
+                onExceptionListener.onException(connectionId);
+                onEstablishListener = null;
             }
         } finally {
             sendConnectionStateToUI(ConnectionState.DISCONNECTED);

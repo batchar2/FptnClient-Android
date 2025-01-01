@@ -10,7 +10,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
 
@@ -19,6 +18,7 @@ import androidx.annotation.NonNull;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
+import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
@@ -99,12 +99,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             return START_NOT_STICKY;
         } else {
             // Достаем параметры для подключения из intent
-            FptnServerDto server = (FptnServerDto) intent.getSerializableExtra("server");
-/*            final String server = intent.getStringExtra(SharedPreferencesFields.SERVER_ADDRESS);
-            final String username = intent.getStringExtra(SharedPreferencesFields.USERNAME);
-            final String password = intent.getStringExtra(SharedPreferencesFields.PASSWORD);
-            final int port = intent.getIntExtra(SharedPreferencesFields.SERVER_PORT, 443);*/
-
+            FptnServerDto server = (FptnServerDto) intent.getSerializableExtra(IntentExtraFieldNames.SELECTED_SERVER);
             connect(server.getHost(), server.getPort(), server.getUsername(), server.getPassword());
             return START_STICKY;
         }
@@ -171,34 +166,27 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         // Переводим VPNService на передний план - чтобы повысить приоритет
         updateForegroundNotification(R.string.connecting);
 
-        startConnection(new CustomVpnConnection(
-                this, mNextConnectionId.getAndIncrement(), server, port, username, password));
-    }
-
-    private void startConnection(final CustomVpnConnection connection) {
+        CustomVpnConnection connection = new CustomVpnConnection(
+                this, mNextConnectionId.getAndIncrement(), server, port, username, password);
         setConnectingConnection(connection);
 
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(mConfigureIntent);
-        connection.setConnectionListener(new CustomVpnConnection.CustomVpnConnectionListener() {
-            @Override
-            public void onEstablish(ParcelFileDescriptor tunInterface) {
-                // Если удалось подключиться, обнуляем подключающийся поток и
-                // сохраняем пару подключившийся поток/tunInterface
-                mConnectingThread.compareAndSet(connection, null);
-                setEstablishedConnection(new EstablishedConnection(connection, tunInterface));
-            }
-
-            @Override
-            public void onException(int connectionId) {
-                Optional.ofNullable(mConnectingThread.get())
-                        .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
-                        .ifPresent(customVpnConnection -> setConnectingConnection(null));
-                Optional.ofNullable(mConnection.get())
-                        .map(pair -> pair.first)
-                        .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
-                        .ifPresent(customVpnConnection -> setEstablishedConnection(null));
-            }
+        connection.setOnEstablishListener(tunInterface -> {
+            // Если удалось подключиться, обнуляем подключающийся поток и
+            // сохраняем пару подключившийся поток/tunInterface
+            mConnectingThread.compareAndSet(connection, null);
+            setEstablishedConnection(new EstablishedConnection(connection, tunInterface));
+        });
+        connection.setOnExceptionListener(connectionId -> {
+            // Если во время подключения произошла ошибка
+            Optional.ofNullable(mConnectingThread.get())
+                    .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
+                    .ifPresent(customVpnConnection -> setConnectingConnection(null));
+            Optional.ofNullable(mConnection.get())
+                    .map(pair -> pair.first)
+                    .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
+                    .ifPresent(customVpnConnection -> setEstablishedConnection(null));
         });
         connection.start();
     }

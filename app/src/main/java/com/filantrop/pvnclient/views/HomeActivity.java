@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
+import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
 import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
@@ -66,6 +67,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
+
         initializeVariable();
     }
 
@@ -280,7 +282,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private Intent enrichIntent(Intent intent) {
         FptnServerDto server = fptnViewModel.getSelectedServer();
-        intent.putExtra("server", server);
+        intent.putExtra(IntentExtraFieldNames.SELECTED_SERVER, server);
         return intent;
     }
 
