@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -24,6 +25,7 @@ import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.enums.SharedPreferencesFields;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -137,8 +139,16 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 break;
             case CONNECTION_STATE:
                 if (fptnViewModel != null) {
-                    Optional<ConnectionState> connectionState = Arrays.stream(ConnectionState.values()).filter(t -> t == message.obj).findFirst();
-                    connectionState.ifPresent(state -> fptnViewModel.getConnectionStateMutableLiveData().postValue(state));
+                    Pair<ConnectionState, Instant> connectionStateInstantPair = (Pair<ConnectionState, Instant>) message.obj;
+                    Optional<ConnectionState> connectionState = Arrays.stream(ConnectionState.values()).filter(t -> t == connectionStateInstantPair.first).findFirst();
+                    connectionState.ifPresent(state -> {
+                        fptnViewModel.getConnectionStateMutableLiveData().postValue(state);
+                        if (ConnectionState.CONNECTED.equals(state)) {
+                            fptnViewModel.startTimer(connectionStateInstantPair.second);
+                        } else if (ConnectionState.DISCONNECTED.equals(state)) {
+                            fptnViewModel.stopTimer();
+                        }
+                    });
                 }
                 break;
             case ERROR:

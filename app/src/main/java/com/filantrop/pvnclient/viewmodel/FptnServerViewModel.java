@@ -10,7 +10,6 @@ import androidx.lifecycle.MutableLiveData;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.repository.FptnServerRepository;
-import com.filantrop.pvnclient.utils.CountUpTimer;
 import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -18,10 +17,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 
@@ -41,7 +45,7 @@ public class FptnServerViewModel extends AndroidViewModel {
     @Getter
     private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
 
-    private CountUpTimer timer;
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
@@ -86,39 +90,32 @@ public class FptnServerViewModel extends AndroidViewModel {
         return false;
     }
 
-    public void clearErrorTextMessage(){
+    public void clearErrorTextMessage() {
         errorTextLiveData.setValue("");
     }
 
 
-    public void startTimer() {
-        if (timer == null) {
-            timer = new CountUpTimer() {
-                @Override
-                public void onTick(int second) {
-                    int hours = second / 3600;
-                    int minutes = (second % 3600) / 60;
-                    int seconds = second % 60;
+    public void startTimer(Instant connectedFrom) {
+        Log.d(TAG, "FptnServerViewModel.startTimer: " + connectedFrom);
+        scheduler.scheduleWithFixedDelay(() -> {
+            Instant now = Instant.now();
+            long durationInSeconds = Duration.between(connectedFrom, now).getSeconds();
 
-                    // Format and display the time as HH:MM:SS
-                    String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
-                    timerTextLiveData.postValue(time);
-                }
+            long hours = durationInSeconds / 3600;
+            long minutes = (durationInSeconds % 3600) / 60;
+            long seconds = durationInSeconds % 60;
 
-                @Override
-                public void onFinish() {
-                    timerTextLiveData.postValue("00:00:00");
-                }
-            };
-            timer.start();
-        }
+            // Format and display the time as HH:MM:SS
+            String time = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+            Log.d(TAG, "FptnServerViewModel.time: " + time);
+            timerTextLiveData.postValue(time);
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     public void stopTimer() {
-        if (timer != null) {
-            timer.cancel();
-        }
-        timer = null;
+        Log.d(TAG, "FptnServerViewModel.stopTimer()");
+        scheduler.shutdown();
+        timerTextLiveData.postValue("00:00:00");
     }
 
 }
