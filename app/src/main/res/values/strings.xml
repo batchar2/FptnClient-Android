@@ -1,18 +1,38 @@
 <resources>
+    <string name="app_version">Version 0.0.0 </string>
     <string name="app_name">FptnClient</string>
     <string name="select_server">Select server</string>
+    <string name="connection_time">Connection Time</string>
+    <string name="state_disconnect">Disconnected</string>
 
+    <string name="login_button">Login</string>
+    <string name="logout_button">Logout</string>
+    <string name="update_token_button">Update token</string>
 
-    <string name="address">Server Address:</string>
-    <string name="port">Server Port:</string>
-    <string name="password">Password:</string>
-    <string name="username">Username:</string>
-    <string name="connect">Connect!</string>
-    <string name="disconnect">Disconnect!</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_share">Share</string>
+
+    <string name="your_servers">Your VPN servers</string>
+
+    <string name="settings_token_info">Available servers are encrypted in the token. To update the server list, update the token.</string>
+
+    <string name="share_title">Share via</string>
+    <string name="share_message">FPTN is a free VPN designed to bypass censorship. No registration required!
+https://batchar2.github.io/fptn/
+    </string>
 
     <string name="connecting">FptnVPN is connecting...</string>
     <string name="connected">FptnVPN is connected!</string>
     <string name="disconnected">FptnVPN is disconnected!</string>
     <string name="error">Error on connecting occurs!</string>
     <string name="paste_your_key">Paste your key...</string>
+
+    <string name="dialog_logout_title">Confirm Action</string>
+    <string name="dialog_logout_message">Are you sure you want to logout?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="cancel_button">Cancel</string>
+    <string name="save_button">Save</string>
 </resources>

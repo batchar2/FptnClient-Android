@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_version">Версия 0.0.0 </string>
+    <string name="app_name">FptnClient</string>
+    <string name="select_server">Выбор сервера</string>
+    <string name="connection_time">Время подключения</string>
+    <string name="state_disconnect">Отключено</string>
+
+    <string name="login_button">Войти</string>
+    <string name="logout_button">Выйти</string>
+    <string name="update_token_button">Обновление токена</string>
+
+    <string name="menu_home">Главная</string>
+    <string name="menu_settings">Настроки</string>
+    <string name="menu_share">Поделиться</string>
+
+    <string name="your_servers">Ваши VPN сервера</string>
+
+    <string name="settings_token_info">Доступные сервера зашифрованы в токене. Для обновления списка серверов обновите токен</string>
+
+    <string name="share_title">Поделиться через</string>
+    <string name="share_message">FPTN — это бесплатный VPN для обхода цензуры. Здесь нет регистрации!
+https://batchar2.github.io/fptn/
+    </string>
+
+    <string name="connecting">FptnVPN подключается...</string>
+    <string name="connected">FptnVPN подключен!</string>
+    <string name="disconnected">FptnVPN отключен!</string>
+    <string name="error">Ошибка подключения!</string>
+    <string name="paste_your_key">Вставьте ваш ключ...</string>
+
+    <string name="dialog_logout_title">Подтвердите действие</string>
+    <string name="dialog_logout_message">Вы уверены, что хотите выйти?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
+    <string name="cancel_button">Отмена</string>
+    <string name="save_button">Сохранить</string>
+</resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main_layour"
+    android:id="@+id/login_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/application_background"
@@ -36,11 +36,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/rounde_corner"
+            android:background="@drawable/round_back_white10_20"
             android:hint="@string/paste_your_key"
-            android:inputType="text"
+            android:inputType="none"
+            android:longClickable="true"
+            android:clickable="true"
+            android:maxHeight="150dp"
             android:padding="10dp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textColorHint="@color/hint"
             android:textSize="16sp" />
 
@@ -49,14 +52,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:background="@drawable/rounde_corner"
-            android:backgroundTint="@color/white"
+            android:background="@drawable/round_back_secondary_100"
             android:onClick="onLogin"
-            android:padding="18dp"
-            android:text="Login"
-            android:textColor="@color/text"
+            android:padding="8dp"
+            android:textAllCaps="false"
+            android:text="@string/login_button"
+            android:textColor="@color/primary"
             android:textSize="18sp" />
-
     </LinearLayout>
 
 

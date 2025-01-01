@@ -9,12 +9,15 @@ import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -27,6 +30,7 @@ import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.callback.DBFutureCallback;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -60,11 +64,14 @@ public class HomeActivity extends AppCompatActivity {
     private ServiceConnection connection;
     private CustomVpnService vpnService;
 
+    private BottomNavigationView bottomNavigationView;
+
+    private View homeServerSpinnerView;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
-
         initializeVariable();
     }
 
@@ -101,10 +108,6 @@ public class HomeActivity extends AppCompatActivity {
     @SuppressLint("InlinedApi")
     private void initializeVariable() {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-
-        startStopButton = findViewById(R.id.toggleButton);
-        startStopButton.setOnClickListener(this::onClickToStartStop);
-
         ListenableFuture<List<FptnServerDto>> allServersFuture = fptnViewModel.getAllServers();
         Futures.addCallback(allServersFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
             List<FptnServerDto> fixedServers = new ArrayList<>();
@@ -112,9 +115,11 @@ public class HomeActivity extends AppCompatActivity {
             fixedServers.addAll(result);
             ((FptnServerAdapter) spinnerServers.getAdapter()).setFptnServerDtoList(fixedServers);
         }, this.getMainExecutor());
-
         spinnerServers = findViewById(R.id.home_server_spinner);
         spinnerServers.setAdapter(new FptnServerAdapter());
+
+        startStopButton = findViewById(R.id.toggleButton);
+        startStopButton.setOnClickListener(this::onClickToStartStop);
 
         homeTextViewTimeLabel = findViewById(R.id.homeTextViewTimeLabel);
         downloadTextView = findViewById(R.id.downloadTextView);
@@ -127,8 +132,6 @@ public class HomeActivity extends AppCompatActivity {
         statusTextView = findViewById(R.id.homeTextViewConnectionStatus);
         errorTextView = findViewById(R.id.errorTextView);
 
-        // hide
-        disconnectedStateUiItems();
 
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
             switch (connectionState) {
@@ -144,21 +147,51 @@ public class HomeActivity extends AppCompatActivity {
                     fptnViewModel.stopTimer();
             }
         });
-
         fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
-
         fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
-
         fptnViewModel.getTimerTextLiveData().observe(this, text -> timerTextView.setText(text));
-
         fptnViewModel.getErrorTextLiveData().observe(this, errorText -> {
             Log.i(TAG, "errorText: " + errorText);
             errorTextView.setText(errorText);
         });
+
+        // FIXME
+        bottomNavigationView = findViewById(R.id.bottomNavBar);
+        bottomNavigationView.setSelectedItemId(R.id.menuHome);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.menuHome) {
+                return true;
+            } else if (itemId == R.id.menuSettings) {
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menuShare) {
+                bottomNavigationView.setSelectedItemId(R.id.menuHome); // don't change
+                final String shareTitle = getString(R.string.share_title);
+                final String shareMessage = getString(R.string.share_message);
+
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
+                startActivity(Intent.createChooser(shareIntent, shareTitle));
+            }
+            return false;
+        });
+
+        homeServerSpinnerView = findViewById(R.id.home_server_spinner);
+
+        // hide
+        disconnectedStateUiItems();
     }
 
-
     private void disconnectedStateUiItems() {
+        statusTextView.setText("Disconnected");
+        timerTextView.setText("00:00:00");
+        downloadTextView.setText("01 Mb/s");
+        uploadTextView.setText("0 Mb/s");
+        startStopButton.setChecked(false);
+
         hideView(homeTextViewTimeLabel);
         hideView(downloadTextView);
         hideView(uploadTextView);
@@ -166,15 +199,14 @@ public class HomeActivity extends AppCompatActivity {
         hideView(homeDownloadImageView);
         hideView(homeUploadImageView);
 
-        statusTextView.setText("Disconnected");
-        timerTextView.setText("00:00:00");
-        downloadTextView.setText("0 Mb/s");
-        uploadTextView.setText("0 Mb/s");
-        startStopButton.setChecked(false);
-
+        showView(homeServerSpinnerView);
     }
 
     private void connectedStateUiItems() {
+        statusTextView.setText("Running");
+        fptnViewModel.clearErrorTextMessage();
+        startStopButton.setChecked(true);
+
         showView(homeTextViewTimeLabel);
         showView(downloadTextView);
         showView(uploadTextView);
@@ -182,9 +214,7 @@ public class HomeActivity extends AppCompatActivity {
         showView(homeDownloadImageView);
         showView(homeUploadImageView);
 
-        statusTextView.setText("Running");
-        fptnViewModel.clearErrorTextMessage();
-        startStopButton.setChecked(true);
+        hideView(homeServerSpinnerView);
     }
 
     private void hideView(View view) {
