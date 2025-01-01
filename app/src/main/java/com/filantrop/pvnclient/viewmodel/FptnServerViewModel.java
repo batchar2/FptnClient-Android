@@ -57,6 +57,10 @@ public class FptnServerViewModel extends AndroidViewModel {
         return fptnServerRepository.getAllServersListFuture();
     }
 
+    public void deleteAll() {
+        fptnServerRepository.deleteAll();
+    }
+
     public boolean parseAndSaveFptnLink(String url) {
         String preparedUrl = url.substring(7);  // Remove first 7 characters
         try {
@@ -79,13 +83,15 @@ public class FptnServerViewModel extends AndroidViewModel {
             }
 
             if (!serverDtoList.isEmpty()) {
+                deleteAll(); // delete old
                 fptnServerRepository.insertAll(serverDtoList);
                 return true;
             }
-
             Log.e(TAG, "Servers from fptnLink is empty!");
         } catch (JSONException e) {
             Log.e(TAG, "Can't parse fptnLink!", e);
+        } catch (Exception e) {
+            Log.e(TAG, "Undefined error:", e);
         }
         return false;
     }

@@ -18,11 +18,16 @@ import lombok.Getter;
 public class FptnServerAdapter extends BaseAdapter {
 
     private List<FptnServerDto> fptnServerDtoList;
+    private int recyclerLayout = R.layout.home_list_recycler_server_item;
 
     public void setFptnServerDtoList(List<FptnServerDto> fptnServerDtoList) {
         this.fptnServerDtoList = fptnServerDtoList;
 
         notifyDataSetChanged();
+    }
+
+    public void setRecyclerLayout(int layoutId) {
+        recyclerLayout = layoutId;
     }
 
     @Override
@@ -44,7 +49,7 @@ public class FptnServerAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         if (view == null) {
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_server_item, parent, false);
+            view = LayoutInflater.from(parent.getContext()).inflate(recyclerLayout, parent, false);
         }
         FptnServerDto server = fptnServerDtoList.get(position);
 

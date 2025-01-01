@@ -5,17 +5,19 @@
     android:id="@+id/home_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/application_background">
+    android:background="@drawable/application_background"
+    android:textSize="16sp"
+    >
 
     <TextView
         android:id="@+id/homeTextViewTimeLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
-        android:text="Connection Time"
+        android:layout_marginTop="50dp"
+        android:text="@string/connection_time"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,26 +25,26 @@
         android:id="@+id/homeTextViewTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="112dp"
+        android:layout_marginTop="15dp"
         android:text="00:00:00"
         android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/homeTextViewTimeLabel"
         app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="@+id/homeTextViewTimeLabel"
+        app:layout_constraintTop_toBottomOf="@+id/homeTextViewTimeLabel" />
 
     <ToggleButton
         android:id="@+id/toggleButton"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginTop="150dp"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="120dp"
         android:background="@drawable/toggle_button"
         android:text=""
         android:textOff=""
         android:textOn=""
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/homeTextViewTime"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/homeTextViewTime"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -50,10 +52,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Disconnected"
+        android:text="@string/state_disconnect"
         android:textColor="@color/yellow"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/toggleButton"
+        app:layout_constraintStart_toStartOf="@+id/toggleButton"
         app:layout_constraintTop_toBottomOf="@+id/toggleButton" />
 
     <ImageView
@@ -61,32 +63,32 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
+        android:layout_marginRight="5dp"
         android:contentDescription="Upload Icon"
         app:layout_constraintEnd_toStartOf="@+id/downloadTextView"
+        app:layout_constraintStart_toStartOf="@+id/toggleButton"
         app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus"
         app:srcCompat="@drawable/dowload"
         tools:ignore="MissingConstraints" />
 
     <TextView
         android:id="@+id/downloadTextView"
-        android:layout_width="100dp"
+        android:layout_width="130dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
         android:gravity="end|center_vertical"
         android:text="0 Mb/s"
-        android:textSize="16sp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toStartOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
 
     <TextView
         android:id="@+id/uploadTextView"
-        android:layout_width="100dp"
+        android:layout_width="130dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
         android:gravity="start|center_vertical"
         android:text="0 Mb/s"
-        android:textSize="16sp"
         android:textColor="@color/white"
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
@@ -96,7 +98,9 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="5dp"
         android:contentDescription="Download Icon"
+        app:layout_constraintEnd_toEndOf="@+id/toggleButton"
         app:layout_constraintStart_toEndOf="@+id/uploadTextView"
         app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus"
         app:srcCompat="@drawable/upload"
@@ -131,11 +135,12 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:background="@drawable/blue_outline"
+            android:background="@drawable/round_back_white10_20"
             android:dropDownWidth="match_parent"
-            android:popupBackground="@drawable/bg_spinner_servers_down"
+            android:popupBackground="@drawable/round_back_spinner_down"
             android:spinnerMode="dropdown"
-            tools:listitem="@layout/home_recycler_server_item" />
+            tools:listitem="@layout/home_list_recycler_server_item" />
+
     </RelativeLayout>
 
     <TextView
@@ -147,91 +152,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/relativeLayout" />
 
-
-    <!--    <RelativeLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="20dp"-->
-<!--        android:layout_marginStart="20dp"-->
-<!--        android:layout_marginEnd="20dp"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/textView2"-->
-<!--        tools:ignore="MissingConstraints">-->
-
-
-<!--        <Spinner-->
-<!--            android:id="@+id/home_server_spinner"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:dropDownWidth="match_parent"-->
-<!--            android:background="@drawable/blue_outline"-->
-<!--            android:popupBackground="@drawable/bg_spinner_servers_down"-->
-<!--            android:spinnerMode="dropdown"-->
-<!--            android:layout_marginLeft="10dp"-->
-<!--            android:layout_marginRight="10dp"-->
-<!--            tools:listitem="@layout/home_recycler_server_item"-->
-<!--            />-->
-<!--    </RelativeLayout>-->
-
-
-    <!--        <Spinner-->
-    <!--            android:id="@+id/home_server_spinner"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:dropDownVerticalOffset="40dp"-->
-    <!--            android:background="@drawable/blue_outline"-->
-    <!--            android:popupBackground="@drawable/bg_spinner_servers_down"-->
-    <!--            android:spinnerMode="dropdown"-->
-    <!--            tools:listitem="@layout/home_recycler_server_item"-->
-    <!--            />-->
-    <!--        android:dropDownVerticalOffset="40dp"-->
-
-<!--    android:popupBackground="@drawable/blue_outline_white_background"-->
-
-<!--    <androidx.coordinatorlayout.widget.CoordinatorLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="20dp"-->
-<!--        android:layout_marginStart="20dp"-->
-<!--        android:layout_marginEnd="20dp"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/textView2"-->
-<!--        tools:ignore="MissingConstraints">-->
-
-<!--        <Spinner-->
-<!--            android:id="@+id/home_server_spinner"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:background="@drawable/bg_spinner_servers_down" />-->
-<!--    </androidx.coordinatorlayout.widget.CoordinatorLayout>-->
-
-
-
-    <!--    <androidx.coordinatorlayout.widget.CoordinatorLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginStart="30dp"-->
-<!--        android:layout_marginTop="20dp"-->
-<!--        android:layout_marginEnd="30dp"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/textView2"-->
-<!--        tools:ignore="MissingConstraints">-->
-<!--        <com.google.android.material.textfield.TextInputLayout-->
-<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:hint="select_server">-->
-<!--            <AutoCompleteTextView-->
-<!--                android:id="@+id/home_auto_complete_txt"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:inputType="none"-->
-<!--                tools:ignore="LabelFor" />-->
-<!--        </com.google.android.material.textfield.TextInputLayout>-->
-<!--    </androidx.coordinatorlayout.widget.CoordinatorLayout>-->
-
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_nav_bar_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

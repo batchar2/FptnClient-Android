@@ -1,7 +1,4 @@
 <resources>
-
-    <style name="Base.Theme.FptnClient" parent="Theme.Material3.Dark.NoActionBar"></style>
-<!--    <style name="Base.Theme.FptnClient" parent="Theme.Design.NoActionBar"></style>-->
-
+    <style name="Base.Theme.FptnClient" parent="@style/Theme.AppCompat.NoActionBar"></style>
     <style name="Theme.FptnClient" parent="Base.Theme.FptnClient" />
 </resources>

@@ -1,11 +1,15 @@
 package com.filantrop.pvnclient.views;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.InputType;
 import android.text.method.LinkMovementMethod;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         initializeVariable();
     }
 
-    @SuppressLint("InlinedApi")
+    @SuppressLint({"InlinedApi", "ClickableViewAccessibility"})
     private void initializeVariable() {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
 
@@ -54,12 +58,16 @@ public class LoginActivity extends AppCompatActivity {
         TextView label = findViewById(R.id.fptn_login_html_label);
         label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
         label.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // HIDE KEYBOARD
+        EditText editText = (EditText)findViewById(R.id.fptn_login_link_input);
+        editText.setShowSoftInputOnFocus(false);
     }
 
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
         final String fptnLink = linkInput.getText().toString();
-        if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
+        if (fptnLink.startsWith("fptn://") && fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
         } else {
