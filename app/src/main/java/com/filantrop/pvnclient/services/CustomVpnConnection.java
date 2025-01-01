@@ -34,11 +34,6 @@ public class CustomVpnConnection extends Thread {
 
     public interface OnEstablishListener {
         void onEstablish(ParcelFileDescriptor tunInterface);
-
-    }
-
-    public interface OnExceptionListener {
-        void onException(int connectionId);
     }
 
     /**
@@ -59,8 +54,6 @@ public class CustomVpnConnection extends Thread {
 
     @Setter
     private OnEstablishListener onEstablishListener;
-    @Setter
-    private OnExceptionListener onExceptionListener;
 
     @Getter
     private Instant connectionTime;
@@ -127,10 +120,8 @@ public class CustomVpnConnection extends Thread {
             scheduler.scheduleWithFixedDelay(() -> {
                 // Get download and upload speeds
                 String downloadSpeed = downloadRate.getFormatString();
-                sendDownloadSpeedToUI(downloadSpeed);
-
                 String uploadSpeed = uploadRate.getFormatString();
-                sendUploadSpeedToUI(uploadSpeed);
+                sendSpeedInfoToUI(downloadSpeed, uploadSpeed);
             }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
 
             // Packets received need to be written to this output stream.
@@ -164,11 +155,6 @@ public class CustomVpnConnection extends Thread {
             }
         } catch (PVNClientException | IOException e) {
             sendErrorMessageToUI(e.getMessage());
-            if (onEstablishListener != null) {
-                // чтобы обнулить ссылки на это соединение в сервисе
-                onExceptionListener.onException(connectionId);
-                onEstablishListener = null;
-            }
         } finally {
             sendConnectionStateToUI(ConnectionState.DISCONNECTED);
             if (vpnInterface != null) {
@@ -187,12 +173,8 @@ public class CustomVpnConnection extends Thread {
         service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
     }
 
-    private void sendDownloadSpeedToUI(String msg) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_DOWNLOAD.getValue(), 0, 0, msg));
-    }
-
-    private void sendUploadSpeedToUI(String msg) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_UPLOAD.getValue(), 0, 0, msg));
+    private void sendSpeedInfoToUI(String downloadSpeed, String uploadSpeed) {
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_INFO.getValue(), 0, 0, Pair.create(downloadSpeed, uploadSpeed)));
     }
 
     private void sendConnectionStateToUI(ConnectionState connectionState) {
