@@ -114,6 +114,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     public void updateConnectionStateInViewModel() {
         if (mConnection.get() != null) {
             fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTED);
+            fptnViewModel.startTimer(mConnection.get().first.getConnectionTime());
         } else if (mConnection.get() == null && mConnectingThread.get() != null) {
             fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING);
         } else if (mConnection.get() == null && mConnectingThread.get() == null) {

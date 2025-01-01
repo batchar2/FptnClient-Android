@@ -9,17 +9,15 @@ import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
@@ -65,8 +63,6 @@ public class HomeActivity extends AppCompatActivity {
     private CustomVpnService vpnService;
 
     private BottomNavigationView bottomNavigationView;
-
-    private View homeServerSpinnerView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -136,7 +132,7 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
             switch (connectionState) {
                 case CONNECTING:
-                    statusTextView.setText("Connecting...");
+                    connectingStateUiItems();
                     break;
                 case CONNECTED:
                     connectedStateUiItems();
@@ -177,10 +173,14 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
 
-        homeServerSpinnerView = findViewById(R.id.home_server_spinner);
-
         // hide
         disconnectedStateUiItems();
+    }
+
+    private void connectingStateUiItems() {
+        statusTextView.setText("Connecting...");
+        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_secondary_100));
+        spinnerServers.setEnabled(false);
     }
 
     private void disconnectedStateUiItems() {
@@ -197,7 +197,8 @@ public class HomeActivity extends AppCompatActivity {
         hideView(homeDownloadImageView);
         hideView(homeUploadImageView);
 
-        showView(homeServerSpinnerView);
+        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_white10_20));
+        spinnerServers.setEnabled(true);
     }
 
     private void connectedStateUiItems() {
@@ -212,7 +213,8 @@ public class HomeActivity extends AppCompatActivity {
         showView(homeDownloadImageView);
         showView(homeUploadImageView);
 
-        hideView(homeServerSpinnerView);
+        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_secondary_100));
+        spinnerServers.setEnabled(false);
     }
 
     private void hideView(View view) {

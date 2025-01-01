@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
@@ -46,6 +47,7 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> scheduledFuture;
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
@@ -103,7 +105,11 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     public void startTimer(Instant connectedFrom) {
         Log.d(TAG, "FptnServerViewModel.startTimer: " + connectedFrom);
-        scheduler.scheduleWithFixedDelay(() -> {
+        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
+            scheduledFuture.cancel(true);
+            scheduledFuture = null;
+        }
+        scheduledFuture = scheduler.scheduleWithFixedDelay(() -> {
             Instant now = Instant.now();
             long durationInSeconds = Duration.between(connectedFrom, now).getSeconds();
 
@@ -120,7 +126,10 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     public void stopTimer() {
         Log.d(TAG, "FptnServerViewModel.stopTimer()");
-        scheduler.shutdown();
+        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
+            scheduledFuture.cancel(true);
+            scheduledFuture = null;
+        }
         timerTextLiveData.postValue("00:00:00");
     }
 
