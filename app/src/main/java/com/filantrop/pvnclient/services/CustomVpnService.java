@@ -5,24 +5,23 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
+import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
-import com.filantrop.pvnclient.enums.SharedPreferencesFields;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -61,6 +60,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     // Binder given to clients.
     private final IBinder binder = new LocalBinder();
+    private FptnServerDto selectedServer;
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -99,7 +99,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             disconnect();
             return START_NOT_STICKY;
         } else {
-            connect();
+            // Достаем параметры для подключения из intent
+            selectedServer = (FptnServerDto) intent.getSerializableExtra(IntentExtraFieldNames.SELECTED_SERVER);
+            connect(selectedServer.getHost(), selectedServer.getPort(), selectedServer.getUsername(), selectedServer.getPassword());
             return START_STICKY;
         }
     }
@@ -114,6 +116,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     public void updateConnectionStateInViewModel() {
         if (mConnection.get() != null) {
             fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTED);
+            //Передаем на UI актуальные параметры подключения
+            fptnViewModel.startTimer(mConnection.get().first.getConnectionTime());
+            fptnViewModel.getSelectedServerLiveData().postValue(selectedServer);
         } else if (mConnection.get() == null && mConnectingThread.get() != null) {
             fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING);
         } else if (mConnection.get() == null && mConnectingThread.get() == null) {
@@ -127,14 +132,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
         HandlerMessageTypes type = Arrays.stream(HandlerMessageTypes.values()).filter(t -> t.getValue() == message.what).findFirst().orElse(HandlerMessageTypes.UNKNOWN);
         switch (type) {
-            case SPEED_UPLOAD:
+            case SPEED_INFO:
                 if (fptnViewModel != null) {
-                    fptnViewModel.getUploadSpeedAsStringLiveData().postValue((String) message.obj);
-                }
-                break;
-            case SPEED_DOWNLOAD:
-                if (fptnViewModel != null) {
-                    fptnViewModel.getDownloadSpeedAsStringLiveData().postValue((String) message.obj);
+                    Pair<String, String> downloadSpeedUploadSpeed = (Pair<String, String>) message.obj;
+                    fptnViewModel.getDownloadSpeedAsStringLiveData().postValue(downloadSpeedUploadSpeed.first);
+                    fptnViewModel.getUploadSpeedAsStringLiveData().postValue(downloadSpeedUploadSpeed.second);
                 }
                 break;
             case CONNECTION_STATE:
@@ -147,6 +149,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                             fptnViewModel.startTimer(connectionStateInstantPair.second);
                         } else if (ConnectionState.DISCONNECTED.equals(state)) {
                             fptnViewModel.stopTimer();
+                            disconnect();
                         }
                     });
                 }
@@ -160,46 +163,21 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         return true;
     }
 
-    private void connect() {
+    private void connect(String server, int port, String username, String password) {
         // Переводим VPNService на передний план - чтобы повысить приоритет
         updateForegroundNotification(R.string.connecting);
 
-        // Достаем параметры для подключения из SharedPreferences
-        final SharedPreferences prefs = getSharedPreferences(SharedPreferencesFields.NAME, MODE_PRIVATE);
-
-        final String server = prefs.getString(SharedPreferencesFields.SERVER_ADDRESS, "");
-        final String username = prefs.getString(SharedPreferencesFields.USERNAME, "");
-        final String password = prefs.getString(SharedPreferencesFields.PASSWORD, "");
-        final int port = prefs.getInt(SharedPreferencesFields.SERVER_PORT, 0);
-
-        startConnection(new CustomVpnConnection(
-                this, mNextConnectionId.getAndIncrement(), server, port, username, password));
-    }
-
-    private void startConnection(final CustomVpnConnection connection) {
+        CustomVpnConnection connection = new CustomVpnConnection(
+                this, mNextConnectionId.getAndIncrement(), server, port, username, password);
         setConnectingConnection(connection);
 
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(mConfigureIntent);
-        connection.setConnectionListener(new CustomVpnConnection.CustomVpnConnectionListener() {
-            @Override
-            public void onEstablish(ParcelFileDescriptor tunInterface) {
-                // Если удалось подключиться, обнуляем подключающийся поток и
-                // сохраняем пару подключившийся поток/tunInterface
-                mConnectingThread.compareAndSet(connection, null);
-                setEstablishedConnection(new EstablishedConnection(connection, tunInterface));
-            }
-
-            @Override
-            public void onException(int connectionId) {
-                Optional.ofNullable(mConnectingThread.get())
-                        .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
-                        .ifPresent(customVpnConnection -> setConnectingConnection(null));
-                Optional.ofNullable(mConnection.get())
-                        .map(pair -> pair.first)
-                        .filter(customVpnConnection -> customVpnConnection.getConnectionId() == connectionId)
-                        .ifPresent(customVpnConnection -> setEstablishedConnection(null));
-            }
+        connection.setOnEstablishListener(tunInterface -> {
+            // Если удалось подключиться, обнуляем подключающийся поток и
+            // сохраняем пару подключившийся поток/tunInterface
+            mConnectingThread.compareAndSet(connection, null);
+            setEstablishedConnection(new EstablishedConnection(connection, tunInterface));
         });
         connection.start();
     }

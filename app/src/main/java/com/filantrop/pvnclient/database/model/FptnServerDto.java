@@ -3,11 +3,17 @@ package com.filantrop.pvnclient.database.model;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity(tableName = "server_table")
 @Data
-public class FptnServerDto {
+public class FptnServerDto implements Serializable {
+
+    public static final FptnServerDto AUTO = new FptnServerDto("Auto", "Auto", "Auto", "", 0);
+
     @PrimaryKey(autoGenerate = true)
     private int id;
     private String name;

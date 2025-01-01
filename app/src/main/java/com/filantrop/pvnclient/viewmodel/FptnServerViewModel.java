@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.filantrop.pvnclient.database.model.FptnServerDto;
@@ -25,9 +26,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class FptnServerViewModel extends AndroidViewModel {
     private final static String TAG = FptnServerViewModel.class.getName();
@@ -44,13 +47,34 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final MutableLiveData<String> timerTextLiveData = new MutableLiveData<>("00:00:00");
     @Getter
     private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
+    @Getter
+    private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
+    @Getter
+    private final MutableLiveData<FptnServerDto> selectedServerLiveData = new MutableLiveData<>(FptnServerDto.AUTO);
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> scheduledFuture;
+
+    public FptnServerDto getSelectedServer() {
+        FptnServerDto selectedServer = selectedServerLiveData.getValue();
+        if (selectedServer == FptnServerDto.AUTO) {
+            FptnServerDto bestServer = selectBestServer(serverDtoListLiveData.getValue());
+            selectedServerLiveData.postValue(bestServer);
+            return bestServer;
+        }
+        return selectedServer;
+    }
+
+    private FptnServerDto selectBestServer(List<FptnServerDto> serverDtos) {
+        //todo: selectedBestServer
+        return serverDtos.get(0);
+    }
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
 
         fptnServerRepository = new FptnServerRepository(getApplication());
+        serverDtoListLiveData = fptnServerRepository.getAllServersLiveData();
     }
 
     public ListenableFuture<List<FptnServerDto>> getAllServers() {
@@ -103,7 +127,11 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     public void startTimer(Instant connectedFrom) {
         Log.d(TAG, "FptnServerViewModel.startTimer: " + connectedFrom);
-        scheduler.scheduleWithFixedDelay(() -> {
+        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
+            scheduledFuture.cancel(true);
+            scheduledFuture = null;
+        }
+        scheduledFuture = scheduler.scheduleWithFixedDelay(() -> {
             Instant now = Instant.now();
             long durationInSeconds = Duration.between(connectedFrom, now).getSeconds();
 
@@ -120,7 +148,10 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     public void stopTimer() {
         Log.d(TAG, "FptnServerViewModel.stopTimer()");
-        scheduler.shutdown();
+        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
+            scheduledFuture.cancel(true);
+            scheduledFuture = null;
+        }
         timerTextLiveData.postValue("00:00:00");
     }
 

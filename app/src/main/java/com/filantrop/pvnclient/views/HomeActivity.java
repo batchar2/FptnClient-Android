@@ -4,35 +4,32 @@ import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
-import com.filantrop.pvnclient.enums.SharedPreferencesFields;
+import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
 import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
-import com.filantrop.pvnclient.views.callback.DBFutureCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,12 +63,11 @@ public class HomeActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
 
-    private View homeServerSpinnerView;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
+
         initializeVariable();
     }
 
@@ -107,16 +103,24 @@ public class HomeActivity extends AppCompatActivity {
 
     @SuppressLint("InlinedApi")
     private void initializeVariable() {
-        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-        ListenableFuture<List<FptnServerDto>> allServersFuture = fptnViewModel.getAllServers();
-        Futures.addCallback(allServersFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
-            List<FptnServerDto> fixedServers = new ArrayList<>();
-            fixedServers.add(new FptnServerDto("Auto", "Auto", "Auto", "", 0));
-            fixedServers.addAll(result);
-            ((FptnServerAdapter) spinnerServers.getAdapter()).setFptnServerDtoList(fixedServers);
-        }, this.getMainExecutor());
         spinnerServers = findViewById(R.id.home_server_spinner);
-        spinnerServers.setAdapter(new FptnServerAdapter());
+        spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Object itemAtPosition = parent.getItemAtPosition(position);
+                if (itemAtPosition instanceof FptnServerDto) {
+                    FptnServerDto fptnServerDto = (FptnServerDto) itemAtPosition;
+                    if (fptnViewModel.getSelectedServerLiveData().getValue() != fptnServerDto) {
+                        fptnViewModel.getSelectedServerLiveData().postValue(fptnServerDto);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         startStopButton = findViewById(R.id.toggleButton);
         startStopButton.setOnClickListener(this::onClickToStartStop);
@@ -132,11 +136,19 @@ public class HomeActivity extends AppCompatActivity {
         statusTextView = findViewById(R.id.homeTextViewConnectionStatus);
         errorTextView = findViewById(R.id.errorTextView);
 
-
+        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+        fptnViewModel.getServerDtoListLiveData().observe(this, fptnServerDtos -> {
+            if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
+                List<FptnServerDto> fixedServers = new ArrayList<>();
+                fixedServers.add(FptnServerDto.AUTO);
+                fixedServers.addAll(fptnServerDtos);
+                spinnerServers.setAdapter(new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item));
+            }
+        });
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
             switch (connectionState) {
                 case CONNECTING:
-                    statusTextView.setText("Connecting...");
+                    connectingStateUiItems();
                     break;
                 case CONNECTED:
                     connectedStateUiItems();
@@ -151,6 +163,18 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.getErrorTextLiveData().observe(this, errorText -> {
             Log.i(TAG, "errorText: " + errorText);
             errorTextView.setText(errorText);
+        });
+
+        // Вот это чтобы в выпадающем списке выбирался реальный сервер к которому подключаемся
+        fptnViewModel.getSelectedServerLiveData().observe(this, fptnServerDto -> {
+            SpinnerAdapter adapter = spinnerServers.getAdapter();
+            if (adapter != null && adapter instanceof FptnServerAdapter) {
+                for (int pos = 0; pos < adapter.getCount(); pos++) {
+                    if (fptnServerDto.getId() == adapter.getItemId(pos)) {
+                        spinnerServers.setSelection(pos);
+                    }
+                }
+            }
         });
 
         // FIXME
@@ -177,10 +201,14 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
 
-        homeServerSpinnerView = findViewById(R.id.home_server_spinner);
-
         // hide
         disconnectedStateUiItems();
+    }
+
+    private void connectingStateUiItems() {
+        statusTextView.setText("Connecting...");
+        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_secondary_100));
+        spinnerServers.setEnabled(false);
     }
 
     private void disconnectedStateUiItems() {
@@ -197,7 +225,8 @@ public class HomeActivity extends AppCompatActivity {
         hideView(homeDownloadImageView);
         hideView(homeUploadImageView);
 
-        showView(homeServerSpinnerView);
+        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_white10_20));
+        spinnerServers.setEnabled(true);
     }
 
     private void connectedStateUiItems() {
@@ -212,7 +241,8 @@ public class HomeActivity extends AppCompatActivity {
         showView(homeDownloadImageView);
         showView(homeUploadImageView);
 
-        hideView(homeServerSpinnerView);
+        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_secondary_100));
+        spinnerServers.setEnabled(false);
     }
 
     private void hideView(View view) {
@@ -229,50 +259,31 @@ public class HomeActivity extends AppCompatActivity {
 
     public void onClickToStartStop(View v) {
         if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.DISCONNECTED) {
-            List<FptnServerDto> fptnServerDtoList = ((FptnServerAdapter) spinnerServers.getAdapter()).getFptnServerDtoList();
-            if (fptnServerDtoList != null && !fptnServerDtoList.isEmpty()) {
-                // todo: выбор наилучшего сервера. сейчас для простоты первый
-                FptnServerDto server = fptnServerDtoList.get(1);
-                int selectedPosition = spinnerServers.getSelectedItemPosition();
-                if (selectedPosition > 1) {
-                    server = fptnServerDtoList.get(selectedPosition);
-                }
-
-                //TODO: отойти от sharedPref - передавать всю инфу в intent
-                final SharedPreferences prefs = getSharedPreferences(SharedPreferencesFields.NAME, MODE_PRIVATE);
-                prefs.edit()
-                        .putString(SharedPreferencesFields.SERVER_ADDRESS, server.getHost())
-                        .putInt(SharedPreferencesFields.SERVER_PORT, server.getPort())
-                        .putString(SharedPreferencesFields.USERNAME, server.getUsername())
-                        .putString(SharedPreferencesFields.PASSWORD, server.getPassword())
-                        .apply();
-                // Запрос на предоставление приложению возможности запускать впн Intent != null, если приложению еще не предоставлялся доступ
-                Intent intent = VpnService.prepare(HomeActivity.this);
-                if (intent != null) {
-                    // Запрос на предоставление приложению возможности запускать впн
-                    startActivityForResult(intent, 0);
-                } else {
-                    // Запрос был ранее предоставлен - сразу вызов onActivityResult с RESULT_OK
-                    onActivityResult(0, RESULT_OK, null);
-                }
+            Intent intent = VpnService.prepare(HomeActivity.this);
+            if (intent != null) {
+                // Запрос на предоставление приложению возможности запускать впн
+                ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
+                    if (activityResult.getResultCode() == RESULT_OK) {
+                        startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
+                    }
+                });
+                intentActivityResultLauncher.launch(intent);
             } else {
-                Toast.makeText(this, "Server list is empty! Please login!", Toast.LENGTH_SHORT).show();
+                startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
             }
         } else if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.CONNECTED) {
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
         }
     }
 
-    @Override
-    protected void onActivityResult(int request, int result, Intent data) {
-        super.onActivityResult(request, result, data);
-        if (result == RESULT_OK) {
-            startService(getServiceIntent().setAction(CustomVpnService.ACTION_CONNECT));
-        }
-    }
-
     private Intent getServiceIntent() {
         return new Intent(this, CustomVpnService.class);
+    }
+
+    private Intent enrichIntent(Intent intent) {
+        FptnServerDto server = fptnViewModel.getSelectedServer();
+        intent.putExtra(IntentExtraFieldNames.SELECTED_SERVER, server);
+        return intent;
     }
 
 }

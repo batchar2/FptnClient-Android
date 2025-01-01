@@ -6,8 +6,7 @@ import lombok.Getter;
 public enum HandlerMessageTypes {
     // цифры от балды
     CONNECTION_STATE(586),
-    SPEED_DOWNLOAD(587),
-    SPEED_UPLOAD(588),
+    SPEED_INFO(599),
     ERROR(9881),
     UNKNOWN(6000);
 
