@@ -1,20 +1,13 @@
 package com.filantrop.pvnclient.views;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.PopupWindow;
-import android.widget.Toast;
 
 
 import androidx.annotation.Nullable;
@@ -22,16 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
-import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
-import com.filantrop.pvnclient.views.callback.DBFutureCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import lombok.Getter;
 
@@ -52,21 +38,8 @@ public class SettingsActivity extends AppCompatActivity {
         initializeVariable();
     }
 
+    @SuppressLint("InlinedApi")
     private void initializeVariable() {
-        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-        ListenableFuture<List<FptnServerDto>> allServersFuture = fptnViewModel.getAllServers();
-        Futures.addCallback(allServersFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
-            List<FptnServerDto> fixedServers = new ArrayList<>();
-            fixedServers.addAll(result);
-            ((FptnServerAdapter) serverListView.getAdapter()).setFptnServerDtoList(fixedServers);
-            setListViewHeightBasedOnChildren(serverListView);
-        }, this.getMainExecutor());
-        serverListView = findViewById(R.id.settingsServersRecyclerView);
-
-        FptnServerAdapter adapter = new FptnServerAdapter();
-        adapter.setRecyclerLayout(R.layout.settings_server_list_item); // set layout FIXME
-        serverListView.setAdapter(adapter);
-
         // FIXME
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuSettings);
@@ -92,28 +65,29 @@ public class SettingsActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+        fptnViewModel.getServerDtoListLiveData().observe(this, fptnServerDtos -> {
+            if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
+                serverListView.setAdapter(new FptnServerAdapter(fptnServerDtos, R.layout.home_list_recycler_server_item));
+                setListViewHeightBasedOnChildren(serverListView);
+            }
+        });
+        serverListView = findViewById(R.id.settingsServersRecyclerView);
     }
 
     public void onLogout(View v) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle(R.string.dialog_logout_title)
                 .setMessage(R.string.dialog_logout_message)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        fptnViewModel.deleteAll();
-                        // goto Login activity
-                        Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                    }
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    dialog.dismiss();
+                    fptnViewModel.deleteAll();
+                    // goto Login activity
+                    Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                    startActivity(intent);
                 })
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+                .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 

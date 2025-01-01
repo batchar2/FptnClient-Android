@@ -5,7 +5,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Handler;
@@ -17,12 +16,12 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
-import com.filantrop.pvnclient.enums.SharedPreferencesFields;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -99,7 +98,14 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             disconnect();
             return START_NOT_STICKY;
         } else {
-            connect();
+            // Достаем параметры для подключения из intent
+            FptnServerDto server = (FptnServerDto) intent.getSerializableExtra("server");
+/*            final String server = intent.getStringExtra(SharedPreferencesFields.SERVER_ADDRESS);
+            final String username = intent.getStringExtra(SharedPreferencesFields.USERNAME);
+            final String password = intent.getStringExtra(SharedPreferencesFields.PASSWORD);
+            final int port = intent.getIntExtra(SharedPreferencesFields.SERVER_PORT, 443);*/
+
+            connect(server.getHost(), server.getPort(), server.getUsername(), server.getPassword());
             return START_STICKY;
         }
     }
@@ -161,17 +167,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         return true;
     }
 
-    private void connect() {
+    private void connect(String server, int port, String username, String password) {
         // Переводим VPNService на передний план - чтобы повысить приоритет
         updateForegroundNotification(R.string.connecting);
-
-        // Достаем параметры для подключения из SharedPreferences
-        final SharedPreferences prefs = getSharedPreferences(SharedPreferencesFields.NAME, MODE_PRIVATE);
-
-        final String server = prefs.getString(SharedPreferencesFields.SERVER_ADDRESS, "");
-        final String username = prefs.getString(SharedPreferencesFields.USERNAME, "");
-        final String password = prefs.getString(SharedPreferencesFields.PASSWORD, "");
-        final int port = prefs.getInt(SharedPreferencesFields.SERVER_PORT, 0);
 
         startConnection(new CustomVpnConnection(
                 this, mNextConnectionId.getAndIncrement(), server, port, username, password));

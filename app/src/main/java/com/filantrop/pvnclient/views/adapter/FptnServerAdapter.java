@@ -1,6 +1,5 @@
 package com.filantrop.pvnclient.views.adapter;
 
-import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,17 +16,15 @@ import lombok.Getter;
 @Getter
 public class FptnServerAdapter extends BaseAdapter {
 
-    private List<FptnServerDto> fptnServerDtoList;
-    private int recyclerLayout = R.layout.home_list_recycler_server_item;
+    @Getter
+    private final List<FptnServerDto> fptnServerDtoList;
+    private final int layoutViewResourceId;
 
-    public void setFptnServerDtoList(List<FptnServerDto> fptnServerDtoList) {
+    public FptnServerAdapter(List<FptnServerDto> fptnServerDtoList, int layoutViewResourceId) {
         this.fptnServerDtoList = fptnServerDtoList;
+        this.layoutViewResourceId = layoutViewResourceId;
 
         notifyDataSetChanged();
-    }
-
-    public void setRecyclerLayout(int layoutId) {
-        recyclerLayout = layoutId;
     }
 
     @Override
@@ -37,19 +34,18 @@ public class FptnServerAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return position;
+        return fptnServerDtoList.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return fptnServerDtoList.get(position).getId();
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         if (view == null) {
-            view = LayoutInflater.from(parent.getContext()).inflate(recyclerLayout, parent, false);
+            view = LayoutInflater.from(parent.getContext()).inflate(layoutViewResourceId, parent, false);
         }
         FptnServerDto server = fptnServerDtoList.get(position);
 
