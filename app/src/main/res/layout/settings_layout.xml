@@ -18,9 +18,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <ImageView
-                android:layout_width="160dp"
-                android:layout_height="160dp"
-                android:src="@drawable/icon_account_circle_100"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/icon_settings_circle_100"
                 android:layout_gravity="center"
                 android:layout_marginTop="100dp" />
             <TextView
