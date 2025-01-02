@@ -179,12 +179,20 @@
             <Spinner
                 android:id="@+id/home_server_spinner"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/round_back_white10_20"
-                android:dropDownWidth="match_parent"
-                android:popupBackground="@drawable/round_back_spinner_down"
+                android:layout_height="55dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/spinner_background"
+                android:textColor="@color/primary"
                 android:spinnerMode="dropdown"
-                tools:listitem="@layout/home_list_recycler_server_item" />
+                android:drawablePadding="10dp"
+                android:popupBackground="@drawable/round_back_spinner_down"
+                android:dropDownWidth="match_parent"
+                android:clipToOutline="true"
+                android:ems="10"
+                android:hint="Auto"
+                android:inputType="text"
+                android:textColorHint="@color/white"
+                android:state_pressed="true" />
         </LinearLayout>
 
         <!-- Show error -->
