@@ -3,6 +3,7 @@ package com.filantrop.pvnclient.services.websocket;
 import android.util.Log;
 
 import com.filantrop.pvnclient.services.exception.PVNClientException;
+import com.filantrop.pvnclient.utils.MySSLSocketFactory;
 import com.google.protobuf.ByteString;
 
 import org.fptn.protocol.Protocol;
@@ -29,9 +30,25 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 
+
+
 public class OkHttpClientWrapper {
     public static final MediaType JSON = MediaType.get("application/json");
-
+    private static final String[] CHROME_CIPHERS = new String[]{
+            // ANDROID DOESNT SUPPORT ALL
+            "ECDHE-RSA-AES128-GCM-SHA256",
+            "ECDHE-ECDSA-AES256-GCM-SHA384",
+            // "ECDHE-RSA-AES256-GCM-SHA384",
+            // "ECDHE-ECDSA-CHACHA20-POLY1305",
+            "ECDHE-RSA-CHACHA20-POLY1305"
+            // "ECDHE-RSA-AES128-CBC-SHA",
+            // "ECDHE-RSA-AES256-CBC-SHA",
+            // "RSA-AES128-GCM-SHA256",
+            // "RSA-AES256-GCM-SHA384",
+            // "RSA-AES128-CBC-SHA",
+            // "RSA-AES256-CBC-SHA",
+            //"RSA-3DES-EDE-CBC-SHA"
+    };
     public static final String LOGIN_URL_PATTERN = "https://%s:%d/api/v1/login";
     public static final String DNS_URL_PATTERN = "https://%s:%d/api/v1/dns";
     public static final String WEBSOCKET_URL = "wss://%s:%d/fptn";
@@ -84,9 +101,9 @@ public class OkHttpClientWrapper {
             Log.e(getTag(), "Login failed", e);
             throw PVNClientException.fromException(e);
         }
-        // Create an SSL socket factory with our all-trusting manager
-        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
+        // Create an SSL socket factory with our all-trusting manager
+        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), CHROME_CIPHERS );
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 
@@ -129,7 +146,6 @@ public class OkHttpClientWrapper {
                     Log.e(getTag(), "Error response: " + response);
                 }
             }
-
         } catch (JSONException | IOException e) {
             Log.e(getTag(), "Login failed", e);
             throw PVNClientException.fromException(e);
@@ -144,7 +160,6 @@ public class OkHttpClientWrapper {
                     .url(url)
                     .get()
                     .build();
-
             try (Response response = client.newCall(request).execute()) {
                 if (response.code() == 200 && response.body() != null) {
                     JSONObject jsonResponse = new JSONObject(response.body().string());
@@ -199,21 +214,38 @@ public class OkHttpClientWrapper {
     }
 
     public void send(ByteBuffer buffer, int length) {
+        final int maxPayloadSize = 1450;
         if (webSocket != null) {
             byte[] copyBuffer = new byte[length];
             System.arraycopy(buffer.array(), 0, copyBuffer, 0, length);
             ByteString payload = ByteString.copyFrom(copyBuffer);
 
+            // padding to random data
+            ByteString padding = ByteString.EMPTY;
+            if (payload.size() < maxPayloadSize) {
+                final int paddingSize = maxPayloadSize - payload.size();
+                padding = generateRandomBytes(paddingSize);
+            }
+
             Protocol.IPPacket packet = Protocol.IPPacket.newBuilder()
                     .setPayload(payload)
+                    .setPaddingData(padding)
                     .build();
+
             Protocol.Message msg = Protocol.Message.newBuilder()
                     .setProtocolVersion(1)
                     .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
                     .setPacket(packet)
                     .build();
+
             webSocket.send(okio.ByteString.of(msg.toByteArray()));
         }
     }
 
+    public static ByteString generateRandomBytes(int size) {
+        byte[] randomBytes = new byte[size];
+        SecureRandom secureRandom = new SecureRandom(); // Use SecureRandom for cryptographic safety
+        secureRandom.nextBytes(randomBytes);
+        return ByteString.copyFrom(randomBytes);
+    }
 }
