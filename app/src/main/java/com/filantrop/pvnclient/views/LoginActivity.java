@@ -1,15 +1,11 @@
 package com.filantrop.pvnclient.views;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.InputType;
 import android.text.method.LinkMovementMethod;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,7 +18,6 @@ import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.callback.DBFutureCallback;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -54,7 +49,10 @@ public class LoginActivity extends AppCompatActivity {
         }, this.getMainExecutor());
 
         // Show HTML
-        String html = "<div style=\"text-align:center;\">Use the Telegram <a href=\"https://t.me/fptn_bot\">bot</a> to get your key.</div>";
+        final String telegramBot = getString(R.string.telegram_bot);
+        final String textTemplate = getString(R.string.telegram_text_template);
+        final String replacedText = textTemplate.replace("{}", "<a href=\"https://t.me/fptn_bot\">" + telegramBot +"</a> ");
+        String html = "<div style=\"text-align:center;\">" + replacedText + "</div>";
         TextView label = findViewById(R.id.fptn_login_html_label);
         label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
         label.setMovementMethod(LinkMovementMethod.getInstance());

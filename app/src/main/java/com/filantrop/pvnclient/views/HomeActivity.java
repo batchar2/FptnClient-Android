@@ -19,7 +19,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
@@ -42,18 +41,24 @@ public class HomeActivity extends AppCompatActivity {
     @Getter
     private FptnServerViewModel fptnViewModel;
 
+    private TextView connectionTimerLabel;
+    private TextView connectionTimer;
+
     private TextView downloadTextView;
     private TextView uploadTextView;
 
-    private TextView homeTextViewTimeLabel;
-    private TextView timerTextView;
     private TextView statusTextView;
     private TextView errorTextView;
 
-    private View homeDownloadImageView;
-    private View homeUploadImageView;
+    private TextView connectedServerName;
+
+    private View serverInfoFrame;
+
+    private View homeSpeedFrame;
 
     private Spinner spinnerServers;
+
+    View settingsMenuItem;
 
     private ToggleButton startStopButton;
 
@@ -122,19 +127,24 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        startStopButton = findViewById(R.id.toggleButton);
+        startStopButton = findViewById(R.id.home_do_connect_button);
         startStopButton.setOnClickListener(this::onClickToStartStop);
 
-        homeTextViewTimeLabel = findViewById(R.id.homeTextViewTimeLabel);
-        downloadTextView = findViewById(R.id.downloadTextView);
-        homeDownloadImageView = findViewById(R.id.homeDownloadImageView);
-        uploadTextView = findViewById(R.id.uploadTextView);
-        homeUploadImageView = findViewById(R.id.homeUploadImageView);
-        homeDownloadImageView = findViewById(R.id.homeDownloadImageView);
+        downloadTextView = findViewById(R.id.home_download_speed);
 
-        timerTextView = findViewById(R.id.homeTextViewTime);
-        statusTextView = findViewById(R.id.homeTextViewConnectionStatus);
-        errorTextView = findViewById(R.id.errorTextView);
+        uploadTextView = findViewById(R.id.home_upload_speed);
+
+        homeSpeedFrame = findViewById(R.id.home_speed_frame);
+
+        connectionTimer = findViewById(R.id.home_connection_timer);
+        connectionTimerLabel = findViewById(R.id.home_connection_timer_label);
+        statusTextView = findViewById(R.id.home_connection_status);
+        errorTextView = findViewById(R.id.home_error_text_view);
+        connectedServerName = findViewById(R.id.home_connected_server_name);
+
+        serverInfoFrame = findViewById(R.id.home_server_info_frame);
+
+        settingsMenuItem = findViewById(R.id.menuSettings);
 
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
         fptnViewModel.getServerDtoListLiveData().observe(this, fptnServerDtos -> {
@@ -159,22 +169,17 @@ public class HomeActivity extends AppCompatActivity {
         });
         fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
         fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
-        fptnViewModel.getTimerTextLiveData().observe(this, text -> timerTextView.setText(text));
+        fptnViewModel.getTimerTextLiveData().observe(this, text -> connectionTimer.setText(text));
         fptnViewModel.getErrorTextLiveData().observe(this, errorText -> {
             Log.i(TAG, "errorText: " + errorText);
             errorTextView.setText(errorText);
         });
 
-        // Вот это чтобы в выпадающем списке выбирался реальный сервер к которому подключаемся
+        // set info about selected server
         fptnViewModel.getSelectedServerLiveData().observe(this, fptnServerDto -> {
             SpinnerAdapter adapter = spinnerServers.getAdapter();
-            if (adapter != null && adapter instanceof FptnServerAdapter) {
-                for (int pos = 0; pos < adapter.getCount(); pos++) {
-                    if (fptnServerDto.getId() == adapter.getItemId(pos)) {
-                        spinnerServers.setSelection(pos);
-                    }
-                }
-            }
+            final String serverInfo = fptnServerDto.getName() + " (" + fptnServerDto.getHost() + ")";
+            connectedServerName.setText(serverInfo);
         });
 
         // FIXME
@@ -200,49 +205,44 @@ public class HomeActivity extends AppCompatActivity {
             }
             return false;
         });
-
         // hide
         disconnectedStateUiItems();
     }
 
     private void connectingStateUiItems() {
-        statusTextView.setText("Connecting...");
-        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_secondary_100));
-        spinnerServers.setEnabled(false);
+        statusTextView.setText(R.string.connecting);
     }
 
     private void disconnectedStateUiItems() {
-        statusTextView.setText("Disconnected");
-        timerTextView.setText("00:00:00");
-        downloadTextView.setText("01 Mb/s");
+        statusTextView.setText(R.string.disconnected);
+        connectionTimer.setText("00:00:00");
+        downloadTextView.setText("0 Mb/s");
         uploadTextView.setText("0 Mb/s");
         startStopButton.setChecked(false);
 
-        hideView(homeTextViewTimeLabel);
-        hideView(downloadTextView);
-        hideView(uploadTextView);
-        hideView(timerTextView);
-        hideView(homeDownloadImageView);
-        hideView(homeUploadImageView);
+        hideView(connectionTimer);
+        hideView(connectionTimerLabel);
+        hideView(serverInfoFrame);
+        hideView(homeSpeedFrame);
+        showView(spinnerServers);
 
-        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_white10_20));
-        spinnerServers.setEnabled(true);
+        // ENABLE SETTINGS
+        settingsMenuItem.setEnabled(true);
     }
 
     private void connectedStateUiItems() {
-        statusTextView.setText("Running");
+        statusTextView.setText(R.string.running);
         fptnViewModel.clearErrorTextMessage();
         startStopButton.setChecked(true);
 
-        showView(homeTextViewTimeLabel);
-        showView(downloadTextView);
-        showView(uploadTextView);
-        showView(timerTextView);
-        showView(homeDownloadImageView);
-        showView(homeUploadImageView);
+        showView(connectionTimer);
+        showView(connectionTimerLabel);
+        showView(serverInfoFrame);
+        showView(homeSpeedFrame);
+        hideView(spinnerServers);
 
-        spinnerServers.setBackground(AppCompatResources.getDrawable(this, R.drawable.round_back_secondary_100));
-        spinnerServers.setEnabled(false);
+        // DISABLE SETTINGS
+        settingsMenuItem.setEnabled(false);
     }
 
     private void hideView(View view) {

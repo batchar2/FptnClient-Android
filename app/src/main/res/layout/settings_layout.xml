@@ -6,44 +6,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/application_background"
-    android:textSize="18sp"
-    >
+    android:textSize="18sp">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         tools:ignore="MissingConstraints">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
             <ImageView
                 android:layout_width="160dp"
                 android:layout_height="160dp"
                 android:src="@drawable/icon_account_circle_100"
                 android:layout_gravity="center"
-                android:layout_marginTop="100dp"
-                />
+                android:layout_marginTop="100dp" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center"
                 android:textStyle="bold"
-                android:text="FPTN"
-                />
+                android:text="FPTN" />
             <TextView
-                android:id="@+id/settingsVersion"
+                android:id="@+id/settings_fptn_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center"
                 android:textStyle="bold"
-                android:text="@string/app_version"
-                />
+                android:text="@string/app_version" />
 
             <!-- Your VPN servers -->
             <LinearLayout
@@ -60,14 +54,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                     <ImageView
-                        android:id="@+id/settingsAvaialableServersImage"
+                        android:id="@+id/settings_available_servers_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_baseline_your_servers_24"
                         android:layout_gravity="center"
                         android:paddingLeft="12dp"
-                        android:paddingRight="12dp"
-                        />
+                        android:paddingRight="12dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -75,8 +68,7 @@
                         android:textColor="@color/white"
                         android:textStyle="normal"
                         android:text="@string/your_servers"
-                        android:layout_toEndOf="@+id/settingsAvaialableServersImage"
-                        />
+                        android:layout_toEndOf="@+id/settings_available_servers_icon" />
                 </RelativeLayout>
 
                 <LinearLayout
@@ -85,14 +77,13 @@
                     android:layout_marginStart="30dp"
                     android:orientation="vertical">
                     <ListView
-                        android:id="@+id/settingsServersRecyclerView"
+                        android:id="@+id/settings_servers_list"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         tools:listitem="@layout/settings_server_list_item"
                         android:divider="@android:color/transparent"
                         android:dividerHeight="0dp"
-                        tools:ignore="NestedScrolling">
-                    </ListView>
+                        tools:ignore="NestedScrolling"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -113,7 +104,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                     <ImageView
-                        android:id="@+id/settingUpdateTokenIcon"
+                        android:id="@+id/setting_update_token_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_baseline_update_24"
@@ -128,7 +119,7 @@
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:text="@string/update_token_button"
-                        android:layout_toEndOf="@+id/settingUpdateTokenIcon"
+                        android:layout_toEndOf="@+id/setting_update_token_icon"
                         />
                     <ImageView
                         android:layout_width="wrap_content"
@@ -174,14 +165,13 @@
                     android:layout_height="wrap_content">
 
                     <ImageView
-                        android:id="@+id/settingLogoutIcon"
+                        android:id="@+id/setting_logout_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_baseline_logout_24"
                         android:layout_gravity="center"
                         android:paddingLeft="12dp"
-                        android:paddingRight="12dp"
-                        />
+                        android:paddingRight="12dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -189,8 +179,7 @@
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:text="@string/logout_button"
-                        android:layout_toEndOf="@+id/settingLogoutIcon"
-                        />
+                        android:layout_toEndOf="@+id/setting_logout_icon" />
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -199,8 +188,7 @@
                         android:textStyle="bold"
                         android:src="@drawable/ic_outline_arrow_forward_ios_16"
                         android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true"
-                    />
+                        android:layout_alignParentTop="true" />
                 </RelativeLayout>
             </LinearLayout>
         </LinearLayout>

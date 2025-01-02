@@ -23,10 +23,12 @@ https://batchar2.github.io/fptn/
     </string>
 
     <string name="connecting">FptnVPN is connecting...</string>
-    <string name="connected">FptnVPN is connected!</string>
-    <string name="disconnected">FptnVPN is disconnected!</string>
+    <string name="connected">FptnVPN is connected</string>
+    <string name="disconnected">FptnVPN is disconnected</string>
     <string name="error">Error on connecting occurs!</string>
-    <string name="paste_your_key">Paste your key...</string>
+    <string name="paste_your_token">Paste your token...</string>
+    <string name="running">FptnVPN is running</string>
+
 
     <string name="dialog_logout_title">Confirm Action</string>
     <string name="dialog_logout_message">Are you sure you want to logout?</string>
@@ -35,4 +37,9 @@ https://batchar2.github.io/fptn/
 
     <string name="cancel_button">Cancel</string>
     <string name="save_button">Save</string>
+
+    <string name="server_label">Server:</string>
+
+    <string name="telegram_bot">the Telegram-bot</string>
+    <string name="telegram_text_template">Use {} to get your token</string>
 </resources>

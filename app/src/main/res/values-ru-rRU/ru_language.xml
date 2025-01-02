@@ -24,10 +24,11 @@ https://batchar2.github.io/fptn/
     </string>
 
     <string name="connecting">FptnVPN подключается...</string>
-    <string name="connected">FptnVPN подключен!</string>
-    <string name="disconnected">FptnVPN отключен!</string>
+    <string name="connected">FptnVPN подключен</string>
+    <string name="disconnected">FptnVPN отключен</string>
     <string name="error">Ошибка подключения!</string>
-    <string name="paste_your_key">Вставьте ваш ключ...</string>
+    <string name="paste_your_token">Скопируйте ваш токен...</string>
+    <string name="running">Подключено</string>
 
     <string name="dialog_logout_title">Подтвердите действие</string>
     <string name="dialog_logout_message">Вы уверены, что хотите выйти?</string>
@@ -36,4 +37,9 @@ https://batchar2.github.io/fptn/
 
     <string name="cancel_button">Отмена</string>
     <string name="save_button">Сохранить</string>
+
+    <string name="server_label">Сервер:</string>
+
+    <string name="telegram_bot">Телеграм-бот</string>
+    <string name="telegram_text_template">Используйте {} чтобы получить ваш токен</string>
 </resources>

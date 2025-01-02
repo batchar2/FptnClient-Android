@@ -2,155 +2,208 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/home_layout"
+    android:id="@+id/settings_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/application_background"
-    android:textSize="16sp"
-    >
+    android:textSize="18sp">
 
-    <TextView
-        android:id="@+id/homeTextViewTimeLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="@string/connection_time"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/homeTextViewTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:text="00:00:00"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="@+id/homeTextViewTimeLabel"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="@+id/homeTextViewTimeLabel"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewTimeLabel" />
-
-    <ToggleButton
-        android:id="@+id/toggleButton"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:layout_marginTop="120dp"
-        android:background="@drawable/toggle_button"
-        android:text=""
-        android:textOff=""
-        android:textOn=""
-        app:layout_constraintEnd_toEndOf="@+id/homeTextViewTime"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/homeTextViewTime"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/homeTextViewConnectionStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/state_disconnect"
-        android:textColor="@color/yellow"
-        app:layout_constraintEnd_toEndOf="@+id/toggleButton"
-        app:layout_constraintStart_toStartOf="@+id/toggleButton"
-        app:layout_constraintTop_toBottomOf="@+id/toggleButton" />
-
-    <ImageView
-        android:id="@+id/homeDownloadImageView"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="5dp"
-        android:contentDescription="Upload Icon"
-        app:layout_constraintEnd_toStartOf="@+id/downloadTextView"
-        app:layout_constraintStart_toStartOf="@+id/toggleButton"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus"
-        app:srcCompat="@drawable/dowload"
-        tools:ignore="MissingConstraints" />
-
-    <TextView
-        android:id="@+id/downloadTextView"
-        android:layout_width="130dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:gravity="end|center_vertical"
-        android:text="0 Mb/s"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toStartOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
-
-    <TextView
-        android:id="@+id/uploadTextView"
-        android:layout_width="130dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:gravity="start|center_vertical"
-        android:text="0 Mb/s"
-        android:textColor="@color/white"
-        app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
-
-    <ImageView
-        android:id="@+id/homeUploadImageView"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="5dp"
-        android:contentDescription="Download Icon"
-        app:layout_constraintEnd_toEndOf="@+id/toggleButton"
-        app:layout_constraintStart_toEndOf="@+id/uploadTextView"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus"
-        app:srcCompat="@drawable/upload"
-        tools:ignore="MissingConstraints" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="0dp"
-        app:layout_constraintWidth_percent="0.05"
-        android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:text=""
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/homeTextViewConnectionStatus" />
-
-    <RelativeLayout
-        android:id="@+id/relativeLayout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="10dp"
         tools:ignore="MissingConstraints">
 
-        <Spinner
-            android:id="@+id/home_server_spinner"
+        <!-- Connection time (fix height to hide) -->
+        <LinearLayout
+            android:layout_marginTop="80dp"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints"
+            android:padding="10dp">
+            <TextView
+                android:id="@+id/home_connection_timer_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/connection_time"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- Timer (fix height to hide) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints"
+            android:padding="10dp">
+            <TextView
+                android:id="@+id/home_connection_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00:00"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- Toggle button -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/round_back_white10_20"
-            android:dropDownWidth="match_parent"
-            android:popupBackground="@drawable/round_back_spinner_down"
-            android:spinnerMode="dropdown"
-            tools:listitem="@layout/home_list_recycler_server_item" />
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints"
+            android:padding="10dp">
+            <ToggleButton
+                android:id="@+id/home_do_connect_button"
+                android:layout_width="180dp"
+                android:layout_height="180dp"
+                android:background="@drawable/toggle_button"
+                android:text=""
+                android:textOff=""
+                android:textOn=""/>
+        </LinearLayout>
 
-    </RelativeLayout>
+        <!--- Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints"
+            android:padding="10dp">
+            <TextView
+                android:id="@+id/home_connection_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/state_disconnect"
+                android:textColor="@color/yellow" />
+        </LinearLayout>
 
-    <TextView
-        android:id="@+id/errorTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/relativeLayout" />
+        <!-- Server -->
+        <LinearLayout
+            android:id="@+id/home_server_info_frame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            tools:ignore="MissingConstraints"
+            android:padding="10dp">
+            <TextView
+                android:layout_marginEnd="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/server_label"
+                android:textColor="@color/white" />
+            <TextView
+                android:id="@+id/home_connected_server_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estonia (127.0.0.1)"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- Speed status -->
+        <LinearLayout
+            android:id="@+id/home_speed_frame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/round_settings_back_white10_20"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            tools:ignore="MissingConstraints">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="10dp"
+                    android:contentDescription="Upload Icon"
+                    app:srcCompat="@drawable/dowload" />
+                <TextView
+                    android:paddingEnd="10dp"
+                    android:id="@+id/home_download_speed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end|center_vertical"
+                    android:text="0 Mb/s"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:paddingLeft="10dp"
+                    android:id="@+id/home_upload_speed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="start|center_vertical"
+                    android:text="0 Mb/s"
+                    android:textColor="@color/white" />
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Download Icon"
+                    app:srcCompat="@drawable/upload" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Spinner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints"
+            android:padding="5dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="5dp">
+
+            <Spinner
+                android:id="@+id/home_server_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/round_back_white10_20"
+                android:dropDownWidth="match_parent"
+                android:popupBackground="@drawable/round_back_spinner_down"
+                android:spinnerMode="dropdown"
+                tools:listitem="@layout/home_list_recycler_server_item" />
+        </LinearLayout>
+
+        <!-- Show error -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="5dp"
+            tools:ignore="MissingConstraints">
+            <TextView
+                android:id="@+id/home_error_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavBar"

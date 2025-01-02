@@ -62,8 +62,11 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
             }
             return false;
         });
-
-        String html = "<div style=\"text-align:center;\">Use the Telegram <a href=\"https://t.me/fptn_bot\">bot</a> to get your key.</div>";
+        // Show HTML
+        final String telegramBot = getString(R.string.telegram_bot);
+        final String textTemplate = getString(R.string.telegram_text_template);
+        final String replacedText = textTemplate.replace("{}", "<a href=\"https://t.me/fptn_bot\">" + telegramBot +"</a> ");
+        String html = "<div style=\"text-align:center;\">" + replacedText + "</div>";
         TextView label = findViewById(R.id.fptn_login_html_label);
         label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
         label.setMovementMethod(LinkMovementMethod.getInstance());
