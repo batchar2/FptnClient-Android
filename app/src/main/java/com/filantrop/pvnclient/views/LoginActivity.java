@@ -64,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
-        final String fptnLink = linkInput.getText().toString();
+        final String fptnLink = linkInput.getText().toString().replaceAll("\\s+","");
         if (fptnLink.startsWith("fptn://") && fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
