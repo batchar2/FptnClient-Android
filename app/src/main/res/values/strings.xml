@@ -29,6 +29,8 @@ https://batchar2.github.io/fptn/
     <string name="paste_your_token">Paste your token...</string>
     <string name="running">FptnVPN is running</string>
 
+    <string name="vpn_permission_warning">For running FptnVPN need permissions!</string>
+
 
     <string name="dialog_logout_title">Confirm Action</string>
     <string name="dialog_logout_message">Are you sure you want to logout?</string>

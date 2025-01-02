@@ -23,6 +23,8 @@
 https://batchar2.github.io/fptn/
     </string>
 
+    <string name="vpn_permission_warning">Для работы FPTN необходимы разрешения!</string>
+
     <string name="connecting">Подключаемся...</string>
     <string name="connected">Подключен</string>
     <string name="disconnected">Отключен</string>

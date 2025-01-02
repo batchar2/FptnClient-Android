@@ -11,8 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -50,7 +50,7 @@ public class HomeActivity extends AppCompatActivity {
     private TextView statusTextView;
     private TextView errorTextView;
 
-    private TextView connectedServerName;
+    private TextView connectedServerTextView;
 
     private View serverInfoFrame;
 
@@ -67,6 +67,15 @@ public class HomeActivity extends AppCompatActivity {
     private CustomVpnService vpnService;
 
     private BottomNavigationView bottomNavigationView;
+
+    private final ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
+        if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
+            startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
+        } else {
+            Toast.makeText(this, R.string.vpn_permission_warning, Toast.LENGTH_SHORT).show();
+            fptnViewModel.getErrorTextLiveData().postValue(getString(R.string.vpn_permission_warning));
+        }
+    });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -140,7 +149,7 @@ public class HomeActivity extends AppCompatActivity {
         connectionTimerLabel = findViewById(R.id.home_connection_timer_label);
         statusTextView = findViewById(R.id.home_connection_status);
         errorTextView = findViewById(R.id.home_error_text_view);
-        connectedServerName = findViewById(R.id.home_connected_server_name);
+        connectedServerTextView = findViewById(R.id.home_connected_server_name);
 
         serverInfoFrame = findViewById(R.id.home_server_info_frame);
 
@@ -177,9 +186,8 @@ public class HomeActivity extends AppCompatActivity {
 
         // set info about selected server
         fptnViewModel.getSelectedServerLiveData().observe(this, fptnServerDto -> {
-            SpinnerAdapter adapter = spinnerServers.getAdapter();
             final String serverInfo = fptnServerDto.getName() + " (" + fptnServerDto.getHost() + ")";
-            connectedServerName.setText(serverInfo);
+            connectedServerTextView.setText(serverInfo);
         });
 
         // FIXME
@@ -262,11 +270,6 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = VpnService.prepare(HomeActivity.this);
             if (intent != null) {
                 // Запрос на предоставление приложению возможности запускать впн
-                ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
-                    if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
-                        startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
-                    }
-                });
                 intentActivityResultLauncher.launch(intent);
             } else {
                 startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
