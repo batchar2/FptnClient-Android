@@ -64,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
+        // removes all whitespaces and non-visible characters (e.g., tab, \n).
         final String fptnLink = linkInput.getText().toString().replaceAll("\\s+","");
         if (fptnLink.startsWith("fptn://") && fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
             Intent intent = new Intent(this, HomeActivity.class);
