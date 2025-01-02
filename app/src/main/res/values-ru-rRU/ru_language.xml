@@ -43,5 +43,5 @@ https://batchar2.github.io/fptn/
     <string name="server_label">Сервер:</string>
 
     <string name="telegram_bot">Телеграм-бот</string>
-    <string name="telegram_text_template">Используйте {} чтобы получить ваш токен</string>
+    <string name="telegram_text_template">Используйте {} чтобы получить токен</string>
 </resources>

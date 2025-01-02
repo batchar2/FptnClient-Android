@@ -43,5 +43,5 @@ https://batchar2.github.io/fptn/
     <string name="server_label">Server:</string>
 
     <string name="telegram_bot">the Telegram-bot</string>
-    <string name="telegram_text_template">Use {} to get your token</string>
+    <string name="telegram_text_template">Use {} to get a token</string>
 </resources>
