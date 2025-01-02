@@ -23,9 +23,9 @@
 https://batchar2.github.io/fptn/
     </string>
 
-    <string name="connecting">FptnVPN подключается...</string>
-    <string name="connected">FptnVPN подключен</string>
-    <string name="disconnected">FptnVPN отключен</string>
+    <string name="connecting">Подключаемся...</string>
+    <string name="connected">Подключен</string>
+    <string name="disconnected">Отключен</string>
     <string name="error">Ошибка подключения!</string>
     <string name="paste_your_token">Скопируйте ваш токен...</string>
     <string name="running">Подключено</string>
