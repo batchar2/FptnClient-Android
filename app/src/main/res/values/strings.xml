@@ -26,7 +26,7 @@ https://batchar2.github.io/fptn/
     <string name="connected">FptnVPN is connected</string>
     <string name="disconnected">FptnVPN is disconnected</string>
     <string name="error">Error on connecting occurs!</string>
-    <string name="paste_your_token">Paste your token...</string>
+    <string name="paste_your_token">Paste your token here...</string>
     <string name="running">FptnVPN is running</string>
 
     <string name="vpn_permission_warning">For running FptnVPN need permissions!</string>

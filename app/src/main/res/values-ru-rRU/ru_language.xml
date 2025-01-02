@@ -29,7 +29,7 @@ https://batchar2.github.io/fptn/
     <string name="connected">Подключен</string>
     <string name="disconnected">Отключен</string>
     <string name="error">Ошибка подключения!</string>
-    <string name="paste_your_token">Скопируйте ваш токен...</string>
+    <string name="paste_your_token">Скопируйте сюда токен...</string>
     <string name="running">Подключено</string>
 
     <string name="dialog_logout_title">Подтвердите действие</string>
