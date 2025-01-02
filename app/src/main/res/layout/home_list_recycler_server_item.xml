@@ -5,14 +5,12 @@
     android:paddingTop="10dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingLeft="20dp"
-    android:paddingRight="20dp"
-    >
+    android:paddingRight="20dp">
 
     <ImageView
         android:id="@+id/ivCountry"
         android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:paddingLeft="5dp"
+        android:layout_height="38dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         app:srcCompat="@drawable/vpn_icon" />
