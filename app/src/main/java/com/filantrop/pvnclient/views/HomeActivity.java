@@ -162,6 +162,8 @@ public class HomeActivity extends AppCompatActivity {
                 fixedServers.add(FptnServerDto.AUTO);
                 fixedServers.addAll(fptnServerDtos);
                 spinnerServers.setAdapter(new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item));
+
+                spinnerServers.performClosedEvent(); // FIX SPINNER BACKGROUND
             }
         });
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
