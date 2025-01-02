@@ -263,7 +263,7 @@ public class HomeActivity extends AppCompatActivity {
             if (intent != null) {
                 // Запрос на предоставление приложению возможности запускать впн
                 ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
-                    if (activityResult.getResultCode() == RESULT_OK) {
+                    if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
                         startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
                     }
                 });

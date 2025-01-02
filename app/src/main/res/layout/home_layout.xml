@@ -55,8 +55,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            tools:ignore="MissingConstraints"
-            android:padding="10dp">
+            tools:ignore="MissingConstraints">
             <ToggleButton
                 android:id="@+id/home_do_connect_button"
                 android:layout_width="180dp"
