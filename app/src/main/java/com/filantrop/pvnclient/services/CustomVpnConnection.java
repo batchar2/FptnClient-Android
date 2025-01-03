@@ -95,14 +95,44 @@ public class CustomVpnConnection extends Thread {
             builder.addRoute("172.20.0.1", 32);
             builder.addDnsServer("172.20.0.1"); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                builder.addRoute("0.0.0.0", 0);
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("172.16.0.0"), 12));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("192.168.0.0"), 16));
             } else {
-                builder.addRoute(InetAddress.getByName(serverHost), 32);
+                builder.addRoute("224.0.0.0", 3);
+                builder.addRoute("208.0.0.0", 4);
+                builder.addRoute("200.0.0.0", 5);
+                builder.addRoute("196.0.0.0", 6);
+                builder.addRoute("194.0.0.0", 7);
+                builder.addRoute("193.0.0.0", 8);
+                builder.addRoute("192.0.0.0", 9);
+                builder.addRoute("192.192.0.0", 10);
+                builder.addRoute("192.128.0.0", 11);
+                builder.addRoute("192.176.0.0", 12);
+                builder.addRoute("192.160.0.0", 13);
+                builder.addRoute("192.172.0.0", 14);
+                builder.addRoute("192.170.0.0", 15);
+                builder.addRoute("192.169.0.0", 16);
+                builder.addRoute("128.0.0.0", 3);
+                builder.addRoute("176.0.0.0", 4);
+                builder.addRoute("160.0.0.0", 5);
+                builder.addRoute("168.0.0.0", 6);
+                builder.addRoute("174.0.0.0", 7);
+                builder.addRoute("173.0.0.0", 8);
+                builder.addRoute("172.128.0.0", 9);
+                builder.addRoute("172.64.0.0", 10);
+                builder.addRoute("172.32.0.0", 11);
+                builder.addRoute("172.0.0.0", 12);
+                builder.addRoute("64.0.0.0", 2);
+                builder.addRoute("32.0.0.0", 3);
+                builder.addRoute("16.0.0.0", 4);
+                //builder.addRoute("0.0.0.0", 5);
+                builder.addRoute("12.0.0.0", 6);
+                builder.addRoute("8.0.0.0", 7);
+                builder.addRoute("11.0.0.0", 8);
             }
-            builder.addRoute("0.0.0.0", 0);
             builder.setSession(serverHost).setConfigureIntent(mConfigureIntent);
 
             synchronized (service) {
