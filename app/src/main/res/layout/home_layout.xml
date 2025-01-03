@@ -11,20 +11,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:gravity="center"
+        android:orientation="vertical"
         android:padding="10dp"
         tools:ignore="MissingConstraints">
 
         <!-- Connection time (fix height to hide) -->
         <LinearLayout
-            android:layout_marginTop="80dp"
             android:layout_width="match_parent"
             android:layout_height="40dp"
+            android:layout_marginTop="80dp"
             android:gravity="center"
             android:orientation="vertical"
-            tools:ignore="MissingConstraints"
-            android:padding="10dp">
+            android:padding="10dp"
+            tools:ignore="MissingConstraints">
+
             <TextView
                 android:id="@+id/home_connection_timer_label"
                 android:layout_width="wrap_content"
@@ -39,8 +40,9 @@
             android:layout_height="40dp"
             android:gravity="center"
             android:orientation="vertical"
-            tools:ignore="MissingConstraints"
-            android:padding="10dp">
+            android:padding="10dp"
+            tools:ignore="MissingConstraints">
+
             <TextView
                 android:id="@+id/home_connection_timer"
                 android:layout_width="wrap_content"
@@ -56,6 +58,7 @@
             android:gravity="center"
             android:orientation="vertical"
             tools:ignore="MissingConstraints">
+
             <ToggleButton
                 android:id="@+id/home_do_connect_button"
                 android:layout_width="180dp"
@@ -63,7 +66,7 @@
                 android:background="@drawable/toggle_button"
                 android:text=""
                 android:textOff=""
-                android:textOn=""/>
+                android:textOn="" />
         </LinearLayout>
 
         <!--- Status -->
@@ -72,8 +75,9 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            tools:ignore="MissingConstraints"
-            android:padding="10dp">
+            android:padding="10dp"
+            tools:ignore="MissingConstraints">
+
             <TextView
                 android:id="@+id/home_connection_status"
                 android:layout_width="wrap_content"
@@ -89,14 +93,16 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal"
-            tools:ignore="MissingConstraints"
-            android:padding="10dp">
+            android:padding="10dp"
+            tools:ignore="MissingConstraints">
+
             <TextView
-                android:layout_marginEnd="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
                 android:text="@string/server_label"
                 android:textColor="@color/white" />
+
             <TextView
                 android:id="@+id/home_connected_server_name"
                 android:layout_width="wrap_content"
@@ -110,51 +116,57 @@
             android:id="@+id/home_speed_frame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/round_settings_back_white10_20"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
             tools:ignore="MissingConstraints">
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_marginEnd="10dp"
                     android:contentDescription="Upload Icon"
                     app:srcCompat="@drawable/dowload" />
+
                 <TextView
-                    android:paddingEnd="10dp"
                     android:id="@+id/home_download_speed"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="end|center_vertical"
+                    android:paddingEnd="10dp"
                     android:text="0 Mb/s"
                     android:textColor="@color/white" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
                 <TextView
-                    android:paddingLeft="10dp"
                     android:id="@+id/home_upload_speed"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="start|center_vertical"
+                    android:paddingLeft="10dp"
                     android:text="0 Mb/s"
                     android:textColor="@color/white" />
+
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
@@ -168,23 +180,30 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
             android:gravity="center"
             android:orientation="vertical"
-            tools:ignore="MissingConstraints"
             android:padding="5dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="5dp">
+            tools:ignore="MissingConstraints">
 
-            <Spinner
+            <com.filantrop.pvnclient.utils.CustomSpinner
                 android:id="@+id/home_server_spinner"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/round_back_white10_20"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/round_back_spinner_down"
+                android:clipToOutline="true"
                 android:dropDownWidth="match_parent"
-                android:popupBackground="@drawable/round_back_spinner_down"
+                android:ems="10"
+                android:hint="Auto"
+                android:inputType="text"
+                android:popupBackground="@drawable/spinner_background_up"
                 android:spinnerMode="dropdown"
-                tools:listitem="@layout/home_list_recycler_server_item" />
+                android:state_pressed="true"
+                android:textColor="@color/primary"
+                android:textColorHint="@color/white" />
         </LinearLayout>
 
         <!-- Show error -->
@@ -195,6 +214,7 @@
             android:orientation="vertical"
             android:padding="5dp"
             tools:ignore="MissingConstraints">
+
             <TextView
                 android:id="@+id/home_error_text_view"
                 android:layout_width="wrap_content"
@@ -208,9 +228,9 @@
         android:id="@+id/bottomNavBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/bottom_nav_bar_menu"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:menu="@menu/bottom_nav_bar_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

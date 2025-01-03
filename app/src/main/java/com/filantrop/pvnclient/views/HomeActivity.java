@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -25,6 +24,7 @@ import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
+import com.filantrop.pvnclient.utils.CustomSpinner;
 import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
 import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
@@ -56,7 +56,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private View homeSpeedFrame;
 
-    private Spinner spinnerServers;
+    private CustomSpinner spinnerServers;
 
     View settingsMenuItem;
 
@@ -162,6 +162,8 @@ public class HomeActivity extends AppCompatActivity {
                 fixedServers.add(FptnServerDto.AUTO);
                 fixedServers.addAll(fptnServerDtos);
                 spinnerServers.setAdapter(new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item));
+
+                spinnerServers.performClosedEvent(); // FIX SPINNER BACKGROUND
             }
         });
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
