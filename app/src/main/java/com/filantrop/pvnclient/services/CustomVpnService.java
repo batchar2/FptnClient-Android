@@ -118,7 +118,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTED);
             //Передаем на UI актуальные параметры подключения
             fptnViewModel.startTimer(mConnection.get().first.getConnectionTime());
-            fptnViewModel.getSelectedServerLiveData().postValue(selectedServer);
+            fptnViewModel.getSelectedServerLiveData().setValue(selectedServer);
         } else if (mConnection.get() == null && mConnectingThread.get() != null) {
             fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING);
         } else if (mConnection.get() == null && mConnectingThread.get() == null) {

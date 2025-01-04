@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatSpinner;
+import androidx.core.content.ContextCompat;
 
 import com.filantrop.pvnclient.R;
 
@@ -28,7 +29,7 @@ public class CustomSpinner extends AppCompatSpinner {
     @Override
     public boolean performClick() {
         mOpenInitiated = true;
-        setBackground(getResources().getDrawable(R.drawable.spinner_background_up));
+        setBackground(ContextCompat.getDrawable(getContext(), R.drawable.spinner_background_up));
         return super.performClick();
     }
 
@@ -44,7 +45,7 @@ public class CustomSpinner extends AppCompatSpinner {
      */
     public void performClosedEvent() {
         mOpenInitiated = false;
-        setBackground(getResources().getDrawable(R.drawable.spinner_background_down));
+        setBackground(ContextCompat.getDrawable(getContext(), R.drawable.spinner_background_down));
     }
 
     /**

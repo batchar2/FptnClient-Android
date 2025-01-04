@@ -30,7 +30,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
-import lombok.Setter;
 
 public class FptnServerViewModel extends AndroidViewModel {
     private final static String TAG = FptnServerViewModel.class.getName();
@@ -155,4 +154,11 @@ public class FptnServerViewModel extends AndroidViewModel {
         timerTextLiveData.postValue("00:00:00");
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+
+        stopTimer();
+        scheduler.shutdown();
+    }
 }

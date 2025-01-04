@@ -121,11 +121,13 @@ public class HomeActivity extends AppCompatActivity {
         spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Object itemAtPosition = parent.getItemAtPosition(position);
-                if (itemAtPosition instanceof FptnServerDto) {
-                    FptnServerDto fptnServerDto = (FptnServerDto) itemAtPosition;
-                    if (fptnViewModel.getSelectedServerLiveData().getValue() != fptnServerDto) {
-                        fptnViewModel.getSelectedServerLiveData().postValue(fptnServerDto);
+                if (parent.isEnabled()) {
+                    Object itemAtPosition = parent.getItemAtPosition(position);
+                    if (itemAtPosition instanceof FptnServerDto) {
+                        FptnServerDto fptnServerDto = (FptnServerDto) itemAtPosition;
+                        if (fptnViewModel.getSelectedServerLiveData().getValue() != fptnServerDto) {
+                            fptnViewModel.getSelectedServerLiveData().postValue(fptnServerDto);
+                        }
                     }
                 }
             }
@@ -220,6 +222,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void connectingStateUiItems() {
+        spinnerServers.setEnabled(false);
         statusTextView.setText(R.string.connecting);
     }
 
@@ -229,6 +232,7 @@ public class HomeActivity extends AppCompatActivity {
         downloadTextView.setText("0 Mb/s");
         uploadTextView.setText("0 Mb/s");
         startStopButton.setChecked(false);
+        spinnerServers.setEnabled(true);
 
         hideView(connectionTimer);
         hideView(connectionTimerLabel);
@@ -244,6 +248,7 @@ public class HomeActivity extends AppCompatActivity {
         statusTextView.setText(R.string.running);
         fptnViewModel.clearErrorTextMessage();
         startStopButton.setChecked(true);
+        spinnerServers.setEnabled(false);
 
         showView(connectionTimer);
         showView(connectionTimerLabel);
