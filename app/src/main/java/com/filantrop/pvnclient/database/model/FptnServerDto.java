@@ -31,4 +31,8 @@ public class FptnServerDto implements Serializable {
         this.port = port;
     }
 
+    public String getServerInfo() {
+        return name + " (" + host + ")";
+    }
+
 }
