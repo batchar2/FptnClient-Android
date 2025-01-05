@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey;
 import java.io.Serializable;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Entity(tableName = "server_table")
 @Data
@@ -35,4 +34,31 @@ public class FptnServerDto implements Serializable {
         return name + " (" + host + ")";
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
