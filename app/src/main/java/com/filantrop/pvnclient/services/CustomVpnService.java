@@ -2,14 +2,17 @@ package com.filantrop.pvnclient.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
 
@@ -19,6 +22,7 @@ import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
 import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
+import com.filantrop.pvnclient.utils.Constants;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.R;
@@ -51,12 +55,15 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     private final AtomicReference<CustomVpnConnection> mConnectingThread = new AtomicReference<>();
 
     // Удачно подключившийся поток становится mConnection
-    private final AtomicReference<EstablishedConnection> mConnection = new AtomicReference<>();
+    private final AtomicReference<Pair<CustomVpnConnection, ParcelFileDescriptor>> mConnection = new AtomicReference<>();
 
     private final AtomicInteger mNextConnectionId = new AtomicInteger(1);
 
-    // Отложенный Intent для запуска из нотификации Activity для конфигурации VPN
-    private PendingIntent mConfigureIntent;
+    // Pending Intent for launch MainActivity when notification tapped
+    private PendingIntent launchMainActivityPendingIntent;
+
+    // Pending Intent to disconnect from notification
+    private PendingIntent disconnectPendingIntent;
 
     // Binder given to clients.
     private final IBinder binder = new LocalBinder();
@@ -87,9 +94,14 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
         // Создаем PendingIntent (Отложенное намерение) чтобы в Нотификации
         // была доступна кнопка конфигурации (при нажатии вызовет MainActivity)
-        mConfigureIntent = PendingIntent.getActivity(this, 0,
+        launchMainActivityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, HomeActivity.class),
-                PendingIntent.FLAG_MUTABLE);
+                PendingIntent.FLAG_IMMUTABLE);
+
+        disconnectPendingIntent = PendingIntent.getService(this, 0,
+                new Intent(this, CustomVpnService.class)
+                        .setAction(CustomVpnService.ACTION_DISCONNECT),
+                PendingIntent.FLAG_IMMUTABLE);
     }
 
     @Override
@@ -135,8 +147,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             case SPEED_INFO:
                 if (fptnViewModel != null) {
                     Pair<String, String> downloadSpeedUploadSpeed = (Pair<String, String>) message.obj;
-                    fptnViewModel.getDownloadSpeedAsStringLiveData().postValue(downloadSpeedUploadSpeed.first);
-                    fptnViewModel.getUploadSpeedAsStringLiveData().postValue(downloadSpeedUploadSpeed.second);
+                    String downloadSpeed = downloadSpeedUploadSpeed.first;
+                    String uploadSpeed = downloadSpeedUploadSpeed.second;
+                    fptnViewModel.getDownloadSpeedAsStringLiveData().postValue(downloadSpeed);
+                    fptnViewModel.getUploadSpeedAsStringLiveData().postValue(uploadSpeed);
+                    updateNotificationWithMessage("Connected to " + selectedServer.getServerInfo(), "Download: " + downloadSpeed + " Upload: " + uploadSpeed);
                 }
                 break;
             case CONNECTION_STATE:
@@ -147,6 +162,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                         fptnViewModel.getConnectionStateMutableLiveData().postValue(state);
                         if (ConnectionState.CONNECTED.equals(state)) {
                             fptnViewModel.startTimer(connectionStateInstantPair.second);
+                            updateNotificationWithMessage("Connected to " + selectedServer.getServerInfo(), "");
                         } else if (ConnectionState.DISCONNECTED.equals(state)) {
                             fptnViewModel.stopTimer();
                             disconnect();
@@ -164,20 +180,20 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     }
 
     private void connect(String server, int port, String username, String password) {
-        // Переводим VPNService на передний план - чтобы повысить приоритет
-        updateForegroundNotification(R.string.connecting);
+        // Moving VPNService to foreground to give it higher priority in system
+        startForegroundWithNotification("Connecting to " + selectedServer.getServerInfo());
 
         CustomVpnConnection connection = new CustomVpnConnection(
                 this, mNextConnectionId.getAndIncrement(), server, port, username, password);
         setConnectingConnection(connection);
 
         // Handler to mark as connected once onEstablish is called.
-        connection.setConfigureIntent(mConfigureIntent);
+        connection.setConfigureIntent(launchMainActivityPendingIntent);
         connection.setOnEstablishListener(tunInterface -> {
             // Если удалось подключиться, обнуляем подключающийся поток и
             // сохраняем пару подключившийся поток/tunInterface
             mConnectingThread.compareAndSet(connection, null);
-            setEstablishedConnection(new EstablishedConnection(connection, tunInterface));
+            setEstablishedConnection(new Pair<>(connection, tunInterface));
         });
         connection.start();
     }
@@ -189,8 +205,8 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         }
     }
 
-    private void setEstablishedConnection(final EstablishedConnection establishedConnection) {
-        final EstablishedConnection oldEstablishedConnection = mConnection.getAndSet(establishedConnection);
+    private void setEstablishedConnection(final Pair<CustomVpnConnection, ParcelFileDescriptor> establishedConnection) {
+        final Pair<CustomVpnConnection, ParcelFileDescriptor> oldEstablishedConnection = mConnection.getAndSet(establishedConnection);
         if (oldEstablishedConnection != null) {
             try {
                 // прерываем старый поток
@@ -212,23 +228,51 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         stopForeground(true);
     }
 
-    // Выводит в уведомления
-    private void updateForegroundNotification(final int message) {
-        final String NOTIFICATION_CHANNEL_ID = "FptnVPN";
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(
-                NOTIFICATION_SERVICE);
-        mNotificationManager.createNotificationChannel(new NotificationChannel(
-                NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID,
-                NotificationManager.IMPORTANCE_HIGH));
-        Notification notification = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.vpn_icon)
-                .setContentText(getString(message))
-                .setContentIntent(mConfigureIntent)
-                .build();
+    private void startForegroundWithNotification(String title) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // айдишник по идее должен быть уникальным,
-        // но пусть будет так - потому что только одна нотификация - пока сервис работает!
-        startForeground(1, notification);
+        NotificationChannel notificationChannel = notificationManager.getNotificationChannel(Constants.MAIN_NOTIFICATION_CHANNEL_ID);
+        if (notificationChannel == null) {
+            notificationManager.createNotificationChannelGroup(
+                    new NotificationChannelGroup(Constants.MAIN_NOTIFICATION_CHANNEL_GROUP_ID, getString(R.string.notification_group_name)));
+
+            NotificationChannel newNotificationChannel = new NotificationChannel(
+                    Constants.MAIN_NOTIFICATION_CHANNEL_ID,
+                    getString(R.string.notification_channel_name),
+                    NotificationManager.IMPORTANCE_LOW);
+            newNotificationChannel.setGroup(Constants.MAIN_NOTIFICATION_CHANNEL_GROUP_ID);
+            notificationManager.createNotificationChannel(
+                    newNotificationChannel
+            );
+        }
+
+        Notification notification = createNotification(title, "");
+        startForeground(Constants.MAIN_CONNECTED_NOTIFICATION_ID, notification);
+    }
+
+    private void updateNotificationWithMessage(String title, String message) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(
+                NOTIFICATION_SERVICE);
+        Notification notification = createNotification(title, message);
+        notificationManager.notify(Constants.MAIN_CONNECTED_NOTIFICATION_ID, notification);
+    }
+
+    private Notification createNotification(String title, String message) {
+        // In Api level 24 an above, there is no icon in design!!!
+        Notification.Action actionDisconnect = new Notification.Action.Builder(null, getString(R.string.disconnect_action), disconnectPendingIntent)
+                .build();
+        return new Notification.Builder(this, Constants.MAIN_NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.vpn_icon)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+                .setOngoing(true) // user can't close notification (works only when screen locked)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
+                .setAutoCancel(false) // for not remove notification after press it
+                .addAction(actionDisconnect)
+                .setContentIntent(launchMainActivityPendingIntent)
+                .build();
     }
 
 }

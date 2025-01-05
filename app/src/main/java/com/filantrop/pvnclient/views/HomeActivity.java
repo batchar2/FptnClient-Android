@@ -190,8 +190,7 @@ public class HomeActivity extends AppCompatActivity {
 
         // set info about selected server
         fptnViewModel.getSelectedServerLiveData().observe(this, fptnServerDto -> {
-            final String serverInfo = fptnServerDto.getName() + " (" + fptnServerDto.getHost() + ")";
-            connectedServerTextView.setText(serverInfo);
+            connectedServerTextView.setText(fptnServerDto.getServerInfo());
         });
 
         // FIXME

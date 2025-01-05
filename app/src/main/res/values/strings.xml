@@ -44,4 +44,8 @@ https://batchar2.github.io/fptn/
 
     <string name="telegram_bot">the Telegram-bot</string>
     <string name="telegram_text_template">Use {} to get a token</string>
+
+    <string name="notification_channel_name">When connected</string>
+    <string name="notification_group_name">Main</string>
+    <string name="disconnect_action">Disconnect</string>
 </resources>
