@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
+    implementation(libs.ipaddress)
 
     // add lombok
     compileOnly(libs.lombock)
