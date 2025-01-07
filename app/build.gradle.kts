@@ -1,19 +1,23 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
     alias(libs.plugins.protobuf)
 }
 
 android {
     namespace = "com.filantrop.pvnclient"
-    compileSdk = 34
+    compileSdk = rootProject.extra.get("compileSdkVersion") as Int
 
     defaultConfig {
         applicationId = "com.filantrop.pvnclient"
-        minSdk = 33
-        targetSdkVersion(rootProject.extra["defaultTargetSdkVersion"] as Int)
-        versionCode = 1
-        versionName = "1.0"
+        val versionMajor: Int by rootProject.extra
+        val versionMinor: Int by rootProject.extra
+        val versionPatch: Int by rootProject.extra
+        val versionBuild: Int by rootProject.extra
+        versionCode = 1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
+        versionName = "$versionMajor.$versionMinor.$versionPatch.$versionBuild"
+
+        minSdk = rootProject.extra.get("minSdkVersion") as Int
+        targetSdk = rootProject.extra.get("targetSdkVersion") as Int
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -25,7 +29,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -33,46 +37,41 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
     buildFeatures {
         viewBinding = true
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    // To use CallbackToFutureAdapter
+    implementation(libs.androidx.concurrent.futures)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.monitor)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.monitor)
-    implementation(libs.androidx.activity)
-    implementation(libs.protobuf.javalite)
+    implementation(libs.androidx.room.guava)
+    // adding ORM Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.guava)
+    implementation(libs.material)
     implementation(libs.okhttp)
+    implementation(libs.protobuf.javalite)
 
     // add lombok
     compileOnly(libs.lombock)
+
+    annotationProcessor(libs.androidx.room.compiler)
     annotationProcessor(libs.lombock)
 
-    //adding ORM Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.guava)
-    annotationProcessor(libs.androidx.room.compiler)
     testImplementation(libs.androidx.room.testing)
-
-    implementation(libs.guava)
-
-    // To use CallbackToFutureAdapter
-    implementation(libs.androidx.concurrent.futures)
-
-
-    //for tests (but we have no tests! yet?)
+    // for tests (but we have no tests! yet?)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
+
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
 }
 java {
     toolchain {

@@ -2,12 +2,16 @@
 agp = "8.5.2"
 concurrentFutures = "1.2.0"
 guava = "31.0.1-android"
+gradlePlugin = "8.2.2"
 kotlin = "1.9.24"
 coreKtx = "1.10.1"
+autonomousappsSorting = "0.13"
+detektPlugin = "1.23.7"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
+ksp = "2.0.20-1.0.24"
 material = "1.12.0"
 constraintlayout = "2.2.0"
 navigationFragmentKtx = "2.8.4"
@@ -21,6 +25,7 @@ lombock = "1.18.36"
 roomRuntime = "2.6.1"
 
 [libraries]
+android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrentFutures" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -38,6 +43,9 @@ androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navi
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
@@ -45,6 +53,7 @@ lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 
