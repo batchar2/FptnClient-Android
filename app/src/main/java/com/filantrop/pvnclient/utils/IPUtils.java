@@ -10,7 +10,7 @@ public class IPUtils {
     public static void exclude(IPAddress rootSubnet, List<IPAddress> subnetsToExclude, List<IPAddress> afterExclude) {
         Optional<IPAddress> any = subnetsToExclude.stream().filter(subnet -> subnet.equals(rootSubnet)).findAny();
         if (any.isPresent()) {
-            // дошли до минимальной единицы
+            // we reach minimum size target subnet
             //System.out.println("rootSubnet: " + rootSubnet + " == any: " + any.get());
             return;
         }
@@ -46,4 +46,5 @@ public class IPUtils {
             }
         }
     }
+
 }

@@ -122,7 +122,7 @@ public class CustomVpnConnection extends Thread {
                     String hostIp = ipAddress.getLower().toAddressString().getHostAddress().toString();
                     Integer networkPrefixLength = ipAddress.getLower().toAddressString().getNetworkPrefixLength();
                     Log.d(getTag(), "subnetsToInclude.ipAddress: " + hostIp + "/" + networkPrefixLength);
-                    builder.addRoute(hostIp, networkPrefixLength);
+                    builder.addRoute(hostIp, networkPrefixLength != null ? networkPrefixLength : 32);
                 }
             }
 
