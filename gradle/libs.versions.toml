@@ -3,6 +3,7 @@ agp = "8.5.2"
 concurrentFutures = "1.2.0"
 guava = "31.0.1-android"
 gradlePlugin = "8.2.2"
+ipaddress = "5.5.1"
 kotlin = "1.9.24"
 coreKtx = "1.10.1"
 autonomousappsSorting = "0.13"
@@ -33,6 +34,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomRuntime" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

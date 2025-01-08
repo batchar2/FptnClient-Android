@@ -265,11 +265,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 .setSmallIcon(R.drawable.vpn_icon)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-                .setOngoing(true) // user can't close notification (works only when screen locked)
+                //.setOngoing(true) // user can't close notification (works only when screen locked)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
-                .setAutoCancel(false) // for not remove notification after press it
+                //.setAutoCancel(false) // for not remove notification after press it
                 .addAction(actionDisconnect)
                 .setContentIntent(launchMainActivityPendingIntent)
                 .build();

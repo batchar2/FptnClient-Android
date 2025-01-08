@@ -16,6 +16,7 @@ import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
 import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
 import com.filantrop.pvnclient.services.websocket.WebSocketMessageCallback;
 import com.filantrop.pvnclient.utils.DataRateCalculator;
+import com.filantrop.pvnclient.utils.IPUtils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,10 +24,16 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -99,10 +106,26 @@ public class CustomVpnConnection extends Thread {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("172.16.0.0"), 12));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("192.168.0.0"), 16));
+                builder.addRoute("0.0.0.0", 0);
             } else {
-                builder.addRoute(InetAddress.getByName(serverHost), 32);
+                IPAddress rootSubnet = new IPAddressString("0.0.0.0/0").getAddress();
+                List<IPAddress> subnetsToExclude = Stream.of(
+                                serverHost + "/32",
+                                "10.10.0.0/16",
+                                "172.16.0.0/12",
+                                "192.168.0.0/16")
+                        .map(sub -> new IPAddressString(sub).getAddress()).collect(Collectors.toList());
+
+                List<IPAddress> subnetsToInclude = new ArrayList<>();
+                IPUtils.exclude(rootSubnet, subnetsToExclude, subnetsToInclude);
+                for (IPAddress ipAddress : subnetsToInclude) {
+                    String hostIp = ipAddress.getLower().toAddressString().getHostAddress().toString();
+                    Integer networkPrefixLength = ipAddress.getLower().toAddressString().getNetworkPrefixLength();
+                    Log.d(getTag(), "subnetsToInclude.ipAddress: " + hostIp + "/" + networkPrefixLength);
+                    builder.addRoute(hostIp, networkPrefixLength != null ? networkPrefixLength : 32);
+                }
             }
-            builder.addRoute("0.0.0.0", 0);
+
             builder.setSession(serverHost).setConfigureIntent(mConfigureIntent);
 
             synchronized (service) {
