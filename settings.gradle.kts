@@ -1,12 +1,13 @@
 rootProject.name = "PVNClient"
 
-include(":app")
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
         mavenCentral()
-        mavenLocal()
     }
 }
+
+include(":app")
+include(":core:common")
+include(":vpnclient")

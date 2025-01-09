@@ -23,8 +23,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew buildDebug
+      run: ./gradlew build
     - name: Checks
-      run: ./gradlew ktlintCheck detektCheck
+      run: ./gradlew ktlintCheck detektCheck checkSortDependencies
     - name: Tests
       run: ./gradlew test

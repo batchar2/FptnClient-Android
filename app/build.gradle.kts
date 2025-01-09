@@ -43,6 +43,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:common"))
+    implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
     // To use CallbackToFutureAdapter
@@ -56,10 +58,10 @@ dependencies {
     // adding ORM Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
+    implementation(libs.ipaddress)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
-    implementation(libs.ipaddress)
 
     // add lombok
     compileOnly(libs.lombock)

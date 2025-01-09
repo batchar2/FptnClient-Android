@@ -11,12 +11,12 @@ import android.util.Pair;
 
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
-import com.filantrop.pvnclient.services.exception.PVNClientException;
 import com.filantrop.pvnclient.services.websocket.CustomWebSocketListener;
 import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
 import com.filantrop.pvnclient.services.websocket.WebSocketMessageCallback;
 import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.filantrop.pvnclient.utils.IPUtils;
+import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -55,7 +55,7 @@ public class CustomVpnConnection extends Thread {
 
     private final String serverHost;
 
-    private final OkHttpClientWrapper okHttpClientWrapper;
+    private OkHttpClientWrapper okHttpClientWrapper;
 
     private PendingIntent mConfigureIntent;
 
@@ -75,7 +75,11 @@ public class CustomVpnConnection extends Thread {
         this.service = service;
         this.connectionId = connectionId;
         this.serverHost = serverHost;
-        this.okHttpClientWrapper = new OkHttpClientWrapper(username, password, serverHost, serverPort);
+        try {
+            this.okHttpClientWrapper = new OkHttpClientWrapper(username, password, serverHost, serverPort);
+        } catch (PVNClientException ex) {
+            sendErrorMessageToUI(ex.getMessage());
+        }
     }
 
     /**
@@ -94,7 +98,7 @@ public class CustomVpnConnection extends Thread {
             String token = okHttpClientWrapper.getAuthToken();
             if (token == null) {
                 // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
-                throw PVNClientException.fromMessage("Can't get authToken!");
+                throw new PVNClientException("Can't get authToken!");
             }
 
             VpnService.Builder builder = service.new Builder();
@@ -132,7 +136,7 @@ public class CustomVpnConnection extends Thread {
                 vpnInterface = builder.establish();
             }
             if (vpnInterface == null) {
-                throw PVNClientException.fromMessage("Can't get vpn interface");
+                throw new PVNClientException("Can't get vpn interface");
             } else {
                 if (onEstablishListener != null) {
                     onEstablishListener.onEstablish(vpnInterface);

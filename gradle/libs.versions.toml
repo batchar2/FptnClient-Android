@@ -24,6 +24,7 @@ protobuf = "4.26.1"
 okhttp = "4.12.0"
 lombock = "1.18.36"
 roomRuntime = "2.6.1"
+jetbrainsKotlinJvm = "1.9.24"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
@@ -58,4 +59,5 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 
