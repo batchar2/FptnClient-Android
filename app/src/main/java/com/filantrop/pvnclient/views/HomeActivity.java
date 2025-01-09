@@ -59,7 +59,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private CustomSpinner spinnerServers;
 
-    View settingsMenuItem;
+    private View settingsMenuItem;
 
     private ToggleButton startStopButton;
 
@@ -122,6 +122,7 @@ public class HomeActivity extends AppCompatActivity {
         spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // todo: add selected server with auto
                 if (parent.isEnabled()) {
                     Object itemAtPosition = parent.getItemAtPosition(position);
                     if (itemAtPosition instanceof FptnServerDto) {
@@ -185,6 +186,7 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
         fptnViewModel.getTimerTextLiveData().observe(this, text -> connectionTimer.setText(text));
         fptnViewModel.getErrorTextLiveData().observe(this, errorText -> {
+            //todo: добавить всплывающее диалоговое окно об ошибке
             Log.i(TAG, "errorText: " + errorText);
             errorTextView.setText(errorText);
         });
@@ -233,6 +235,7 @@ public class HomeActivity extends AppCompatActivity {
         uploadTextView.setText("0 Mb/s");
         startStopButton.setChecked(false);
         spinnerServers.setEnabled(true);
+        spinnerServers.setSelection(fptnViewModel.getSelectedServerPosition());
 
         hideView(connectionTimer);
         hideView(connectionTimerLabel);
@@ -291,7 +294,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private Intent enrichIntent(Intent intent) {
-        FptnServerDto server = fptnViewModel.getSelectedServer();
+        FptnServerDto server = fptnViewModel.getSelectedServerLiveData().getValue();
         intent.putExtra(SELECTED_SERVER, server);
         return intent;
     }

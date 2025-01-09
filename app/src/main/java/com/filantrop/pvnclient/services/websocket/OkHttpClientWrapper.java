@@ -2,6 +2,7 @@ package com.filantrop.pvnclient.services.websocket;
 
 import android.util.Log;
 
+import com.filantrop.pvnclient.core.common.Constants;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 import com.google.protobuf.ByteString;
@@ -62,7 +63,7 @@ public class OkHttpClientWrapper {
 
     private WebSocket webSocket;
 
-    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException{
+    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException {
         this.username = username;
         this.password = password;
         this.host = host;
@@ -95,7 +96,7 @@ public class OkHttpClientWrapper {
             sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, trustAllCerts, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            Log.e(getTag(), "Login failed", e);
+            Log.e(getTag(), "SSLContext init failed", e);
             throw new PVNClientException(e.getMessage());
         }
 
