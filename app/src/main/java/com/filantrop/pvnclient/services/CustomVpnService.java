@@ -1,5 +1,7 @@
 package com.filantrop.pvnclient.services;
 
+import static com.filantrop.pvnclient.core.common.Constants.SELECTED_SERVER;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -9,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -18,14 +21,13 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.filantrop.pvnclient.R;
+import com.filantrop.pvnclient.core.common.Constants;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
-import com.filantrop.pvnclient.enums.IntentExtraFieldNames;
-import com.filantrop.pvnclient.utils.Constants;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
-import com.filantrop.pvnclient.R;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -112,7 +114,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             return START_NOT_STICKY;
         } else {
             // Достаем параметры для подключения из intent
-            selectedServer = (FptnServerDto) intent.getSerializableExtra(IntentExtraFieldNames.SELECTED_SERVER);
+            selectedServer = (FptnServerDto) intent.getSerializableExtra(SELECTED_SERVER);
             connect(selectedServer.getHost(), selectedServer.getPort(), selectedServer.getUsername(), selectedServer.getPassword());
             return START_STICKY;
         }
@@ -261,18 +263,19 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         // In Api level 24 an above, there is no icon in design!!!
         Notification.Action actionDisconnect = new Notification.Action.Builder(null, getString(R.string.disconnect_action), disconnectPendingIntent)
                 .build();
-        return new Notification.Builder(this, Constants.MAIN_NOTIFICATION_CHANNEL_ID)
+        Notification.Builder builder = new Notification.Builder(this, Constants.MAIN_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.vpn_icon)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
-                //.setOngoing(true) // user can't close notification (works only when screen locked)
-                .setContentTitle(title)
+                .setVisibility(Notification.VISIBILITY_PUBLIC);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
+            //.setOngoing(true) // user can't close notification (works only when screen locked)
+        }
+        builder.setContentTitle(title)
                 .setContentText(message)
                 .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
                 //.setAutoCancel(false) // for not remove notification after press it
                 .addAction(actionDisconnect)
-                .setContentIntent(launchMainActivityPendingIntent)
-                .build();
+                .setContentIntent(launchMainActivityPendingIntent);
+        return builder.build();
     }
-
 }
