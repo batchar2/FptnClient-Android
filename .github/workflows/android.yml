@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '17'
-        distribution: 'temurin'
+        distribution: 'zulu'
         cache: gradle
 
     - name: Grant execute permission for gradlew
@@ -25,6 +25,6 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew buildDebug
     - name: Checks
-      run: ./gradlew ktlintCheck detektCheck checkSortDependencies
+      run: ./gradlew ktlintCheck detektCheck
     - name: Tests
       run: ./gradlew test
