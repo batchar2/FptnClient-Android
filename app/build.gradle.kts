@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 plugins {
     id("com.android.application")
     alias(libs.plugins.protobuf)
@@ -7,13 +11,16 @@ android {
     namespace = "com.filantrop.pvnclient"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
 
+    val dateTimeString: String = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now())
+
     defaultConfig {
         applicationId = "com.filantrop.pvnclient"
         val versionMajor: Int by rootProject.extra
         val versionMinor: Int by rootProject.extra
         val versionPatch: Int by rootProject.extra
         val versionBuild: Int by rootProject.extra
-        versionCode = 1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
+        versionCode =
+            1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch.$versionBuild"
 
         minSdk = rootProject.extra.get("minSdkVersion") as Int
@@ -39,6 +46,17 @@ android {
     }
     buildFeatures {
         viewBinding = true
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            // Define the new APK file name
+            val newApkName = "fptn-client-$dateTimeString.apk"
+            println("SOI")
+
+            // Rename the output file
+            outputFile.renameTo(File(outputFile.parent, newApkName))
+        }
     }
 }
 
