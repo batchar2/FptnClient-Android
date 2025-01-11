@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
-    <ManuallySuppressedIssues></ManuallySuppressedIssues>
-    <CurrentIssues>
-    </CurrentIssues>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MissingPackageDeclaration:AndroidApplicationConventionPlugin.kt$.AndroidApplicationConventionPlugin.kt</ID>
+    <ID>MissingPackageDeclaration:KotlinLibraryConventionPlugin.kt$.KotlinLibraryConventionPlugin.kt</ID>
+  </CurrentIssues>
 </SmellBaseline>

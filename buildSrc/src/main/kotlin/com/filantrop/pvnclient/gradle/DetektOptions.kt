@@ -1,5 +1,6 @@
-package com.filantrop.pvnclient
+package com.filantrop.pvnclient.gradle
 
+import com.filantrop.pvnclient.gradle.task.TomlFileValidationTask
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.gradle.api.Project
@@ -35,6 +36,8 @@ object DetektOptions {
 
             parallel.set(true)
         }
+
+        tasks.register<TomlFileValidationTask>("tomlCheck")
     }
 
     private fun SourceTask.configureSources(layout: ProjectLayout) {

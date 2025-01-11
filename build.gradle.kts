@@ -1,6 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-import com.filantrop.pvnclient.DetektOptions.applyDetektOptions
-import com.filantrop.pvnclient.FormattingOptions.applyPrecheckOptions
+import com.filantrop.pvnclient.gradle.DetektOptions.applyDetektOptions
+import com.filantrop.pvnclient.gradle.FormattingOptions.applyPrecheckOptions
 
 buildscript {
 
@@ -42,6 +42,7 @@ tasks.register("clean", Delete::class) {
 
 plugins {
     alias(libs.plugins.deps.sorting) apply false
+    alias(libs.plugins.deps.unused) apply true
 }
 
 applyPrecheckOptions()
@@ -49,4 +50,20 @@ applyDetektOptions()
 
 subprojects {
     apply(plugin = "com.squareup.sort-dependencies")
+}
+
+dependencyAnalysis {
+    val fail = "fail"
+    val ignore = "ignore"
+    issues {
+        all {
+            onUnusedDependencies { severity(fail) }
+            onUsedTransitiveDependencies { severity(ignore) }
+            onIncorrectConfiguration { severity(ignore) }
+            onCompileOnly { severity(ignore) }
+            onRuntimeOnly { severity(ignore) }
+            onUnusedAnnotationProcessors { severity(ignore) }
+            onRedundantPlugins { severity(ignore) }
+        }
+    }
 }

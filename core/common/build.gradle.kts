@@ -1,5 +1,5 @@
 plugins {
-    id("kotlin")
+    id("pvnclient.android.library.kotlin")
 }
 
 dependencies {
