@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.application")
+    id("pvnclient.android.application")
     alias(libs.plugins.protobuf)
 }
 
@@ -48,14 +48,9 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
     // To use CallbackToFutureAdapter
-    implementation(libs.androidx.concurrent.futures)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.monitor)
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.room.guava)
-    // adding ORM Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
     implementation(libs.ipaddress)
@@ -63,17 +58,13 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
 
-    // add lombok
     compileOnly(libs.lombock)
 
     annotationProcessor(libs.androidx.room.compiler)
     annotationProcessor(libs.lombock)
 
-    testImplementation(libs.androidx.room.testing)
-    // for tests (but we have no tests! yet?)
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 }
 java {

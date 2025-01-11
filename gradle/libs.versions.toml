@@ -2,14 +2,13 @@
 activity = "1.9.3"
 appcompat = "1.7.0"
 autonomousappsSorting = "0.14"
-concurrentFutures = "1.2.0"
+autonomousappsUnused = "2.7.0"
 constraintlayout = "2.2.0"
-coreKtx = "1.10.1"
 detektPlugin = "1.23.7"
-espressoCore = "3.6.1"
 gradlePlugin = "8.2.2"
-guava = "31.0.1-android"
+guava = "33.4.0-jre"
 ipaddress = "5.5.1"
+java = "17"
 junit = "4.13.2"
 junitTest = "1.2.1"
 kotlin = "1.9.24"
@@ -17,8 +16,6 @@ ksp = "2.0.20-1.0.24"
 lombock = "1.18.36"
 material = "1.12.0"
 monitor = "1.7.2"
-navigationFragmentKtx = "2.8.4"
-navigationUiKtx = "2.8.4"
 okhttp = "4.12.0"
 protobuf = "4.26.1"
 protobufPlugin = "0.9.4"
@@ -28,18 +25,12 @@ roomRuntime = "2.6.1"
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrentFutures" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitTest" }
 androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
-androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomRuntime" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
@@ -54,5 +45,6 @@ protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 
 [plugins]
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
+deps-unused = { id = "com.autonomousapps.dependency-analysis", version.ref = "autonomousappsUnused" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 

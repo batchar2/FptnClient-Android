@@ -25,6 +25,6 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
     - name: Checks
-      run: ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies
+      run: ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
     - name: Tests
       run: ./gradlew test
