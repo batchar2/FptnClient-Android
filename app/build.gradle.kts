@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
     implementation(libs.ipaddress)
+    implementation(libs.koin.android)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
@@ -64,6 +65,7 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
+    testImplementation(libs.koin.test.junit4)
 
     androidTestImplementation(libs.androidx.junit)
 }

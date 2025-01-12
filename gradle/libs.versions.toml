@@ -11,8 +11,9 @@ ipaddress = "5.5.1"
 java = "17"
 junit = "4.13.2"
 junitTest = "1.2.1"
+koin = "4.0.0"
 kotlin = "1.9.24"
-ksp = "2.0.20-1.0.24"
+ksp = "2.0.20-1.0.25"
 lombock = "1.18.36"
 material = "1.12.0"
 monitor = "1.7.2"
@@ -35,6 +36,10 @@ detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin",
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-androidx-viewmodel = { group = "io.insert-koin", name = "koin-androidx-viewmodel", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
