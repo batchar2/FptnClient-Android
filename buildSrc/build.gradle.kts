@@ -14,6 +14,10 @@ gradlePlugin {
             id = "pvnclient.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
+        register("androidLibrary") {
+            id = "pvnclient.android.library.android"
+            implementationClass = "AndroidLibraryConventionPlugin"
+        }
         register("kotlinLibrary") {
             id = "pvnclient.android.library.kotlin"
             implementationClass = "KotlinLibraryConventionPlugin"
