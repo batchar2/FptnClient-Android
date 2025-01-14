@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.gradle
+package com.filantrop.pvnclient.gradle.options
 
 import org.gradle.api.Project
 import org.gradle.api.attributes.Bundling

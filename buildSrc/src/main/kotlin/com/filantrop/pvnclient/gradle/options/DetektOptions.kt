@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.gradle
+package com.filantrop.pvnclient.gradle.options
 
 import com.filantrop.pvnclient.gradle.task.TomlFileValidationTask
 import io.gitlab.arturbosch.detekt.Detekt

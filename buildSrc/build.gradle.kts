@@ -12,15 +12,15 @@ gradlePlugin {
     plugins {
         register("androidApplication") {
             id = "pvnclient.android.application"
-            implementationClass = "AndroidApplicationConventionPlugin"
+            implementationClass = "com.filantrop.pvnclient.gradle.AndroidApplicationConventionPlugin"
         }
         register("androidLibrary") {
             id = "pvnclient.android.library.android"
-            implementationClass = "AndroidLibraryConventionPlugin"
+            implementationClass = "com.filantrop.pvnclient.gradle.AndroidLibraryConventionPlugin"
         }
         register("kotlinLibrary") {
             id = "pvnclient.android.library.kotlin"
-            implementationClass = "KotlinLibraryConventionPlugin"
+            implementationClass = "com.filantrop.pvnclient.gradle.KotlinLibraryConventionPlugin"
         }
     }
 }

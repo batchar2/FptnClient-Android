@@ -12,14 +12,12 @@ guava = "33.4.0-jre"
 ipaddress = "5.5.1"
 java = "17"
 junit = "4.13.2"
-junitTest = "1.2.1"
 koin = "4.0.1"
 koinKsp = "1.4.0"
 kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
 lombock = "1.18.36"
 material = "1.12.0"
-monitor = "1.7.2"
 okhttp = "4.12.0"
 protobuf = "4.26.1"
 protobufPlugin = "0.9.4"
@@ -30,16 +28,10 @@ android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", ve
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
-androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "composeMaterial3" }
+androidx-compose-runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "compose" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
-androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitTest" }
-androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
-androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -47,11 +39,10 @@ ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddre
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
-koin-androidx-viewmodel = { group = "io.insert-koin", name = "koin-androidx-viewmodel", version.ref = "koin" }
 koin-annotations-jvm = { group = "io.insert-koin", name = "koin-annotations-jvm", version.ref = "koinKsp" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinKsp" }
-koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
+koin-test-jvm = { group = "io.insert-koin", name = "koin-test-jvm", version.ref = "koin" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }

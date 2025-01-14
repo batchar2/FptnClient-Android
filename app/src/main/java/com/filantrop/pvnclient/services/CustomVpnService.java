@@ -36,9 +36,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class CustomVpnService extends VpnService implements Handler.Callback {
     private static final String TAG = CustomVpnService.class.getName();
 
@@ -189,12 +186,12 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(launchMainActivityPendingIntent);
-        connection.onEstablishListener = new CustomVpnConnection.OnEstablishListener(tunInterface -> {
+        connection.onEstablishListener = tunInterface -> {
             // Если удалось подключиться, обнуляем подключающийся поток и
             // сохраняем пару подключившийся поток/tunInterface
             mConnectingThread.compareAndSet(connection, null);
             setEstablishedConnection(new Pair<>(connection, tunInterface));
-        });
+        };
         connection.start();
     }
 

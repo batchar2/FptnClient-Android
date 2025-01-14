@@ -6,7 +6,6 @@ import org.koin.test.verify.verify
 
 @Category(CheckModulesTest::class)
 class CheckModulesTest {
-
     @Test
     fun checkAllModules() {
         appModule.verify()

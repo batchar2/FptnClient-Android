@@ -4,7 +4,7 @@ import com.filantrop.pvnclient.auth.domain.AuthRepository
 import org.koin.core.annotation.Single
 
 @Single(binds = [AuthRepository::class])
-class AuthRepositoryImpl: AuthRepository {
+class AuthRepositoryImpl : AuthRepository {
     override fun login(token: String) {
         TODO("Not yet implemented")
     }

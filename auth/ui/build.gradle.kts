@@ -11,14 +11,8 @@ android {
 
 dependencies {
 
-    implementation(project(":auth:domain"))
-    implementation(project(":auth:data"))
-
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.runtime.android)
     implementation(libs.koin.core)
-    implementation(libs.koin.android)
-    implementation(libs.koin.androidx.compose)
 
     ksp(libs.koin.ksp.compiler)
 }
