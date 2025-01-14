@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import lombok.Getter;
-import lombok.Setter;
 
 public class CustomVpnConnection extends Thread {
 
@@ -59,11 +58,9 @@ public class CustomVpnConnection extends Thread {
 
     private PendingIntent mConfigureIntent;
 
-    @Setter
-    private OnEstablishListener onEstablishListener;
+    OnEstablishListener onEstablishListener;
 
-    @Getter
-    private Instant connectionTime;
+    public Instant connectionTime;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
@@ -197,15 +194,15 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void sendErrorMessageToUI(String msg) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
+        service.mHandler.sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.value, 0, 0, msg));
     }
 
     private void sendSpeedInfoToUI(String downloadSpeed, String uploadSpeed) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_INFO.getValue(), 0, 0, Pair.create(downloadSpeed, uploadSpeed)));
+        service.mHandler.sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_INFO.value, 0, 0, Pair.create(downloadSpeed, uploadSpeed)));
     }
 
     private void sendConnectionStateToUI(ConnectionState connectionState) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, Pair.create(connectionState, Instant.now())));
+        service.mHandler.sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.value, 0, 0, Pair.create(connectionState, Instant.now())));
     }
 
     private String getTag() {
