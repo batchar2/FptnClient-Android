@@ -1,5 +1,6 @@
 plugins {
     id("pvnclient.android.application")
+    id("kotlin-kapt")
     alias(libs.plugins.protobuf)
 }
 
@@ -43,6 +44,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":auth:ui"))
     implementation(project(":core:common"))
     implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)

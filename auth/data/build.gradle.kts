@@ -9,4 +9,7 @@ android {
 dependencies {
 
     implementation(project(":auth:domain"))
+
+    implementation(libs.koin.core)
+    implementation(libs.koin.annotations.jvm)
 }

@@ -3,4 +3,7 @@ plugins {
 }
 
 dependencies {
+
+    implementation(libs.koin.core)
+    implementation(libs.koin.annotations.jvm)
 }
