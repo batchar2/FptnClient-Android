@@ -54,21 +54,6 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledFuture;
 
-    public FptnServerDto getSelectedServer() {
-        FptnServerDto selectedServer = selectedServerLiveData.getValue();
-        if (selectedServer == FptnServerDto.AUTO) {
-            FptnServerDto bestServer = selectBestServer(serverDtoListLiveData.getValue());
-            selectedServerLiveData.postValue(bestServer);
-            return bestServer;
-        }
-        return selectedServer;
-    }
-
-    private FptnServerDto selectBestServer(List<FptnServerDto> serverDtos) {
-        //todo: selectedBestServer
-        return serverDtos.get(0);
-    }
-
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
 
@@ -78,6 +63,23 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     public ListenableFuture<List<FptnServerDto>> getAllServers() {
         return fptnServerRepository.getAllServersListFuture();
+    }
+
+    public int getSelectedServerPosition() {
+        FptnServerDto selectedServer = selectedServerLiveData.getValue();
+        if (FptnServerDto.AUTO.equals(serverDtoListLiveData.getValue()) || selectedServer == null) {
+            return 0;
+        }
+        List<FptnServerDto> fptnServerDtos = serverDtoListLiveData.getValue();
+        if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
+            for (int i = 0; i < fptnServerDtos.size(); i++) {
+                if (selectedServer.equals(fptnServerDtos.get(i))) {
+                    // first element in spinner adapter is AUTO
+                    return i + 1;
+                }
+            }
+        }
+        return 0;
     }
 
     public void deleteAll() {
