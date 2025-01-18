@@ -1,7 +1,11 @@
 package com.filantrop.pvnclient.auth.domain
 
-interface AuthRepository {
-    fun login(token: String)
+import kotlinx.coroutines.flow.Flow
 
-    fun logout()
+interface AuthRepository {
+    val token: Flow<String?>
+
+    suspend fun loginWithToken(token: String)
+
+    suspend fun logout()
 }
