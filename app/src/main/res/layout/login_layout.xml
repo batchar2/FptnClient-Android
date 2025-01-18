@@ -39,7 +39,10 @@
             android:padding="10dp"
             android:textColor="@color/black"
             android:textColorHint="@color/hint"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:drawableEnd="@drawable/ic_baseline_close_24"
+            android:drawablePadding="8dp"
+            />
 
         <Button
             android:id="@+id/fptn_login_button"
