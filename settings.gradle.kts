@@ -10,9 +10,4 @@ pluginManagement {
 
 include(":app")
 include(":core:common")
-include(":core:model")
-include(":core:persistent")
 include(":vpnclient")
-include(":auth:ui")
-include(":auth:data")
-include(":auth:domain")
