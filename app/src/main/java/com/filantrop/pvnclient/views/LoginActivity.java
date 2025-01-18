@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,8 +60,21 @@ public class LoginActivity extends AppCompatActivity {
         label.setMovementMethod(LinkMovementMethod.getInstance());
 
         // HIDE KEYBOARD
-        EditText editText = (EditText)findViewById(R.id.fptn_login_link_input);
+        EditText editText = findViewById(R.id.fptn_login_link_input);
+        editText.setTextIsSelectable(true);
         editText.setShowSoftInputOnFocus(false);
+        editText.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    if (motionEvent.getX() > (view.getWidth() - view.getPaddingRight() - 50)){
+                        ((EditText)view).setText("");
+                    }
+                }
+                return false;
+            }
+        });
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);  // This just hide keyboard when activity starts
     }
 
     public void onLogin(View v) {
