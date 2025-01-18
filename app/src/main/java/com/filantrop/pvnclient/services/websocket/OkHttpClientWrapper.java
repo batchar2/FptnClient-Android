@@ -2,8 +2,9 @@ package com.filantrop.pvnclient.services.websocket;
 
 import android.util.Log;
 
-import com.filantrop.pvnclient.core.common.Constants;
+import com.filantrop.pvnclient.utils.ChromeCiphers;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
+import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 import com.google.protobuf.ByteString;
 
@@ -31,23 +32,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 
+
 public class OkHttpClientWrapper {
     public static final MediaType JSON = MediaType.get("application/json");
-    private static final String[] CHROME_CIPHERS = new String[]{
-            // ANDROID DOESNT SUPPORT ALL
-            "ECDHE-RSA-AES128-GCM-SHA256",
-            "ECDHE-ECDSA-AES256-GCM-SHA384",
-            // "ECDHE-RSA-AES256-GCM-SHA384",
-            // "ECDHE-ECDSA-CHACHA20-POLY1305",
-            "ECDHE-RSA-CHACHA20-POLY1305"
-            // "ECDHE-RSA-AES128-CBC-SHA",
-            // "ECDHE-RSA-AES256-CBC-SHA",
-            // "RSA-AES128-GCM-SHA256",
-            // "RSA-AES256-GCM-SHA384",
-            // "RSA-AES128-CBC-SHA",
-            // "RSA-AES256-CBC-SHA",
-            //"RSA-3DES-EDE-CBC-SHA"
-    };
     public static final String LOGIN_URL_PATTERN = "https://%s:%d/api/v1/login";
     public static final String WEBSOCKET_URL = "wss://%s:%d/fptn";
 
@@ -63,7 +50,7 @@ public class OkHttpClientWrapper {
 
     private WebSocket webSocket;
 
-    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException {
+    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException, EmptyCiphersException {
         this.username = username;
         this.password = password;
         this.host = host;
@@ -89,19 +76,23 @@ public class OkHttpClientWrapper {
                 }
         };
 
-
         // Install the all-trusting trust manager
         final SSLContext sslContext;
         try {
-            sslContext = SSLContext.getInstance("SSL");
+            sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAllCerts, new SecureRandom());
+            // Пример полученного списка поддерживаемых шифров
+            String[] supportedCiphers = sslContext.getSocketFactory().getSupportedCipherSuites();
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             Log.e(getTag(), "SSLContext init failed", e);
             throw new PVNClientException(e.getMessage());
         }
 
         // Create an SSL socket factory with our all-trusting manager
-        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), CHROME_CIPHERS );
+        final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
+        final String[] availableCiphers = chromeCipers.getAvailableCiphers();
+
+        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers);
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 
