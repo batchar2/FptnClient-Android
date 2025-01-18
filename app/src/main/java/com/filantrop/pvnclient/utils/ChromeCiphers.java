@@ -52,21 +52,21 @@ public class ChromeCiphers
         for (String cipher : supportedCiphers) {
             Log.d(getTag(), "> " + cipher);
         }
-        List<String> chiphersResult = new ArrayList<>();
+        List<String> ciphersResult = new ArrayList<>();
 
         for (String cipher : CHROME_CIPHERS) {
             for (String supported : supportedCiphers) {
                 if (cipher.equals(supported)) {
-                    chiphersResult.add(cipher);
+                    ciphersResult.add(cipher);
                     break;
                 }
             }
         }
-        if (chiphersResult.isEmpty()) {
+        if (ciphersResult.isEmpty()) {
             throw new EmptyCiphersException("The list of supported ciphers is empty.");
         }
         // Create an SSL socket factory with our all-trusting manager
-        return chiphersResult.toArray(new String[0]);
+        return ciphersResult.toArray(new String[0]);
     }
 
     private String getTag() {
