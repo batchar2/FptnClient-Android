@@ -3,7 +3,9 @@ package com.filantrop.pvnclient.views.speedtest;
 import android.util.Log;
 
 import com.filantrop.pvnclient.database.model.FptnServerDto;
+import com.filantrop.pvnclient.utils.ChromeCiphers;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
+import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.security.KeyManagementException;
@@ -27,29 +29,16 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
+
+
 public class SpeedTestService {
     private static final String TAG = SpeedTestService.class.getName();
     private static final String GET_FILE_PATTERN = "https://%s:%d/api/v1/test/file.bin";
     private static final long TIMEOUT_MS = 5000L;
-    private static final String[] CHROME_CIPHERS = new String[]{
-            // ANDROID DOESNT SUPPORT ALL
-            "ECDHE-RSA-AES128-GCM-SHA256",
-            "ECDHE-ECDSA-AES256-GCM-SHA384",
-            // "ECDHE-RSA-AES256-GCM-SHA384",
-            // "ECDHE-ECDSA-CHACHA20-POLY1305",
-            "ECDHE-RSA-CHACHA20-POLY1305"
-            // "ECDHE-RSA-AES128-CBC-SHA",
-            // "ECDHE-RSA-AES256-CBC-SHA",
-            // "RSA-AES128-GCM-SHA256",
-            // "RSA-AES256-GCM-SHA384",
-            // "RSA-AES128-CBC-SHA",
-            // "RSA-AES256-CBC-SHA",
-            //"RSA-3DES-EDE-CBC-SHA"
-    };
 
     private final OkHttpClient client;
 
-    public SpeedTestService() throws PVNClientException {
+    public SpeedTestService() throws PVNClientException, EmptyCiphersException {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         // Create a trust manager that does not validate certificate chains
@@ -81,7 +70,10 @@ public class SpeedTestService {
         }
 
         // Create an SSL socket factory with our all-trusting manager
-        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), CHROME_CIPHERS);
+        final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
+        final String[] availableCiphers = chromeCipers.getAvailableCiphers();
+
+        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers);
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 

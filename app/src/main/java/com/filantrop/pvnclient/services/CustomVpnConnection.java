@@ -16,6 +16,7 @@ import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
 import com.filantrop.pvnclient.services.websocket.WebSocketMessageCallback;
 import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.filantrop.pvnclient.utils.IPUtils;
+import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.FileInputStream;
@@ -77,7 +78,7 @@ public class CustomVpnConnection extends Thread {
         this.serverHost = serverHost;
         try {
             this.okHttpClientWrapper = new OkHttpClientWrapper(username, password, serverHost, serverPort);
-        } catch (PVNClientException ex) {
+        } catch (PVNClientException | EmptyCiphersException ex) {
             sendErrorMessageToUI(ex.getMessage());
         }
     }

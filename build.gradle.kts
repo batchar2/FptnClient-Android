@@ -29,7 +29,7 @@ repositories {
 }
 
 extra["compileSdkVersion"] = 35
-extra["minSdkVersion"] = 26
+extra["minSdkVersion"] = 28
 extra["targetSdkVersion"] = 35
 extra["versionMajor"] = 1
 extra["versionMinor"] = 0
