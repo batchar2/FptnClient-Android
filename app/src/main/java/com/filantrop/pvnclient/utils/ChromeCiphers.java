@@ -9,9 +9,8 @@ import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
-public class ChromeCiphers
-{
-    private static final String[] CHROME_CIPHERS = new String[]{
+public class ChromeCiphers {
+    private static final List<String> CHROME_CIPHERS = List.of(
             "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
             "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
             "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
@@ -40,9 +39,10 @@ public class ChromeCiphers
             "SSL_RSA_WITH_3DES_EDE_CBC_SHA",
             "TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
             "TLS_FALLBACK_SCSV"
-    };
+    );
 
     private final SSLContext context;
+
     public ChromeCiphers(SSLContext context) {
         this.context = context;
     }
@@ -54,14 +54,12 @@ public class ChromeCiphers
         }
         List<String> ciphersResult = new ArrayList<>();
 
-        for (String cipher : CHROME_CIPHERS) {
-            for (String supported : supportedCiphers) {
-                if (cipher.equals(supported)) {
-                    ciphersResult.add(cipher);
-                    break;
-                }
+        for (String supportedCipher : supportedCiphers) {
+            if (CHROME_CIPHERS.contains(supportedCipher)) {
+                ciphersResult.add(supportedCipher);
             }
         }
+
         if (ciphersResult.isEmpty()) {
             throw new EmptyCiphersException("The list of supported ciphers is empty.");
         }
