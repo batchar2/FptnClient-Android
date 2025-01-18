@@ -79,13 +79,12 @@ public class LoginActivity extends AppCompatActivity {
 
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
-        // removes all whitespaces and non-visible characters (e.g., tab, \n).
-        final String fptnLink = linkInput.getText().toString().replaceAll("\\s+","");
-        if (fptnLink.startsWith("fptn://") && fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
+        final String fptnLink = linkInput.getText().toString();
+        if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
         } else {
-            Toast.makeText(getApplicationContext(), "Invalid link format or saving failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
         }
     }
 }

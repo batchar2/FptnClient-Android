@@ -87,7 +87,10 @@ public class FptnServerViewModel extends AndroidViewModel {
     }
 
     public boolean parseAndSaveFptnLink(String url) {
-        String preparedUrl = url.substring(7);  // Remove first 7 characters
+        // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
+        final String preparedUrl = url.replaceAll("\\s+","")
+                .replace("fptn://", "")
+                .replace("fptn:", "");
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
             String jsonString = new String(decodedBytes);
@@ -106,7 +109,6 @@ public class FptnServerViewModel extends AndroidViewModel {
                 serverDtoList.add(new FptnServerDto(name, username, password, host, port));
                 Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
             }
-
             if (!serverDtoList.isEmpty()) {
                 deleteAll(); // delete old
                 fptnServerRepository.insertAll(serverDtoList);

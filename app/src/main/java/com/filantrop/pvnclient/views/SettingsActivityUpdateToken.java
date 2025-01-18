@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
@@ -41,6 +42,8 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void initializeVariable() {
+        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+
         // FIXME
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuSettings);
@@ -101,14 +104,13 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
 
     public void onSave(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
-        // removes all whitespaces and non-visible characters (e.g., tab, \n).
-        final String fptnLink = linkInput.getText().toString().replaceAll("\\s+","");
-        if (fptnLink.startsWith("fptn://") && fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
-            Toast.makeText(getApplicationContext(), "Token was updated!", Toast.LENGTH_SHORT).show();
+        final String fptnLink = linkInput.getText().toString();
+        if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
+            Toast.makeText(getApplicationContext(), R.string.token_was_updated, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         } else {
-            Toast.makeText(getApplicationContext(), "Invalid link format or saving failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
         }
     }
 }
