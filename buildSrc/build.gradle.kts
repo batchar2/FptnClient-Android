@@ -12,11 +12,15 @@ gradlePlugin {
     plugins {
         register("androidApplication") {
             id = "pvnclient.android.application"
-            implementationClass = "AndroidApplicationConventionPlugin"
+            implementationClass = "com.filantrop.pvnclient.gradle.AndroidApplicationConventionPlugin"
+        }
+        register("androidLibrary") {
+            id = "pvnclient.android.library.android"
+            implementationClass = "com.filantrop.pvnclient.gradle.AndroidLibraryConventionPlugin"
         }
         register("kotlinLibrary") {
             id = "pvnclient.android.library.kotlin"
-            implementationClass = "KotlinLibraryConventionPlugin"
+            implementationClass = "com.filantrop.pvnclient.gradle.KotlinLibraryConventionPlugin"
         }
     }
 }
@@ -27,5 +31,4 @@ dependencies {
     implementation(libs.android.gradle.plugin)
     implementation(libs.guava)
     implementation(libs.kotlin.gradle.plugin)
-    implementation(libs.ksp.gradle.plugin)
 }

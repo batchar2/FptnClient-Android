@@ -1,5 +1,6 @@
 plugins {
     id("pvnclient.android.application")
+    id("kotlin-kapt")
     alias(libs.plugins.protobuf)
 }
 
@@ -43,17 +44,17 @@ android {
 }
 
 dependencies {
+    implementation(project(":auth:ui"))
     implementation(project(":core:common"))
+    implementation(project(":core:persistent"))
     implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
-    // To use CallbackToFutureAdapter
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.monitor)
-    implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
     implementation(libs.ipaddress)
+    implementation(libs.koin.android)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
@@ -64,8 +65,7 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.junit)
+    testImplementation(libs.koin.test.jvm)
 }
 java {
     toolchain {
