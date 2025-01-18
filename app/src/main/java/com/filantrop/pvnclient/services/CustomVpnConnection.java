@@ -16,6 +16,7 @@ import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
 import com.filantrop.pvnclient.services.websocket.WebSocketMessageCallback;
 import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.filantrop.pvnclient.utils.IPUtils;
+import com.filantrop.pvnclient.vpnclient.exception.ErrorCode;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.FileInputStream;
@@ -97,20 +98,16 @@ public class CustomVpnConnection extends Thread {
 
             final String token = okHttpClientWrapper.getAuthToken();
             if (token == null) {
-                // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
-                throw new PVNClientException("Can't get authToken!");
-            }
-
-            final String dnsServer = okHttpClientWrapper.getDnsServerIPv4();
-            if (dnsServer == null) {
-                // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
-                throw new PVNClientException("Can't get DNS Server!");
+                throw new PVNClientException(ErrorCode.AUTHENTICATION_ERROR.getValue());
             }
 
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
-            builder.addDnsServer(dnsServer); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
+
+            final String dnsServer = okHttpClientWrapper.getDnsServerIPv4();
+            builder.addDnsServer(dnsServer);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
@@ -142,7 +139,7 @@ public class CustomVpnConnection extends Thread {
                 vpnInterface = builder.establish();
             }
             if (vpnInterface == null) {
-                throw new PVNClientException("Can't get vpn interface");
+                throw new PVNClientException(ErrorCode.VPN_INTERFACE_ERROR.getValue());
             } else {
                 if (onEstablishListener != null) {
                     onEstablishListener.onEstablish(vpnInterface);

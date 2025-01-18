@@ -53,8 +53,11 @@ public class LoginActivity extends AppCompatActivity {
         // Show HTML
         final String telegramBot = getString(R.string.telegram_bot);
         final String textTemplate = getString(R.string.telegram_text_template);
-        final String replacedText = textTemplate.replace("{}", "<a href=\"https://t.me/fptn_bot\">" + telegramBot +"</a> ");
+        final String telegramBotLink = getString(R.string.telegram_bot_link);
+
+        final String replacedText = textTemplate.replace("{}", "<a href=\"" + telegramBotLink + "\">" + telegramBot + "</a> ");
         String html = "<div style=\"text-align:center;\">" + replacedText + "</div>";
+
         TextView label = findViewById(R.id.fptn_login_html_label);
         label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
         label.setMovementMethod(LinkMovementMethod.getInstance());
@@ -63,16 +66,13 @@ public class LoginActivity extends AppCompatActivity {
         EditText editText = findViewById(R.id.fptn_login_link_input);
         editText.setTextIsSelectable(true);
         editText.setShowSoftInputOnFocus(false);
-        editText.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_UP){
-                    if (motionEvent.getX() > (view.getWidth() - view.getPaddingRight() - 50)){
-                        ((EditText)view).setText("");
-                    }
+        editText.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                if (motionEvent.getX() > (view.getWidth() - view.getPaddingRight() - 50)) {
+                    ((EditText) view).setText("");
                 }
-                return false;
             }
+            return false;
         });
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);  // This just hide keyboard when activity starts
     }
