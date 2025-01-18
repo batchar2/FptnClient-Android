@@ -1,20 +1,29 @@
 package com.filantrop.pvnclient.auth.domain
 
+import com.filantrop.pvnclient.core.model.UserData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
 
 interface AuthInteractor {
-    fun login(token: String)
+    val userData: Flow<UserData>
 
-    fun logout()
+    suspend fun loginWithToken(token: String)
+
+    suspend fun logout()
 }
 
 @Single(binds = [AuthInteractor::class])
-class AuthInteractorImpl : AuthInteractor {
-    override fun login(token: String) {
-        TODO("Not yet implemented")
-    }
+class AuthInteractorImpl(
+    private val authRepository: AuthRepository,
+) : AuthInteractor {
+    override val userData: Flow<UserData> =
+        authRepository.token.map {
+            requireNotNull(it) { "Token is null" }
+            UserData(it)
+        }
 
-    override fun logout() {
-        TODO("Not yet implemented")
-    }
+    override suspend fun loginWithToken(token: String) = authRepository.loginWithToken(token)
+
+    override suspend fun logout() = authRepository.logout()
 }

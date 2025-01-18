@@ -1,8 +1,10 @@
 package com.filantrop.pvnclient.auth.data.di
 
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Module
+import com.filantrop.pvnclient.auth.data.AuthRepositoryImpl
+import com.filantrop.pvnclient.auth.domain.AuthRepository
+import org.koin.dsl.module
 
-@Module
-@ComponentScan
-object AuthDataModule
+val authDataModule =
+    module {
+        single<AuthRepository> { AuthRepositoryImpl(get()) }
+    }
