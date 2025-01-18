@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.filantrop.pvnclient.utils.ChromeCiphers;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
-import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 import com.google.protobuf.ByteString;
 
@@ -35,6 +34,7 @@ import okhttp3.WebSocket;
 
 public class OkHttpClientWrapper {
     public static final MediaType JSON = MediaType.get("application/json");
+    public static final String DNS_URL_PATTERN = "https://%s:%d/api/v1/dns";
     public static final String LOGIN_URL_PATTERN = "https://%s:%d/api/v1/login";
     public static final String WEBSOCKET_URL = "wss://%s:%d/fptn";
 
@@ -50,7 +50,7 @@ public class OkHttpClientWrapper {
 
     private WebSocket webSocket;
 
-    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException, EmptyCiphersException {
+    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException {
         this.username = username;
         this.password = password;
         this.host = host;
@@ -105,7 +105,7 @@ public class OkHttpClientWrapper {
             json.put("username", username);
             json.put("password", password);
 
-            String url = String.format(Locale.getDefault(), LOGIN_URL_PATTERN, host, port);
+            final String url = String.format(Locale.getDefault(), LOGIN_URL_PATTERN, host, port);
             Request request = new Request.Builder()
                     .url(url)
                     .post(RequestBody.create(json.toString(), JSON))
@@ -115,7 +115,7 @@ public class OkHttpClientWrapper {
                 if (response.code() == 200 && response.body() != null) {
                     JSONObject jsonResponse = new JSONObject(response.body().string());
                     if (jsonResponse.has("access_token")) {
-                        String token = jsonResponse.getString("access_token");
+                        final String token = jsonResponse.getString("access_token");
                         Log.i(getTag(), "Login successful.");
                         return token;
                     } else {
@@ -133,6 +133,35 @@ public class OkHttpClientWrapper {
         return null;
     }
 
+    public String getDnsServerIPv4() throws PVNClientException {
+        try {
+            final String url = String.format(Locale.getDefault(), DNS_URL_PATTERN, host, port);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (response.code() == 200 && response.body() != null) {
+                    JSONObject jsonResponse = new JSONObject(response.body().string());
+                    if (jsonResponse.has("dns")) {
+                        final String dnsServer = jsonResponse.getString("dns");
+                        Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
+                        return dnsServer;
+                    } else {
+                        Log.e(getTag(), "Error: DNS not found in the response.");
+                        throw new PVNClientException("Error: DNS not found in the response.");
+                    }
+                } else {
+                    Log.e(getTag(), "Error response: " + response);
+                }
+            }
+        } catch (JSONException | IOException e) {
+            Log.e(getTag(), "DNS failed", e);
+            throw new PVNClientException(e.getMessage());
+        }
+        return null;
+    }
     public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException {
         if (!isValid(token)) {
             token = getAuthToken();

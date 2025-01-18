@@ -2,7 +2,7 @@ package com.filantrop.pvnclient.utils;
 
 import android.util.Log;
 
-import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
+import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class ChromeCiphers {
         this.context = context;
     }
 
-    public String[] getAvailableCiphers() throws EmptyCiphersException {
+    public String[] getAvailableCiphers() throws PVNClientException {
         String[] supportedCiphers = context.getSocketFactory().getSupportedCipherSuites();
         for (String cipher : supportedCiphers) {
             Log.d(getTag(), "> " + cipher);
@@ -61,7 +61,7 @@ public class ChromeCiphers {
         }
 
         if (ciphersResult.isEmpty()) {
-            throw new EmptyCiphersException("The list of supported ciphers is empty.");
+            throw new PVNClientException("The list of supported ciphers is empty.");
         }
         // Create an SSL socket factory with our all-trusting manager
         return ciphersResult.toArray(new String[0]);

@@ -5,7 +5,6 @@ import android.util.Log;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.utils.ChromeCiphers;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
-import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.security.KeyManagementException;
@@ -38,7 +37,7 @@ public class SpeedTestService {
 
     private final OkHttpClient client;
 
-    public SpeedTestService() throws PVNClientException, EmptyCiphersException {
+    public SpeedTestService() throws PVNClientException {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         // Create a trust manager that does not validate certificate chains

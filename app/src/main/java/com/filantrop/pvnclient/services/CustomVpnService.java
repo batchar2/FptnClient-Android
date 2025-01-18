@@ -29,7 +29,6 @@ import com.filantrop.pvnclient.enums.HandlerMessageTypes;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.views.speedtest.SpeedTestService;
-import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.IOException;
@@ -114,7 +113,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
         try {
             speedTestService = new SpeedTestService();
-        } catch (PVNClientException | EmptyCiphersException e) {
+        } catch (PVNClientException e) {
             throw new RuntimeException(e);
         }
     }
