@@ -16,7 +16,6 @@ import com.filantrop.pvnclient.services.websocket.OkHttpClientWrapper;
 import com.filantrop.pvnclient.services.websocket.WebSocketMessageCallback;
 import com.filantrop.pvnclient.utils.DataRateCalculator;
 import com.filantrop.pvnclient.utils.IPUtils;
-import com.filantrop.pvnclient.vpnclient.exception.EmptyCiphersException;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.FileInputStream;
@@ -78,7 +77,7 @@ public class CustomVpnConnection extends Thread {
         this.serverHost = serverHost;
         try {
             this.okHttpClientWrapper = new OkHttpClientWrapper(username, password, serverHost, serverPort);
-        } catch (PVNClientException | EmptyCiphersException ex) {
+        } catch (PVNClientException ex) {
             sendErrorMessageToUI(ex.getMessage());
         }
     }
@@ -96,16 +95,22 @@ public class CustomVpnConnection extends Thread {
         try {
             sendConnectionStateToUI(ConnectionState.CONNECTING);
 
-            String token = okHttpClientWrapper.getAuthToken();
+            final String token = okHttpClientWrapper.getAuthToken();
             if (token == null) {
                 // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
                 throw new PVNClientException("Can't get authToken!");
             }
 
+            final String dnsServer = okHttpClientWrapper.getDnsServerIPv4();
+            if (dnsServer == null) {
+                // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
+                throw new PVNClientException("Can't get DNS Server!");
+            }
+
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
-            builder.addDnsServer("172.20.0.1"); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
+            builder.addDnsServer(dnsServer); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
