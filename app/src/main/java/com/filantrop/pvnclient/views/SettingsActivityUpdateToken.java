@@ -88,11 +88,11 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
         final String fptnLink = linkInput.getText().toString();
         if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
-            Toast.makeText(getApplicationContext(), getString(R.string.token_was_updated), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.token_was_updated, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         } else {
-            Toast.makeText(getApplicationContext(), "Invalid link format or saving failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
         }
     }
 }

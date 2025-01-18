@@ -50,4 +50,5 @@ https://batchar2.github.io/fptn/
     <string name="disconnect_action">Disconnect</string>
 
     <string name="token_was_updated">Token was updated!</string>
+    <string name="token_saving_failed">Invalid link format!</string>
 </resources>
