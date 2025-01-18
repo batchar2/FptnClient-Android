@@ -48,4 +48,6 @@ https://batchar2.github.io/fptn/
     <string name="notification_channel_name">When connected</string>
     <string name="notification_group_name">Main</string>
     <string name="disconnect_action">Disconnect</string>
+
+    <string name="token_was_updated">Token was updated!</string>
 </resources>
