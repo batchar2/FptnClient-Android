@@ -200,7 +200,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (stringResourceByName != null) {
                     errorTextView.setText(stringResourceByName);
 
-                    Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), stringResourceByName, 3000);
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), stringResourceByName, 8000);
                     if (ErrorCode.Companion.isNeedToOfferRefreshToken(errorCode)) {
                         snackbar.setAction("Refresh token...", v -> {
                             Intent browserIntent = new
@@ -258,7 +258,6 @@ public class HomeActivity extends AppCompatActivity {
         uploadTextView.setText("0 Mb/s");
         startStopButton.setChecked(false);
         spinnerServers.setEnabled(true);
-        spinnerServers.setSelection(fptnViewModel.getSelectedServerPosition());
 
         hideView(connectionTimer);
         hideView(connectionTimerLabel);
