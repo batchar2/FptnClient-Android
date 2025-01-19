@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -25,21 +24,21 @@
             </intent-filter>
         </activity>
         <activity
-            android:label="@string/app_name"
             android:name=".views.HomeActivity"
-            android:exported="true"/>
+            android:exported="true"
+            android:label="@string/app_name" />
         <activity
-            android:label="@string/app_name"
             android:name=".views.SettingsActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:label="@string/app_name" />
         <activity
-            android:label="@string/app_name"
             android:name=".views.SettingsActivityUpdateToken"
-            android:exported="true" />
+            android:exported="true"
+            android:label="@string/app_name" />
+
         <service
             android:name=".services.CustomVpnService"
             android:exported="false"
-            android:foregroundServiceType="specialUse"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
