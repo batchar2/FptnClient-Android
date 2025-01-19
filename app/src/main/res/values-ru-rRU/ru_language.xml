@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_version">Версия 0.0.0 </string>
-    <string name="app_name">FptnClient</string>
+    <!-- app_name - translatable="false" -->
+
+
     <string name="select_server">Выбор сервера</string>
     <string name="connection_time">Время подключения</string>
     <string name="state_disconnect">Отключено</string>
