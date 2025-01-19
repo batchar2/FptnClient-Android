@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -127,11 +126,9 @@ public class HomeActivity extends AppCompatActivity {
         spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // todo: add selected server with auto
                 if (parent.isEnabled()) {
                     Object itemAtPosition = parent.getItemAtPosition(position);
-                    if (itemAtPosition instanceof FptnServerDto) {
-                        FptnServerDto fptnServerDto = (FptnServerDto) itemAtPosition;
+                    if (itemAtPosition instanceof FptnServerDto fptnServerDto) {
                         if (fptnViewModel.getSelectedServerLiveData().getValue() != fptnServerDto) {
                             fptnViewModel.getSelectedServerLiveData().postValue(fptnServerDto);
                         }
