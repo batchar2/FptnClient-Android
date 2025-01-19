@@ -43,10 +43,6 @@ public class SpeedTestCallback implements Callback {
         Optional.of(response).map(Response::body).ifPresent(ResponseBody::close);
     }
 
-    public boolean isNotExecuted() {
-        return endTime == null && exception == null;
-    }
-
     public boolean isSuccess() {
         return exception == null && endTime != null;
     }

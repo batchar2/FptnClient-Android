@@ -54,4 +54,22 @@ https://batchar2.github.io/fptn/
 
     <string name="token_was_updated">Token was updated!</string>
     <string name="token_saving_failed">Invalid link format!</string>
+
+    <string name="telegram_bot_link" translatable="false">https://t.me/fptn_bot</string>
+
+    <!--Error codes strings-->
+    <string name="server_list_is_empty">Server list is empty</string>
+    <string name="find_fastest_server_timeout">Time limit to find the fastest server expired!</string>
+    <string name="all_servers_are_unreachable">"All servers are unreachable!"</string>
+    <string name="authentication_error">Authentication error! Please refresh your access token in the application settings.</string>
+    <string name="dns_server_error">Network error! Failed to retrieve DNS from the server.</string>
+    <string name="vpn_interface_error">Failed to create the VPN interface!</string>
+    <string name="ciphers_error">The list of supported ciphers is empty!</string>
+
+    <string name="access_token_error">Authentication error! Please refresh your access token in the application settings.</string>
+
+    <string name="ssl_context_init_failed">SSL context initialization failed!</string>
+
+    <string name="unknown_error">Error unknown! We don\'t know what has happened and it\'s scary</string>
+
 </resources>

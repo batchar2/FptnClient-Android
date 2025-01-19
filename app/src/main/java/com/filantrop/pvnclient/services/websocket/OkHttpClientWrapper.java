@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.filantrop.pvnclient.utils.ChromeCiphers;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
+import com.filantrop.pvnclient.vpnclient.exception.ErrorCode;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 import com.google.protobuf.ByteString;
 
@@ -17,7 +18,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -81,11 +84,9 @@ public class OkHttpClientWrapper {
         try {
             sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAllCerts, new SecureRandom());
-            // Пример полученного списка поддерживаемых шифров
-            String[] supportedCiphers = sslContext.getSocketFactory().getSupportedCipherSuites();
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             Log.e(getTag(), "SSLContext init failed", e);
-            throw new PVNClientException(e.getMessage());
+            throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED.getValue());
         }
 
         // Create an SSL socket factory with our all-trusting manager
@@ -100,68 +101,62 @@ public class OkHttpClientWrapper {
     }
 
     public String getAuthToken() throws PVNClientException {
-        try {
-            JSONObject json = new JSONObject();
-            json.put("username", username);
-            json.put("password", password);
+        Map<String, String> map = new HashMap<>();
+        map.put("username", username);
+        map.put("password", password);
+        JSONObject json = new JSONObject(map);
 
-            final String url = String.format(Locale.getDefault(), LOGIN_URL_PATTERN, host, port);
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(RequestBody.create(json.toString(), JSON))
-                    .build();
+        final String url = String.format(Locale.getDefault(), LOGIN_URL_PATTERN, host, port);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(RequestBody.create(json.toString(), JSON))
+                .build();
 
-            try (Response response = client.newCall(request).execute()) {
-                if (response.code() == 200 && response.body() != null) {
-                    JSONObject jsonResponse = new JSONObject(response.body().string());
-                    if (jsonResponse.has("access_token")) {
-                        final String token = jsonResponse.getString("access_token");
-                        Log.i(getTag(), "Login successful.");
-                        return token;
-                    } else {
-                        Log.e(getTag(), "Error: Access token not found in the response.");
-                        throw new PVNClientException("Error: Access token not found in the response.");
-                    }
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 200 && response.body() != null) {
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                if (jsonResponse.has("access_token")) {
+                    final String token = jsonResponse.getString("access_token");
+                    Log.i(getTag(), "Login successful.");
+                    return token;
                 } else {
-                    Log.e(getTag(), "Error response: " + response);
+                    Log.e(getTag(), "Error: Access token not found in the response.");
                 }
+            } else {
+                Log.e(getTag(), "Error response: " + response);
             }
         } catch (JSONException | IOException e) {
             Log.e(getTag(), "Login failed", e);
-            throw new PVNClientException(e.getMessage());
         }
-        return null;
+        throw new PVNClientException(ErrorCode.ACCESS_TOKEN_ERROR.getValue());
     }
 
     public String getDnsServerIPv4() throws PVNClientException {
-        try {
-            final String url = String.format(Locale.getDefault(), DNS_URL_PATTERN, host, port);
-            Request request = new Request.Builder()
-                    .url(url)
-                    .get()
-                    .build();
+        final String url = String.format(Locale.getDefault(), DNS_URL_PATTERN, host, port);
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
 
-            try (Response response = client.newCall(request).execute()) {
-                if (response.code() == 200 && response.body() != null) {
-                    JSONObject jsonResponse = new JSONObject(response.body().string());
-                    if (jsonResponse.has("dns")) {
-                        final String dnsServer = jsonResponse.getString("dns");
-                        Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
-                        return dnsServer;
-                    } else {
-                        Log.e(getTag(), "Error: DNS not found in the response.");
-                        throw new PVNClientException("Error: DNS not found in the response.");
-                    }
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 200 && response.body() != null) {
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                if (jsonResponse.has("dns")) {
+                    final String dnsServer = jsonResponse.getString("dns");
+                    Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
+                    return dnsServer;
                 } else {
-                    Log.e(getTag(), "Error response: " + response);
+                    Log.e(getTag(), "Error: DNS not found in the response.");
                 }
+            } else {
+                Log.e(getTag(), "Error response: " + response);
             }
         } catch (JSONException | IOException e) {
-            Log.e(getTag(), "DNS failed", e);
-            throw new PVNClientException(e.getMessage());
+            Log.e(getTag(), "Receiving DNS failed", e);
         }
-        return null;
+        throw new PVNClientException(ErrorCode.DNS_SERVER_ERROR.getValue());
     }
+
     public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException {
         if (!isValid(token)) {
             token = getAuthToken();
@@ -169,8 +164,7 @@ public class OkHttpClientWrapper {
         Request request = new Request.Builder()
                 .url(String.format(Locale.getDefault(), WEBSOCKET_URL, host, port))
                 .addHeader("Authorization", "Bearer " + token)
-                // todo: ClientIP? Why?
-                // Answer: The server needs to know the client's virtual interface for simplicity.
+                // The server needs to know the client's virtual interface for simplicity.
                 .addHeader("ClientIP", "10.10.0.1")
                 .build();
         webSocket = client.newWebSocket(request, webSocketListener);

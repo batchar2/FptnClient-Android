@@ -1,6 +1,7 @@
 package com.filantrop.pvnclient.services;
 
 import static com.filantrop.pvnclient.core.common.Constants.SELECTED_SERVER;
+import static com.filantrop.pvnclient.utils.ResourcesUtils.getStringResourceByName;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -26,9 +27,11 @@ import com.filantrop.pvnclient.core.common.Constants;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
+import com.filantrop.pvnclient.utils.ResourcesUtils;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
 import com.filantrop.pvnclient.views.speedtest.SpeedTestService;
+import com.filantrop.pvnclient.vpnclient.exception.ErrorCode;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.IOException;

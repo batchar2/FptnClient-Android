@@ -5,6 +5,7 @@ import android.util.Log;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.utils.ChromeCiphers;
 import com.filantrop.pvnclient.utils.MySSLSocketFactory;
+import com.filantrop.pvnclient.vpnclient.exception.ErrorCode;
 import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.security.KeyManagementException;
@@ -27,8 +28,6 @@ import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-
-
 
 public class SpeedTestService {
     private static final String TAG = SpeedTestService.class.getName();
@@ -65,7 +64,7 @@ public class SpeedTestService {
             sslContext.init(null, trustAllCerts, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             Log.e(TAG, "SSLContext init failed", e);
-            throw new PVNClientException(e.getMessage());
+            throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED.getValue());
         }
 
         // Create an SSL socket factory with our all-trusting manager
@@ -100,13 +99,13 @@ public class SpeedTestService {
                     Log.d(TAG, "findFastestServer end: " + Instant.now());
                     return bestServer;
                 } else {
-                    throw new PVNClientException("all servers are unreachable!");
+                    throw new PVNClientException(ErrorCode.ALL_SERVERS_UNREACHABLE.getValue());
                 }
             } else {
-                throw new PVNClientException("findFastestServer timeout exception");
+                throw new PVNClientException(ErrorCode.FIND_FASTEST_SERVER_TIMEOUT.getValue());
             }
         } else {
-            throw new PVNClientException("fptnServerDtoList is null or empty");
+            throw new PVNClientException(ErrorCode.SERVER_LIST_NULL_OR_EMPTY.getValue());
         }
     }
 
