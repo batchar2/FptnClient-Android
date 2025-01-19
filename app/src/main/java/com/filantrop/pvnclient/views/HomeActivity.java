@@ -25,10 +25,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.database.model.FptnServerDto;
 import com.filantrop.pvnclient.enums.ConnectionState;
-import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.utils.CustomSpinner;
-import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
+import com.filantrop.pvnclient.services.CustomVpnService;
+import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private CustomSpinner spinnerServers;
 
-    View settingsMenuItem;
+    private View settingsMenuItem;
 
     private ToggleButton startStopButton;
 
@@ -74,7 +74,7 @@ public class HomeActivity extends AppCompatActivity {
             startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
         } else {
             Toast.makeText(this, R.string.vpn_permission_warning, Toast.LENGTH_SHORT).show();
-            fptnViewModel.errorTextLiveData.postValue(getString(R.string.vpn_permission_warning));
+            fptnViewModel.getErrorTextLiveData().postValue(getString(R.string.vpn_permission_warning));
         }
     });
 
@@ -96,14 +96,14 @@ public class HomeActivity extends AppCompatActivity {
                 Log.i(TAG, "onServiceConnected: " + name);
                 CustomVpnService.LocalBinder localBinder = (CustomVpnService.LocalBinder) service;
                 vpnService = localBinder.getService();
-                vpnService.fptnViewModel = fptnViewModel;
+                vpnService.setFptnViewModel(fptnViewModel);
                 vpnService.updateConnectionStateInViewModel();
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 Log.i(TAG, "onServiceDisconnected: " + name);
-                vpnService.fptnViewModel = null;
+                vpnService.setFptnViewModel(null);
             }
         };
         bindService(getServiceIntent().setAction("ON_BIND"), connection, BIND_AUTO_CREATE);
@@ -122,12 +122,13 @@ public class HomeActivity extends AppCompatActivity {
         spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // todo: add selected server with auto
                 if (parent.isEnabled()) {
                     Object itemAtPosition = parent.getItemAtPosition(position);
                     if (itemAtPosition instanceof FptnServerDto) {
                         FptnServerDto fptnServerDto = (FptnServerDto) itemAtPosition;
-                        if (fptnViewModel.selectedServerLiveData.getValue() != fptnServerDto) {
-                            fptnViewModel.selectedServerLiveData.postValue(fptnServerDto);
+                        if (fptnViewModel.getSelectedServerLiveData().getValue() != fptnServerDto) {
+                            fptnViewModel.getSelectedServerLiveData().postValue(fptnServerDto);
                         }
                     }
                 }
@@ -159,7 +160,7 @@ public class HomeActivity extends AppCompatActivity {
         settingsMenuItem = findViewById(R.id.menuSettings);
 
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-        fptnViewModel.serverDtoListLiveData.observe(this, fptnServerDtos -> {
+        fptnViewModel.getServerDtoListLiveData().observe(this, fptnServerDtos -> {
             if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
                 List<FptnServerDto> fixedServers = new ArrayList<>();
                 fixedServers.add(FptnServerDto.AUTO);
@@ -169,7 +170,7 @@ public class HomeActivity extends AppCompatActivity {
                 spinnerServers.performClosedEvent(); // FIX SPINNER BACKGROUND
             }
         });
-        fptnViewModel.connectionStateMutableLiveData.observe(this, connectionState -> {
+        fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
             switch (connectionState) {
                 case CONNECTING:
                     connectingStateUiItems();
@@ -181,16 +182,19 @@ public class HomeActivity extends AppCompatActivity {
                     disconnectedStateUiItems();
             }
         });
-        fptnViewModel.downloadSpeedAsStringLiveData.observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
-        fptnViewModel.uploadSpeedAsStringLiveData.observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
-        fptnViewModel.timerTextLiveData.observe(this, text -> connectionTimer.setText(text));
-        fptnViewModel.errorTextLiveData.observe(this, errorText -> {
+        fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
+        fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
+        fptnViewModel.getTimerTextLiveData().observe(this, text -> connectionTimer.setText(text));
+        fptnViewModel.getErrorTextLiveData().observe(this, errorText -> {
+            //todo: добавить всплывающее диалоговое окно об ошибке
             Log.i(TAG, "errorText: " + errorText);
             errorTextView.setText(errorText);
         });
 
         // set info about selected server
-        fptnViewModel.selectedServerLiveData.observe(this, fptnServerDto -> connectedServerTextView.setText(fptnServerDto.getServerInfo()));
+        fptnViewModel.getSelectedServerLiveData().observe(this, fptnServerDto -> {
+            connectedServerTextView.setText(fptnServerDto.getServerInfo());
+        });
 
         // FIXME
         bottomNavigationView = findViewById(R.id.bottomNavBar);
@@ -231,6 +235,7 @@ public class HomeActivity extends AppCompatActivity {
         uploadTextView.setText("0 Mb/s");
         startStopButton.setChecked(false);
         spinnerServers.setEnabled(true);
+        spinnerServers.setSelection(fptnViewModel.getSelectedServerPosition());
 
         hideView(connectionTimer);
         hideView(connectionTimerLabel);
@@ -271,7 +276,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
-        if (fptnViewModel.connectionStateMutableLiveData.getValue() == ConnectionState.DISCONNECTED) {
+        if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.DISCONNECTED) {
             Intent intent = VpnService.prepare(HomeActivity.this);
             if (intent != null) {
                 // Запрос на предоставление приложению возможности запускать впн
@@ -279,7 +284,7 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
             }
-        } else if (fptnViewModel.connectionStateMutableLiveData.getValue() == ConnectionState.CONNECTED) {
+        } else if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.CONNECTED) {
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
         }
     }
@@ -289,7 +294,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private Intent enrichIntent(Intent intent) {
-        FptnServerDto server = fptnViewModel.getSelectedServer();
+        FptnServerDto server = fptnViewModel.getSelectedServerLiveData().getValue();
         intent.putExtra(SELECTED_SERVER, server);
         return intent;
     }

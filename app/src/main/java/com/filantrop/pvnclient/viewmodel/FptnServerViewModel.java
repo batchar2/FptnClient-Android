@@ -36,31 +36,23 @@ public class FptnServerViewModel extends AndroidViewModel {
 
     private final FptnServerRepository fptnServerRepository;
 
-    public final MutableLiveData<ConnectionState> connectionStateMutableLiveData = new MutableLiveData<>(ConnectionState.DISCONNECTED);
-    public final MutableLiveData<String> downloadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
-    public final MutableLiveData<String> uploadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
-    public final MutableLiveData<String> timerTextLiveData = new MutableLiveData<>("00:00:00");
-    public final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
-    public final LiveData<List<FptnServerDto>> serverDtoListLiveData;
-    public final MutableLiveData<FptnServerDto> selectedServerLiveData = new MutableLiveData<>(FptnServerDto.AUTO);
+    @Getter
+    private final MutableLiveData<ConnectionState> connectionStateMutableLiveData = new MutableLiveData<>(ConnectionState.DISCONNECTED);
+    @Getter
+    private final MutableLiveData<String> downloadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
+    @Getter
+    private final MutableLiveData<String> uploadSpeedAsStringLiveData = new MutableLiveData<>(new DataRateCalculator(1000).getFormatString());
+    @Getter
+    private final MutableLiveData<String> timerTextLiveData = new MutableLiveData<>("00:00:00");
+    @Getter
+    private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
+    @Getter
+    private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
+    @Getter
+    private final MutableLiveData<FptnServerDto> selectedServerLiveData = new MutableLiveData<>(FptnServerDto.AUTO);
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledFuture;
-
-    public FptnServerDto getSelectedServer() {
-        FptnServerDto selectedServer = selectedServerLiveData.getValue();
-        if (selectedServer == FptnServerDto.AUTO) {
-            FptnServerDto bestServer = selectBestServer(serverDtoListLiveData.getValue());
-            selectedServerLiveData.postValue(bestServer);
-            return bestServer;
-        }
-        return selectedServer;
-    }
-
-    private FptnServerDto selectBestServer(List<FptnServerDto> serverDtos) {
-        //todo: selectedBestServer
-        return serverDtos.get(0);
-    }
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
@@ -73,12 +65,32 @@ public class FptnServerViewModel extends AndroidViewModel {
         return fptnServerRepository.getAllServersListFuture();
     }
 
+    public int getSelectedServerPosition() {
+        FptnServerDto selectedServer = selectedServerLiveData.getValue();
+        if (FptnServerDto.AUTO.equals(serverDtoListLiveData.getValue()) || selectedServer == null) {
+            return 0;
+        }
+        List<FptnServerDto> fptnServerDtos = serverDtoListLiveData.getValue();
+        if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
+            for (int i = 0; i < fptnServerDtos.size(); i++) {
+                if (selectedServer.equals(fptnServerDtos.get(i))) {
+                    // first element in spinner adapter is AUTO
+                    return i + 1;
+                }
+            }
+        }
+        return 0;
+    }
+
     public void deleteAll() {
         fptnServerRepository.deleteAll();
     }
 
     public boolean parseAndSaveFptnLink(String url) {
-        String preparedUrl = url.substring(7);  // Remove first 7 characters
+        // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
+        final String preparedUrl = url.replaceAll("\\s+","")
+                .replace("fptn://", "")
+                .replace("fptn:", "");
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
             String jsonString = new String(decodedBytes);
@@ -97,7 +109,6 @@ public class FptnServerViewModel extends AndroidViewModel {
                 serverDtoList.add(new FptnServerDto(name, username, password, host, port));
                 Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
             }
-
             if (!serverDtoList.isEmpty()) {
                 deleteAll(); // delete old
                 fptnServerRepository.insertAll(serverDtoList);

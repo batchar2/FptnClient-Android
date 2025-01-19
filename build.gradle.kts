@@ -1,6 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-import com.filantrop.pvnclient.gradle.options.DetektOptions.applyDetektOptions
-import com.filantrop.pvnclient.gradle.options.FormattingOptions.applyPrecheckOptions
+import com.filantrop.pvnclient.gradle.DetektOptions.applyDetektOptions
+import com.filantrop.pvnclient.gradle.FormattingOptions.applyPrecheckOptions
 
 buildscript {
 
@@ -29,7 +29,7 @@ repositories {
 }
 
 extra["compileSdkVersion"] = 35
-extra["minSdkVersion"] = 26
+extra["minSdkVersion"] = 28
 extra["targetSdkVersion"] = 35
 extra["versionMajor"] = 1
 extra["versionMinor"] = 0
@@ -41,9 +41,8 @@ tasks.register("clean", Delete::class) {
 }
 
 plugins {
-    alias(libs.plugins.deps.sorting) apply true
+    alias(libs.plugins.deps.sorting) apply false
     alias(libs.plugins.deps.unused) apply true
-    alias(libs.plugins.ksp) apply false
 }
 
 applyPrecheckOptions()

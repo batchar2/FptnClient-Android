@@ -1,10 +1,14 @@
 package com.filantrop.pvnclient.views;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.InputType;
 import android.text.method.LinkMovementMethod;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.filantrop.pvnclient.R;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
@@ -35,7 +40,10 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
         initializeVariable();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initializeVariable() {
+        fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
+
         // FIXME
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuSettings);
@@ -73,7 +81,20 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
 
         // HIDE KEYBOARD
         EditText editText = findViewById(R.id.fptn_login_link_input);
+        editText.setTextIsSelectable(true);
         editText.setShowSoftInputOnFocus(false);
+        editText.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    if (motionEvent.getX() > (view.getWidth() - view.getPaddingRight() - 50)){
+                        ((EditText)view).setText("");
+                    }
+                }
+                return false;
+            }
+        });
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);  // This just hide keyboard when activity starts
     }
 
     public void onCancel(View v) {
@@ -83,14 +104,13 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
 
     public void onSave(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
-        // removes all whitespaces and non-visible characters (e.g., tab, \n).
-        final String fptnLink = linkInput.getText().toString().replaceAll("\\s+","");
-        if (fptnLink.startsWith("fptn://") && fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
-            Toast.makeText(getApplicationContext(), "Token was updated!", Toast.LENGTH_SHORT).show();
+        final String fptnLink = linkInput.getText().toString();
+        if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
+            Toast.makeText(getApplicationContext(), R.string.token_was_updated, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         } else {
-            Toast.makeText(getApplicationContext(), "Invalid link format or saving failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
         }
     }
 }

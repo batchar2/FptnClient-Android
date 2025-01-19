@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name=".PvnApp"
         android:allowBackup="true"
         android:icon="@drawable/vpn_icon"
         android:label="@string/app_name"

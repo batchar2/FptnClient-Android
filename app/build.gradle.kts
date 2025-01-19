@@ -1,6 +1,5 @@
 plugins {
     id("pvnclient.android.application")
-    id("kotlin-kapt")
     alias(libs.plugins.protobuf)
 }
 
@@ -51,10 +50,11 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.monitor)
+    implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
     implementation(libs.ipaddress)
-    implementation(libs.koin.android)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
@@ -65,7 +65,8 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
-    testImplementation(libs.koin.test.jvm)
+
+    androidTestImplementation(libs.androidx.junit)
 }
 java {
     toolchain {

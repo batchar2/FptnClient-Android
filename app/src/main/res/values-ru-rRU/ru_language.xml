@@ -48,4 +48,7 @@ https://batchar2.github.io/fptn/
     <string name="notification_channel_name">Когда подключено</string>
     <string name="notification_group_name">Основные</string>
     <string name="disconnect_action">Отключить</string>
+
+    <string name="token_was_updated">Токен был обновлен!</string>
+    <string name="token_saving_failed">Неверный формат токена!</string>
 </resources>

@@ -28,6 +28,8 @@ import com.filantrop.pvnclient.enums.ConnectionState;
 import com.filantrop.pvnclient.enums.HandlerMessageTypes;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.HomeActivity;
+import com.filantrop.pvnclient.views.speedtest.SpeedTestService;
+import com.filantrop.pvnclient.vpnclient.exception.PVNClientException;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -36,6 +38,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class CustomVpnService extends VpnService implements Handler.Callback {
     private static final String TAG = CustomVpnService.class.getName();
 
@@ -43,9 +48,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     public static final String ACTION_DISCONNECT = "com.example.android.fptn.STOP";
 
     //Handler - очередь обрабатываемых в потоке сообщений.
-    public Handler mHandler;
+    @Getter
+    private Handler mHandler;
 
-    public FptnServerViewModel fptnViewModel;
+    @Setter
+    private FptnServerViewModel fptnViewModel;
 
     // Подключающийся поток. Ссылка обнуляется если подключение успешно.
     // Видимо, чтобы потушить поток с неудавшимся соединением
@@ -62,9 +69,13 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     // Pending Intent to disconnect from notification
     private PendingIntent disconnectPendingIntent;
 
+    // Server for finding the best server (and check availability)
+    private SpeedTestService speedTestService;
+
+    private FptnServerDto selectedServer;
+
     // Binder given to clients.
     private final IBinder binder = new LocalBinder();
-    private FptnServerDto selectedServer;
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -89,16 +100,22 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             mHandler = new Handler(this);
         }
 
-        // Создаем PendingIntent (Отложенное намерение) чтобы в Нотификации
-        // была доступна кнопка конфигурации (при нажатии вызовет MainActivity)
+        // pending intent for open MainActivity on tap
         launchMainActivityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, HomeActivity.class),
                 PendingIntent.FLAG_IMMUTABLE);
 
+        // pending intent for disconnect button in notification
         disconnectPendingIntent = PendingIntent.getService(this, 0,
                 new Intent(this, CustomVpnService.class)
                         .setAction(CustomVpnService.ACTION_DISCONNECT),
                 PendingIntent.FLAG_IMMUTABLE);
+
+        try {
+            speedTestService = new SpeedTestService();
+        } catch (PVNClientException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -110,6 +127,31 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         } else {
             // Достаем параметры для подключения из intent
             selectedServer = (FptnServerDto) intent.getSerializableExtra(SELECTED_SERVER);
+            if (FptnServerDto.AUTO.equals(selectedServer)) {
+                if (fptnViewModel == null) {
+                    String error = "fptnViewModel == null";
+                    Log.e(TAG, "onStartCommand: " + error);
+                    fptnViewModel.getErrorTextLiveData().postValue(error);
+                    selectedServer = null;
+                } else {
+                    try {
+                        fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING);
+                        selectedServer = speedTestService.findFastestServer(fptnViewModel.getServerDtoListLiveData().getValue());
+                        fptnViewModel.getSelectedServerLiveData().postValue(selectedServer);
+                    } catch (InterruptedException | PVNClientException e) {
+                        Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
+                        fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED);
+                        fptnViewModel.getErrorTextLiveData().postValue(e.getMessage());
+                        selectedServer = null;
+                    }
+                }
+            }
+
+            if (selectedServer == null) {
+                Log.e(TAG, "onStartCommand: selectedServer is null");
+                return START_NOT_STICKY;
+            }
+
             connect(selectedServer.getHost(), selectedServer.getPort(), selectedServer.getUsername(), selectedServer.getPassword());
             return START_STICKY;
         }
@@ -124,14 +166,14 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     public void updateConnectionStateInViewModel() {
         if (mConnection.get() != null) {
-            fptnViewModel.connectionStateMutableLiveData.postValue(ConnectionState.CONNECTED);
+            fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTED);
             //Передаем на UI актуальные параметры подключения
-            fptnViewModel.startTimer(mConnection.get().first.connectionTime);
-            fptnViewModel.selectedServerLiveData.setValue(selectedServer);
+            fptnViewModel.startTimer(mConnection.get().first.getConnectionTime());
+            //fptnViewModel.getSelectedServerLiveData().setValue(selectedServer);
         } else if (mConnection.get() == null && mConnectingThread.get() != null) {
-            fptnViewModel.connectionStateMutableLiveData.postValue(ConnectionState.CONNECTING);
+            fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING);
         } else if (mConnection.get() == null && mConnectingThread.get() == null) {
-            fptnViewModel.connectionStateMutableLiveData.postValue(ConnectionState.DISCONNECTED);
+            fptnViewModel.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED);
         }
     }
 
@@ -139,15 +181,15 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     public boolean handleMessage(@NonNull Message message) {
         Log.d(TAG, "handleMessage: " + message);
 
-        HandlerMessageTypes type = Arrays.stream(HandlerMessageTypes.values()).filter(t -> t.value == message.what).findFirst().orElse(HandlerMessageTypes.UNKNOWN);
+        HandlerMessageTypes type = Arrays.stream(HandlerMessageTypes.values()).filter(t -> t.getValue() == message.what).findFirst().orElse(HandlerMessageTypes.UNKNOWN);
         switch (type) {
             case SPEED_INFO:
                 if (fptnViewModel != null) {
                     Pair<String, String> downloadSpeedUploadSpeed = (Pair<String, String>) message.obj;
                     String downloadSpeed = downloadSpeedUploadSpeed.first;
                     String uploadSpeed = downloadSpeedUploadSpeed.second;
-                    fptnViewModel.downloadSpeedAsStringLiveData.postValue(downloadSpeed);
-                    fptnViewModel.uploadSpeedAsStringLiveData.postValue(uploadSpeed);
+                    fptnViewModel.getDownloadSpeedAsStringLiveData().postValue(downloadSpeed);
+                    fptnViewModel.getUploadSpeedAsStringLiveData().postValue(uploadSpeed);
                     updateNotificationWithMessage("Connected to " + selectedServer.getServerInfo(), "Download: " + downloadSpeed + " Upload: " + uploadSpeed);
                 }
                 break;
@@ -156,7 +198,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                     Pair<ConnectionState, Instant> connectionStateInstantPair = (Pair<ConnectionState, Instant>) message.obj;
                     Optional<ConnectionState> connectionState = Arrays.stream(ConnectionState.values()).filter(t -> t == connectionStateInstantPair.first).findFirst();
                     connectionState.ifPresent(state -> {
-                        fptnViewModel.connectionStateMutableLiveData.postValue(state);
+                        fptnViewModel.getConnectionStateMutableLiveData().postValue(state);
                         if (ConnectionState.CONNECTED.equals(state)) {
                             fptnViewModel.startTimer(connectionStateInstantPair.second);
                             updateNotificationWithMessage("Connected to " + selectedServer.getServerInfo(), "");
@@ -168,7 +210,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 }
                 break;
             case ERROR:
-                fptnViewModel.errorTextLiveData.postValue((String) message.obj);
+                fptnViewModel.getErrorTextLiveData().postValue((String) message.obj);
                 break;
             default:
                 Log.e(TAG, "unexpected message: " + message);
@@ -186,12 +228,12 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
         // Handler to mark as connected once onEstablish is called.
         connection.setConfigureIntent(launchMainActivityPendingIntent);
-        connection.onEstablishListener = tunInterface -> {
+        connection.setOnEstablishListener(tunInterface -> {
             // Если удалось подключиться, обнуляем подключающийся поток и
             // сохраняем пару подключившийся поток/tunInterface
             mConnectingThread.compareAndSet(connection, null);
             setEstablishedConnection(new Pair<>(connection, tunInterface));
-        };
+        });
         connection.start();
     }
 

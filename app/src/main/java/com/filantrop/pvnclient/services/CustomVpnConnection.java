@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import lombok.Getter;
+import lombok.Setter;
 
 public class CustomVpnConnection extends Thread {
 
@@ -58,9 +59,11 @@ public class CustomVpnConnection extends Thread {
 
     private PendingIntent mConfigureIntent;
 
-    OnEstablishListener onEstablishListener;
+    @Setter
+    private OnEstablishListener onEstablishListener;
 
-    public Instant connectionTime;
+    @Getter
+    private Instant connectionTime;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
@@ -92,16 +95,22 @@ public class CustomVpnConnection extends Thread {
         try {
             sendConnectionStateToUI(ConnectionState.CONNECTING);
 
-            String token = okHttpClientWrapper.getAuthToken();
+            final String token = okHttpClientWrapper.getAuthToken();
             if (token == null) {
                 // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
                 throw new PVNClientException("Can't get authToken!");
             }
 
+            final String dnsServer = okHttpClientWrapper.getDnsServerIPv4();
+            if (dnsServer == null) {
+                // todo: подумать над тем чтобы хранить тексты ошибок в strings.xml и с разной локализацией!!!
+                throw new PVNClientException("Can't get DNS Server!");
+            }
+
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
-            builder.addDnsServer("172.20.0.1"); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
+            builder.addDnsServer(dnsServer); // FIXME! String dnsServer = okHttpClientWrapper.getDNSServer(serverName, serverPort);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
@@ -194,15 +203,15 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void sendErrorMessageToUI(String msg) {
-        service.mHandler.sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.value, 0, 0, msg));
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
     }
 
     private void sendSpeedInfoToUI(String downloadSpeed, String uploadSpeed) {
-        service.mHandler.sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_INFO.value, 0, 0, Pair.create(downloadSpeed, uploadSpeed)));
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_INFO.getValue(), 0, 0, Pair.create(downloadSpeed, uploadSpeed)));
     }
 
     private void sendConnectionStateToUI(ConnectionState connectionState) {
-        service.mHandler.sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.value, 0, 0, Pair.create(connectionState, Instant.now())));
+        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, Pair.create(connectionState, Instant.now())));
     }
 
     private String getTag() {
