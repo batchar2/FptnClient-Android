@@ -1,3 +1,5 @@
+package com.filantrop.pvnclient.gradle
+
 import com.android.build.api.dsl.ApplicationExtension
 import com.filantrop.pvnclient.gradle.extensions.configureKotlinAndroid
 import org.gradle.api.Plugin
