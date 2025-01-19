@@ -16,13 +16,14 @@ enum class ErrorCode(
     ;
 
     companion object {
-        private val errorCodesWithOfferingRefreshToken = listOf(
-            SERVER_LIST_NULL_OR_EMPTY,
-            FIND_FASTEST_SERVER_TIMEOUT,
-            ALL_SERVERS_UNREACHABLE,
-            AUTHENTICATION_ERROR,
-            ACCESS_TOKEN_ERROR,
-        )
+        private val errorCodesWithOfferingRefreshToken =
+            listOf(
+                SERVER_LIST_NULL_OR_EMPTY,
+                FIND_FASTEST_SERVER_TIMEOUT,
+                ALL_SERVERS_UNREACHABLE,
+                AUTHENTICATION_ERROR,
+                ACCESS_TOKEN_ERROR,
+            )
 
         fun isNeedToOfferRefreshToken(errorCode: ErrorCode): Boolean {
             return errorCodesWithOfferingRefreshToken.contains(errorCode)
