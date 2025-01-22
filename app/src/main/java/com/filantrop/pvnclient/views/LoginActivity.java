@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -36,6 +37,13 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.login_layout);
 
         initializeVariable();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // miss back button
+            }
+        });
     }
 
     @SuppressLint({"InlinedApi", "ClickableViewAccessibility"})
