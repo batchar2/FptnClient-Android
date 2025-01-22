@@ -28,7 +28,7 @@
         <EditText
             android:id="@+id/fptn_login_link_input"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/round_back_white10_20"
             android:hint="@string/paste_your_token"
