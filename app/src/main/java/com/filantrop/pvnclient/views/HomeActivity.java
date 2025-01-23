@@ -1,11 +1,13 @@
 package com.filantrop.pvnclient.views;
 
 import static com.filantrop.pvnclient.core.common.Constants.SELECTED_SERVER;
+import static com.filantrop.pvnclient.utils.ResourcesUtils.getStringResourceByName;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -29,7 +31,9 @@ import com.filantrop.pvnclient.services.CustomVpnService;
 import com.filantrop.pvnclient.utils.CustomSpinner;
 import com.filantrop.pvnclient.viewmodel.FptnServerViewModel;
 import com.filantrop.pvnclient.views.adapter.FptnServerAdapter;
+import com.filantrop.pvnclient.vpnclient.exception.ErrorCode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,11 +126,9 @@ public class HomeActivity extends AppCompatActivity {
         spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // todo: add selected server with auto
                 if (parent.isEnabled()) {
                     Object itemAtPosition = parent.getItemAtPosition(position);
-                    if (itemAtPosition instanceof FptnServerDto) {
-                        FptnServerDto fptnServerDto = (FptnServerDto) itemAtPosition;
+                    if (itemAtPosition instanceof FptnServerDto fptnServerDto) {
                         if (fptnViewModel.selectedServerLiveData.getValue() != fptnServerDto) {
                             fptnViewModel.selectedServerLiveData.postValue(fptnServerDto);
                         }
@@ -185,10 +187,28 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.downloadSpeedAsStringLiveData.observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
         fptnViewModel.uploadSpeedAsStringLiveData.observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
         fptnViewModel.timerTextLiveData.observe(this, text -> connectionTimer.setText(text));
-        fptnViewModel.errorTextLiveData.observe(this, errorText -> {
-            //todo: добавить всплывающее диалоговое окно об ошибке
-            Log.i(TAG, "errorText: " + errorText);
-            errorTextView.setText(errorText);
+        fptnViewModel.errorTextLiveData.observe(this, errorCodeText -> {
+            Log.d(TAG, "ErrorCodeText: " + errorCodeText);
+            if (errorCodeText != null && !errorCodeText.isEmpty()) {
+                ErrorCode errorCode = ErrorCode.Companion.getErrorCodeByValue(errorCodeText);
+                String stringResourceByName = getStringResourceByName(getApplicationContext(), errorCode.getValue());
+                Log.e(TAG, "Error as text: " + stringResourceByName);
+
+                if (stringResourceByName != null) {
+                    errorTextView.setText(stringResourceByName);
+
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), stringResourceByName, 8000);
+                    if (ErrorCode.Companion.isNeedToOfferRefreshToken(errorCode)) {
+                        snackbar.setAction("Refresh token...", v -> {
+                            Intent browserIntent = new
+                                    Intent(Intent.ACTION_VIEW,
+                                    Uri.parse(getString(R.string.telegram_bot_link)));
+                            startActivity(browserIntent);
+                        });
+                    }
+                    snackbar.show();
+                }
+            }
         });
 
         // set info about selected server
@@ -235,7 +255,6 @@ public class HomeActivity extends AppCompatActivity {
         uploadTextView.setText("0 Mb/s");
         startStopButton.setChecked(false);
         spinnerServers.setEnabled(true);
-        spinnerServers.setSelection(fptnViewModel.getSelectedServerPosition());
 
         hideView(connectionTimer);
         hideView(connectionTimerLabel);
@@ -252,6 +271,7 @@ public class HomeActivity extends AppCompatActivity {
         fptnViewModel.clearErrorTextMessage();
         startStopButton.setChecked(true);
         spinnerServers.setEnabled(false);
+        errorTextView.setText("");
 
         showView(connectionTimer);
         showView(connectionTimerLabel);
