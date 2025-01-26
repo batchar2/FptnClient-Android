@@ -1,7 +1,9 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="NightAdjusted.Theme.PvnClient" parent="android:Theme.Material.Light.NoActionBar" />
 
-    <style name="Theme.PvnClient" parent="NightAdjusted.Theme.PvnClient" />
+    <style name="Theme.PvnClient" parent="NightAdjusted.Theme.PvnClient">
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+    </style>
 
     <style name="NightAdjusted.Theme.Splash" parent="Theme.SplashScreen">
         <item name="android:windowLightStatusBar">true</item>

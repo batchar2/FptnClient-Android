@@ -1,6 +1,5 @@
 plugins {
     id("pvnclient.android.application")
-    id("pvnclient.android.application.compose")
     id("kotlin-kapt")
     alias(libs.plugins.protobuf)
 }

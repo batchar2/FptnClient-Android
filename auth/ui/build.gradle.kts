@@ -3,7 +3,8 @@ import com.filantrop.pvnclient.gradle.extensions.ksp
 plugins {
     id("pvnclient.android.library.android")
     id("pvnclient.android.library.compose")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -19,6 +20,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.runtime.android)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.koin.android)

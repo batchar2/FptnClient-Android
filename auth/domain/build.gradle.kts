@@ -2,7 +2,7 @@ import com.filantrop.pvnclient.gradle.extensions.ksp
 
 plugins {
     id("pvnclient.android.library.kotlin")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
 }
 
 dependencies {
