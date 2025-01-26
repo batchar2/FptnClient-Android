@@ -1,6 +1,10 @@
+import com.filantrop.pvnclient.gradle.extensions.ksp
+
 plugins {
     id("pvnclient.android.application")
+    id("pvnclient.android.application.compose")
     id("kotlin-kapt")
+    alias(libs.plugins.ksp)
     alias(libs.plugins.protobuf)
 }
 
@@ -49,17 +53,26 @@ android {
 }
 
 dependencies {
+    implementation(project(":auth:domain"))
     implementation(project(":auth:ui"))
     implementation(project(":core:common"))
+    implementation(project(":core:model"))
+    implementation(project(":core:network"))
     implementation(project(":core:persistent"))
     implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.runtime.android)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
     implementation(libs.ipaddress)
     implementation(libs.koin.android)
+    implementation(libs.koin.core)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
@@ -71,6 +84,8 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.koin.test.jvm)
+
+    ksp(libs.koin.ksp.compiler)
 }
 java {
     toolchain {

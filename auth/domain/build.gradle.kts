@@ -7,7 +7,6 @@ plugins {
 
 dependencies {
     implementation(project(":core:model"))
-    implementation(libs.koin.annotations.jvm)
     implementation(libs.koin.core)
     implementation(libs.kotlinx.coroutines.core)
 

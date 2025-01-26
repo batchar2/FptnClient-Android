@@ -1,19 +1,19 @@
-package com.filantrop.pvnclient.auth.ui
+package com.filantrop.pvnclient.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.filantrop.pvnclient.viewmodel.AuthActivityUiState
+import com.filantrop.pvnclient.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class AuthActivity : ComponentActivity() {
-    private val viewModel: AuthViewModel by viewModel()
+class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -35,11 +35,21 @@ class AuthActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { viewModel.uiState.value.shouldKeepSplashScreen() }
 
         setContent {
-            Text(
-                text = "Hello World!",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-            )
+//            val appState = rememberPvnAppState(
+//                networkMonitor = networkMonitor,
+//            )
+//
+//            CompositionLocalProvider(
+//                LocalAnalyticsHelper provides analyticsHelper,
+//            ) {
+//                NiaTheme(
+//                    darkTheme = themeSettings.darkTheme,
+//                    androidTheme = themeSettings.androidTheme,
+//                    disableDynamicTheming = themeSettings.disableDynamicTheming,
+//                ) {
+//                    NiaApp(appState)
+//                }
+//            }
         }
     }
 }

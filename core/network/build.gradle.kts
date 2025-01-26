@@ -6,13 +6,14 @@ plugins {
 }
 
 android {
-    namespace = "com.filantrop.pvnclient.core.persistent"
+    namespace = "com.filantrop.pvnclient.core.network"
 }
 
 dependencies {
-
-    implementation(libs.datastore)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.tracing.ktx)
     implementation(libs.koin.core)
+    implementation(libs.kotlinx.coroutines.core)
 
     ksp(libs.koin.ksp.compiler)
 }

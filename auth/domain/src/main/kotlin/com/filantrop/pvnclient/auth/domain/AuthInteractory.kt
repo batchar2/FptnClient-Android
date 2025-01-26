@@ -3,7 +3,6 @@ package com.filantrop.pvnclient.auth.domain
 import com.filantrop.pvnclient.core.model.UserData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.koin.core.annotation.Single
 
 interface AuthInteractor {
     val userData: Flow<UserData>
@@ -13,7 +12,6 @@ interface AuthInteractor {
     suspend fun logout()
 }
 
-@Single(binds = [AuthInteractor::class])
 class AuthInteractorImpl(
     private val authRepository: AuthRepository,
 ) : AuthInteractor {

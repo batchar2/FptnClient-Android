@@ -1,5 +1,8 @@
 [versions]
 activity = "1.10.0"
+androidxCore = "1.15.0"
+androidxNavigation = "2.8.5"
+androidxTracing = "1.3.0-alpha02"
 appcompat = "1.7.0"
 autonomousappsSorting = "0.14"
 autonomousappsUnused = "2.7.0"
@@ -13,6 +16,7 @@ gradlePlugin = "8.2.2"
 guava = "33.4.0-jre"
 ipaddress = "5.5.1"
 java = "17"
+javax = "1"
 junit = "4.13.2"
 koin = "4.0.1"
 koinKsp = "2.0.0-Beta3"
@@ -36,18 +40,23 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-compose-runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "compose" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-tracing-ktx = { group = "androidx.tracing", name = "tracing-ktx", version.ref = "androidxTracing" }
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
+javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 koin-annotations-jvm = { group = "io.insert-koin", name = "koin-annotations-jvm", version.ref = "koinKsp" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-core-viewmodel-jvm = { group = "io.insert-koin", name = "koin-core-viewmodel-jvm", version.ref = "koin" }
 koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinKsp" }
 koin-test-jvm = { group = "io.insert-koin", name = "koin-test-jvm", version.ref = "koin" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }

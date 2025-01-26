@@ -3,9 +3,7 @@ package com.filantrop.pvnclient.auth.data
 import com.filantrop.pvnclient.auth.domain.AuthRepository
 import com.filantrop.pvnclient.core.persistent.PreferenceStore
 import kotlinx.coroutines.flow.Flow
-import org.koin.core.annotation.Single
 
-@Single(binds = [AuthRepository::class])
 class AuthRepositoryImpl(
     private val preferenceStore: PreferenceStore,
 ) : AuthRepository {

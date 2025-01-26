@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.koin.core.annotation.Single
 
 private const val DATA_STORE_NAME = "PvnDataPreferencesStore"
 private const val BASE_NAMESPACE = "com.filantrop.pvnclient"
@@ -25,7 +24,6 @@ interface PreferenceStore {
     suspend fun clearAllData()
 }
 
-@Single(binds = [PreferenceStore::class])
 class PreferencesStoreImpl(
     context: Context,
 ) : PreferenceStore {

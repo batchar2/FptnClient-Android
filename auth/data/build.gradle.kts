@@ -14,7 +14,6 @@ dependencies {
     implementation(project(":auth:domain"))
     implementation(project(":core:persistent"))
 
-    implementation(libs.koin.annotations.jvm)
     implementation(libs.koin.core)
     implementation(libs.kotlinx.coroutines.core)
 

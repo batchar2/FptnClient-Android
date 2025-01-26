@@ -15,16 +15,11 @@ dependencies {
 
     implementation(project(":auth:data"))
     implementation(project(":auth:domain"))
-    implementation(project(":core:common"))
-    implementation(project(":core:model"))
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.runtime.android)
-    implementation(libs.androidx.core.splashscreen)
-    implementation(libs.koin.android)
     implementation(libs.koin.core)
+    implementation(libs.koin.core.viewmodel.jvm)
 
     ksp(libs.koin.ksp.compiler)
 }

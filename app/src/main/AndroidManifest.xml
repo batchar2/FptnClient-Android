@@ -19,7 +19,7 @@
         android:theme="@style/Theme.PvnClient.Splash"
         tools:targetApi="33">
         <activity
-            android:name=".auth.ui.AuthActivity"
+            android:name=".ui.MainActivity"
             android:configChanges="uiMode"
             android:exported="true">
             <intent-filter>
