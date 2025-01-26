@@ -14,7 +14,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FptnClient"
+        android:theme="@style/Theme.PvnClient.Splash"
         tools:targetApi="33">
         <activity
             android:name=".auth.ui.AuthActivity"

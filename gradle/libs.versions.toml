@@ -29,6 +29,7 @@ splashScreen = "1.0.1"
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
 androidx-compose-runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "compose" }
@@ -57,6 +58,7 @@ protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 
 [plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
 deps-unused = { id = "com.autonomousapps.dependency-analysis", version.ref = "autonomousappsUnused" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

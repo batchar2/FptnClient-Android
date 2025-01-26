@@ -3,10 +3,11 @@ package com.filantrop.pvnclient.auth.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filantrop.pvnclient.auth.domain.AuthInteractor
+import com.filantrop.pvnclient.core.common.Result
+import com.filantrop.pvnclient.core.common.asResult
 import com.filantrop.pvnclient.core.model.UserData
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -15,10 +16,14 @@ class AuthViewModel(
 ) : ViewModel() {
     val uiState: StateFlow<AuthActivityUiState> =
         authInteractor.userData
-            .map {
-                AuthActivityUiState.Success(it)
-            }.catch { AuthActivityUiState.Login }
-            .stateIn(
+            .asResult()
+            .map { result ->
+                when (result) {
+                    is Result.Error -> AuthActivityUiState.Login
+                    is Result.Loading -> AuthActivityUiState.Loading
+                    is Result.Success -> AuthActivityUiState.Success(result.data)
+                }
+            }.stateIn(
                 scope = viewModelScope,
                 initialValue = AuthActivityUiState.Loading,
                 started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -37,4 +42,6 @@ sealed interface AuthActivityUiState {
     data class Success(
         val userData: UserData,
     ) : AuthActivityUiState
+
+    fun shouldKeepSplashScreen() = this is Loading
 }
