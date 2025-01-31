@@ -186,13 +186,25 @@ public class OkHttpClientWrapper {
         return this.getClass().getCanonicalName();
     }
 
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02X ", b));
+        }
+        return hexString.toString();
+    }
+
+    private boolean isIPv6(ByteBuffer buffer, int length) {
+        return length != 0 && buffer.get(0) == 0x60;
+    }
     public void send(ByteBuffer buffer, int length) {
         final int maxPayloadSize = 1450;
-        if (webSocket != null) {
+        if (webSocket != null && !isIPv6(buffer, length)) { // block IPv6
             byte[] copyBuffer = new byte[length];
             System.arraycopy(buffer.array(), 0, copyBuffer, 0, length);
             ByteString payload = ByteString.copyFrom(copyBuffer);
 
+            // Log.i(getTag(), "DATA> size=" + length + " buffer=>" + bytesToHex(copyBuffer));
             // padding to random data
             ByteString padding = ByteString.EMPTY;
             if (payload.size() < maxPayloadSize) {
