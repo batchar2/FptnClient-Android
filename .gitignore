@@ -1,5 +1,7 @@
 app/.classpath
 app/.project
+auth/
+core/
 .idea/
 .kotlin/
 .project

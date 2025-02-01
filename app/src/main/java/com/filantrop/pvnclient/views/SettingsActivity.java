@@ -2,12 +2,16 @@ package com.filantrop.pvnclient.views;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 
 import androidx.activity.OnBackPressedCallback;
@@ -82,6 +86,16 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
         serverListView = findViewById(R.id.settings_servers_list);
+
+        TextView versionTextView = findViewById(R.id.settings_fptn_version);
+        try {
+            Context context = getApplicationContext();
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            final String version = pInfo.versionName;
+            versionTextView.setText(version);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void onLogout(View v) {
