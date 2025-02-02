@@ -21,7 +21,7 @@ class MainViewModel(
                 when (result) {
                     is Result.Error -> AuthActivityUiState.Login
                     is Result.Loading -> AuthActivityUiState.Loading
-                    is Result.Success -> AuthActivityUiState.Success(result.data)
+                    is Result.Success -> AuthActivityUiState.Main(result.data)
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -39,9 +39,27 @@ sealed interface AuthActivityUiState {
 
     data object Login : AuthActivityUiState
 
-    data class Success(
+    data class Main(
         val userData: UserData,
     ) : AuthActivityUiState
 
+    /**
+     * Returns `true` if the state wasn't loaded yet and it should keep showing the splash screen.
+     */
     fun shouldKeepSplashScreen() = this is Loading
+
+    /**
+     * Returns `true` if the dynamic color is disabled.
+     */
+    val shouldDisableDynamicTheming: Boolean get() = true
+
+    /**
+     * Returns `true` if the Android theme should be used.
+     */
+    val shouldUseAndroidTheme: Boolean get() = false
+
+    /**
+     * Returns `true` if dark theme should be used.
+     */
+    fun shouldUseDarkTheme(isSystemDarkTheme: Boolean) = isSystemDarkTheme
 }

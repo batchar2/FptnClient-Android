@@ -44,6 +44,7 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.deps.sorting) apply true
     alias(libs.plugins.deps.unused) apply true
+    alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.ksp) apply false
 }
 

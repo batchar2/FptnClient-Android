@@ -23,7 +23,7 @@ gradlePlugin {
             implementationClass = "com.filantrop.pvnclient.gradle.AndroidLibraryConventionPlugin"
         }
         register("androidLibraryCompose") {
-            id = "pvnclient.android.library.compose"
+            id = "pvnclient.android.library.android.compose"
             implementationClass = "com.filantrop.pvnclient.gradle.AndroidLibraryComposeConventionPlugin"
         }
         register("kotlinLibrary") {
