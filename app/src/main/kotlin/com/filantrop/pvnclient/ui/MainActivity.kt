@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
 
     private fun openScreen(state: AuthActivityUiState) {
         setContent {
-            val darkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+            val darkTheme = isSystemInDarkTheme()
 
             // Update the edge to edge configuration to match the theme
             // This is the same parameters as the default enableEdgeToEdge call, but we manually
@@ -50,22 +51,26 @@ class MainActivity : ComponentActivity() {
             DisposableEffect(darkTheme) {
                 enableEdgeToEdge(
                     statusBarStyle =
-                    SystemBarStyle.auto(
-                        Color.TRANSPARENT,
-                        Color.TRANSPARENT,
-                    ) { darkTheme },
+                        SystemBarStyle.auto(
+                            Color.TRANSPARENT,
+                            Color.TRANSPARENT,
+                        ) { darkTheme },
                     navigationBarStyle =
-                    SystemBarStyle.auto(
-                        lightScrim,
-                        darkScrim,
-                    ) { darkTheme },
+                        SystemBarStyle.auto(
+                            lightScrim,
+                            darkScrim,
+                        ) { darkTheme },
                 )
                 onDispose {}
             }
             PvnTheme(darkTheme = darkTheme) {
                 when (state) {
-                    is AuthActivityUiState.Loading -> System.out.println("moggot Loading")
-                    is AuthActivityUiState.Login -> AuthScreen()
+                    is AuthActivityUiState.Loading -> {
+                        System.out.println("moggot Loading")
+                    }
+                    is AuthActivityUiState.Login -> {
+                        AuthScreen()
+                    }
                     is AuthActivityUiState.Main -> {
                         val context = LocalContext.current
                         context.startActivity(Intent(context, MainActivity::class.java))

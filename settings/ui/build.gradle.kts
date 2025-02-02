@@ -13,15 +13,10 @@ android {
 
 dependencies {
 
-    implementation(project(":settings:data"))
-    implementation(project(":settings:domain"))
-    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.runtime.android)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.koin.core)
-    implementation(libs.koin.core.viewmodel.jvm)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.navigation.runtime)
+    implementation(libs.kotlinx.serialization.core.jvm)
 
     ksp(libs.koin.ksp.compiler)
 }

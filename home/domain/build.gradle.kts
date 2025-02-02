@@ -6,9 +6,5 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core:model"))
-    implementation(libs.koin.core)
-    implementation(libs.kotlinx.coroutines.core)
-
     ksp(libs.koin.ksp.compiler)
 }

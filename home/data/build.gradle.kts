@@ -10,11 +10,5 @@ android {
 }
 
 dependencies {
-
-    implementation(project(":home:domain"))
-
-    implementation(libs.koin.core)
-    implementation(libs.kotlinx.coroutines.core)
-
     ksp(libs.koin.ksp.compiler)
 }
