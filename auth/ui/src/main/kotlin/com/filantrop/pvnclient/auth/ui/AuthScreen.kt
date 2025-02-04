@@ -32,7 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filantrop.pvnclient.core.common.Constants.SPACE
-import com.filantrop.pvnclient.core.designsystem.icon.PVNIcons
+import com.filantrop.pvnclient.core.designsystem.icons.PvnIcons
 import org.koin.androidx.compose.koinViewModel
 
 private const val WEIGHT = 0.5f
@@ -71,7 +71,7 @@ fun AuthScreen(
                 Icon(
                     modifier = Modifier
                         .size(148.dp),
-                    imageVector = PVNIcons.Person,
+                    imageVector = PvnIcons.Person,
                     contentDescription = "person",
                     tint = MaterialTheme.colorScheme.primary,
                 )
