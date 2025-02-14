@@ -31,6 +31,7 @@ https://batchar2.github.io/fptn/
     <string name="error">Error on connecting occurs!</string>
     <string name="paste_your_token">Paste your token here...</string>
     <string name="running">FptnVPN is running</string>
+    <string name="reconnection">FptnVPN is reconnecting...</string>
 
     <string name="vpn_permission_warning">For running FptnVPN need permissions!</string>
 

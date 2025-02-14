@@ -27,18 +27,21 @@ public class CustomWebSocketListener extends WebSocketListener {
     public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
         Log.d(getTag(), "=== WebSocketListener.onClosing ===");
         super.onClosed(webSocket, code, reason);
+        //messageCallback.onConnectionClose();
     }
 
     @Override
     public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
         Log.d(getTag(), "=== WebSocketListener.onClosing ===");
-        super.onClosing(webSocket, code, reason);
+        //super.onClosing(webSocket, code, reason);
+        messageCallback.onConnectionClose();
     }
 
     @Override
     public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
         Log.d(getTag(), "=== WebSocketListener.onFailure ===");
         super.onFailure(webSocket, t, response);
+        messageCallback.onConnectionClose();
     }
 
     @Override
@@ -66,6 +69,7 @@ public class CustomWebSocketListener extends WebSocketListener {
     public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
         Log.i(getTag(), "=== OnOpen Thread: ===" + Thread.currentThread().getId());
         super.onOpen(webSocket, response);
+        messageCallback.onOpen();
     }
 
     private String getTag() {

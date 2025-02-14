@@ -55,6 +55,8 @@ public class LoginActivity extends AppCompatActivity {
             if (result != null && !result.isEmpty()) { // miss login
                 Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                 startActivity(intent);
+            } else {
+                // show
             }
         }, this.getMainExecutor());
 

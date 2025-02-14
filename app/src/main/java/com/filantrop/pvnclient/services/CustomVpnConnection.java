@@ -66,6 +66,10 @@ public class CustomVpnConnection extends Thread {
     @Getter
     private Instant connectionTime;
 
+    private CustomWebSocketListener сustomWebSocketListener;
+
+    private ParcelFileDescriptor vpnInterface;
+
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
     private final DataRateCalculator uploadRate = new DataRateCalculator(1000);
@@ -92,7 +96,7 @@ public class CustomVpnConnection extends Thread {
 
     @Override
     public void run() {
-        ParcelFileDescriptor vpnInterface = null;
+        vpnInterface = null;
         try {
             sendConnectionStateToUI(ConnectionState.CONNECTING);
 
@@ -156,17 +160,51 @@ public class CustomVpnConnection extends Thread {
 
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            WebSocketMessageCallback callback = data -> {
-                try {
-                    downloadRate.update(data.length);
-                    outputStream.write(data);
-                } catch (Exception e) {
-                    Log.w(getTag(), "onMessageReceived: " + new String(data));
+            WebSocketMessageCallback callback = new WebSocketMessageCallback() {
+                @Override
+                public void onMessageReceived(byte[] data) {
+                    try {
+                        downloadRate.update(data.length);
+                        outputStream.write(data);
+                    } catch (Exception e) {
+                        Log.w(getTag(), "Ошибка записи в TUN: " + new String(data));
+                    }
+                }
+                @Override
+                public void onConnectionClose() {
+                    sendConnectionStateToUI(ConnectionState.RECONNECTING);
+                    scheduler.schedule(() -> {
+                        if (isInterrupted()) {
+                            return;
+                        }
+                        if (isTunInterfaceValid(vpnInterface)) {
+                            try {
+                                Log.i(getTag(), "Reconnect WebSocket...");
+                                okHttpClientWrapper.stopWebSocket();
+                                Thread.sleep(500);
+                                okHttpClientWrapper.startWebSocket(сustomWebSocketListener);
+                            } catch (PVNClientException e) {
+                                sendErrorMessageToUI(e.getMessage());
+                            } catch (InterruptedException e) {
+                                Log.w(getTag(), "The thread was interapted", e);
+                                Thread.currentThread().interrupt();
+                            }
+                        } else {
+                            Log.i(getTag(), "Need recreate");
+                            restartVpnConnection();
+                        }
+                    }, 3, TimeUnit.SECONDS);
+                }
+                @Override
+                public void onOpen() {
+                    sendConnectionStateToUI(ConnectionState.CONNECTED);
                 }
             };
-            okHttpClientWrapper.startWebSocket(new CustomWebSocketListener(callback));
+
+            сustomWebSocketListener = new CustomWebSocketListener(callback);
+            okHttpClientWrapper.startWebSocket(сustomWebSocketListener);
             connectionTime = Instant.now();
-            sendConnectionStateToUI(ConnectionState.CONNECTED);
+
 
             // Packets to be sent are queued in this input stream.
             // todo: вынести в отдельный поток? чтобы не блокировать этот
@@ -210,6 +248,15 @@ public class CustomVpnConnection extends Thread {
     private void sendConnectionStateToUI(ConnectionState connectionState) {
         service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, Pair.create(connectionState, Instant.now())));
     }
+
+    private boolean isTunInterfaceValid(ParcelFileDescriptor vpnInterface) {
+        // need check change network condition
+        return vpnInterface.getFileDescriptor() != null;
+    }
+    private void restartVpnConnection() {
+        Log.i(getTag(), "Перезапускаем VPN-соединение...");
+    }
+
 
     private String getTag() {
         return this.getClass().getCanonicalName() + "[" + connectionId + "]";

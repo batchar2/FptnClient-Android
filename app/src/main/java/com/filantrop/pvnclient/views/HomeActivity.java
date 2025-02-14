@@ -188,8 +188,12 @@ public class HomeActivity extends AppCompatActivity {
                 case CONNECTED:
                     connectedStateUiItems();
                     break;
+                case RECONNECTING:
+                    reconnectedStateUiItems();
+                    break;
                 case DISCONNECTED:
                     disconnectedStateUiItems();
+                    break;
             }
         });
         fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
@@ -289,6 +293,11 @@ public class HomeActivity extends AppCompatActivity {
 
         // DISABLE SETTINGS
         settingsMenuItem.setEnabled(false);
+    }
+
+    private void reconnectedStateUiItems()
+    {
+        statusTextView.setText(R.string.reconnection);
     }
 
     private void hideView(View view) {
