@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -170,30 +171,39 @@ public class CustomVpnConnection extends Thread {
                         Log.w(getTag(), "Ошибка записи в TUN: " + new String(data));
                     }
                 }
+
                 @Override
                 public void onConnectionClose() {
-                    sendConnectionStateToUI(ConnectionState.RECONNECTING);
-                    scheduler.schedule(() -> {
-                        if (isInterrupted()) {
-                            return;
-                        }
-                        if (isTunInterfaceValid(vpnInterface)) {
-                            try {
-                                Log.i(getTag(), "Reconnect WebSocket...");
-                                okHttpClientWrapper.stopWebSocket();
-                                Thread.sleep(500);
-                                okHttpClientWrapper.startWebSocket(сustomWebSocketListener);
-                            } catch (PVNClientException e) {
-                                sendErrorMessageToUI(e.getMessage());
-                            } catch (InterruptedException e) {
-                                Log.w(getTag(), "The thread was interapted", e);
-                                Thread.currentThread().interrupt();
+                    if (isInterrupted() && !isAlive()) {
+                        return;
+                    }
+                    try {
+
+                        scheduler.schedule(() -> {
+                            if (isInterrupted()) {
+                                return;
                             }
-                        } else {
-                            Log.i(getTag(), "Need recreate");
-                            restartVpnConnection();
-                        }
-                    }, 3, TimeUnit.SECONDS);
+                            if (isTunInterfaceValid(vpnInterface)) {
+                                try {
+                                    Log.i(getTag(), "Reconnect WebSocket...");
+                                    sendConnectionStateToUI(ConnectionState.RECONNECTING);
+                                    okHttpClientWrapper.stopWebSocket();
+                                    Thread.sleep(500);
+                                    okHttpClientWrapper.startWebSocket(сustomWebSocketListener);
+                                } catch (PVNClientException e) {
+                                    sendErrorMessageToUI(e.getMessage());
+                                } catch (InterruptedException e) {
+                                    Log.w(getTag(), "The thread was interapted", e);
+                                    // Thread.currentThread().interrupt();
+                                }
+                            } else {
+                                Log.i(getTag(), "Need recreate");
+                                restartVpnConnection();
+                            }
+                        }, 1, TimeUnit.SECONDS);
+                    } catch (RejectedExecutionException e) {
+                        Log.w(getTag(), "The thread was rejected", e);
+                    }
                 }
                 @Override
                 public void onOpen() {

@@ -10,26 +10,20 @@
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        tools:ignore="MissingConstraints">
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavBar"
+        android:orientation="vertical">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:src="@drawable/icon_settings_circle_100"
                 android:layout_gravity="center"
-                android:layout_marginTop="100dp" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_gravity="center"
-                android:textStyle="bold"
-                android:text="FPTN" />
+                android:layout_marginTop="30dp" />
             <TextView
                 android:id="@+id/settings_fptn_version"
                 android:layout_width="wrap_content"
@@ -39,6 +33,29 @@
                 android:textStyle="bold"
                 android:text="@string/app_version" />
 
+            <LinearLayout
+                android:background="@drawable/round_settings_back_white10_20"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:ignore="MissingConstraints"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical"
+                android:padding="10dp">
+                <TextView
+                    android:id="@+id/settings_about"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:text="@string/info_message_html"
+                    android:justificationMode="inter_word"
+                    android:textAlignment="viewStart" />
+            </LinearLayout>
             <!-- Your VPN servers -->
             <LinearLayout
                 android:background="@drawable/round_settings_back_white10_20"
@@ -156,6 +173,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginTop="20dp"
+                android:layout_marginBottom="30dp"
                 android:orientation="vertical"
                 android:padding="10dp"
                 android:onClick="onLogout"

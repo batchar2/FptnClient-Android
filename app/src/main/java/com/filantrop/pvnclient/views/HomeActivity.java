@@ -74,6 +74,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
 
+    private boolean wasInit = false;
     private final ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
         if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
             startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
@@ -89,19 +90,15 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.home_layout);
 
         initializeVariable();
-
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // miss back button
-            }
-        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
+        if (!wasInit) {
+            initializeVariable();
+        }
         connection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -124,7 +121,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-
         unbindService(connection);
     }
 
@@ -143,7 +139,6 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
@@ -178,6 +173,11 @@ public class HomeActivity extends AppCompatActivity {
                 spinnerServers.setAdapter(new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item));
 
                 spinnerServers.performClosedEvent(); // FIX SPINNER BACKGROUND
+            } else {
+                // goto Login activity
+                Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
@@ -253,6 +253,7 @@ public class HomeActivity extends AppCompatActivity {
         });
         // hide
         disconnectedStateUiItems();
+        wasInit = true;
     }
 
     private void connectingStateUiItems() {
