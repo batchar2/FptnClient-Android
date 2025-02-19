@@ -1,6 +1,7 @@
 package com.filantrop.pvnclient.services;
 
 import static com.filantrop.pvnclient.core.common.Constants.SELECTED_SERVER;
+import static com.filantrop.pvnclient.core.common.Constants.SELECTED_SERVER_ID_AUTO;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -130,34 +131,60 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "CustomVpnService.onStartCommand: " + intent);
-        if (ACTION_DISCONNECT.equals(intent.getAction())) {
-            disconnect();
-            return START_NOT_STICKY;
-        } else {
-            // Достаем параметры для подключения из intent
-            selectedServer = (FptnServerDto) intent.getSerializableExtra(SELECTED_SERVER);
-            if (FptnServerDto.AUTO.equals(selectedServer)) {
-                try {
-                    List<FptnServerDto> fptnServerDtos = fptnServerRepository.getAllServersListFuture().get();
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING));
-                    selectedServer = speedTestService.findFastestServer(fptnServerDtos);
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getSelectedServerLiveData().postValue(selectedServer));
-                } catch (ExecutionException | InterruptedException | PVNClientException e) {
-                    Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED));
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(e.getMessage()));
-                    selectedServer = null;
-                }
-            }
+        try {
+            if (ACTION_DISCONNECT.equals(intent.getAction())) {
+                /* if we need disconnect */
+                // reset selected
+                fptnServerRepository.resetSelected();
+                // stop running threads
+                disconnect();
+                return START_NOT_STICKY;
+            } else if (ACTION_CONNECT.equals(intent.getAction())) {
+                int serverId = intent.getIntExtra(SELECTED_SERVER, SELECTED_SERVER_ID_AUTO);
+                if (serverId == SELECTED_SERVER_ID_AUTO) {
+                    try {
+                        List<FptnServerDto> fptnServerDtos = fptnServerRepository.getAllServersListFuture().get();
 
-            if (selectedServer == null) {
+                        Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING));
+                        FptnServerDto server = speedTestService.findFastestServer(fptnServerDtos);
+
+                        Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getSelectedServerLiveData().postValue(server));
+                        selectedServer = server;
+
+                        fptnServerRepository.resetSelected().get();
+                        fptnServerRepository.setIsSelected(server.id).get();
+                    } catch (PVNClientException e) {
+                        Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
+                        fptnServerRepository.resetSelected().get();
+                        Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED));
+                        Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(e.getMessage()));
+                        /* if we need all servers unreachable */
+                        return START_NOT_STICKY;
+                    }
+                } else {
+                    fptnServerRepository.resetSelected().get();
+                    fptnServerRepository.setIsSelected(serverId).get();
+                }
+            } else {
+                /* restart after service destruction because all fields of intent is null */
+                Log.i(TAG, "onStartCommand: restart after error");
+            }
+            selectedServer = selectedServer == null ? selectedServer :
+                    fptnServerRepository.getSelected().get();
+            if (selectedServer != null) {
+                connect(selectedServer.host, selectedServer.port, selectedServer.username, selectedServer.password);
+                /* it's ok */
+                return START_STICKY;
+            } else {
                 Log.e(TAG, "onStartCommand: selectedServer is null");
-                Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.ALL_SERVERS_UNREACHABLE.getValue()));
+                Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.SERVER_LIST_NULL_OR_EMPTY.getValue()));
+                /* it's ok - selected server not selected - that should means that previously disconnected*/
                 return START_NOT_STICKY;
             }
-
-            connect(selectedServer.getHost(), selectedServer.getPort(), selectedServer.getUsername(), selectedServer.getPassword());
-            return START_REDELIVER_INTENT;
+        } catch (ExecutionException | InterruptedException e) {
+            /* must never happens */
+            Log.e(TAG, "onStartCommand: ITS NEVER HAPPENS!");
+            return START_NOT_STICKY;
         }
     }
 

@@ -110,7 +110,7 @@ public class SpeedTestService {
     }
 
     private SpeedTestCallback runServerSpeedTest(FptnServerDto fptnServerDto, CountDownLatch countDownLatch) {
-        String url = String.format(Locale.getDefault(), GET_FILE_PATTERN, fptnServerDto.getHost(), fptnServerDto.getPort());
+        String url = String.format(Locale.getDefault(), GET_FILE_PATTERN, fptnServerDto.host, fptnServerDto.port);
         Request request = new Request.Builder().url(url).get().build();
         SpeedTestCallback callback = new SpeedTestCallback(fptnServerDto, Instant.now(), countDownLatch);
         client.newCall(request).enqueue(callback);

@@ -65,30 +65,13 @@ public class FptnServerViewModel extends AndroidViewModel {
         return fptnServerRepository.getAllServersListFuture();
     }
 
-    public int getSelectedServerPosition() {
-        FptnServerDto selectedServer = selectedServerLiveData.getValue();
-        if (FptnServerDto.AUTO.equals(serverDtoListLiveData.getValue()) || selectedServer == null) {
-            return 0;
-        }
-        List<FptnServerDto> fptnServerDtos = serverDtoListLiveData.getValue();
-        if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
-            for (int i = 0; i < fptnServerDtos.size(); i++) {
-                if (selectedServer.equals(fptnServerDtos.get(i))) {
-                    // first element in spinner adapter is AUTO
-                    return i + 1;
-                }
-            }
-        }
-        return 0;
-    }
-
     public void deleteAll() {
         fptnServerRepository.deleteAll();
     }
 
     public boolean parseAndSaveFptnLink(String url) {
         // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
-        final String preparedUrl = url.replaceAll("\\s+","")
+        final String preparedUrl = url.replaceAll("\\s+", "")
                 .replace("fptn://", "")
                 .replace("fptn:", "");
         try {
@@ -106,7 +89,7 @@ public class FptnServerViewModel extends AndroidViewModel {
                 String host = serverObject.getString("host");
                 int port = serverObject.getInt("port");
 
-                serverDtoList.add(new FptnServerDto(name, username, password, host, port));
+                serverDtoList.add(new FptnServerDto(0, false, name, username, password, host, port));
                 Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
             }
             if (!serverDtoList.isEmpty()) {
