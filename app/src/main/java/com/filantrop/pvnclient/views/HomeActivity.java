@@ -322,9 +322,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private Intent enrichIntent(Intent intent) {
-        FptnServerDto server = fptnViewModel.getSelectedServerLiveData().getValue();
-        intent.putExtra(SELECTED_SERVER, server);
-        return intent;
+        return intent.putExtra(SELECTED_SERVER, fptnViewModel.getSelectedServerLiveData().getValue().id);
     }
 
 }

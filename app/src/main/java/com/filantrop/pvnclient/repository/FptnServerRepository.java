@@ -36,4 +36,16 @@ public class FptnServerRepository {
     public void insertAll(List<FptnServerDto> serverDtoList) {
         executorService.execute(() -> serverDtoList.forEach(fptnServerDto -> database.fptnServerDAO().insert(fptnServerDto)));
     }
+
+    public ListenableFuture<Integer>  resetSelected() {
+        return database.fptnServerDAO().resetSelected();
+    }
+
+    public ListenableFuture<Integer> setIsSelected(int id) {
+        return database.fptnServerDAO().setIsSelected(id);
+    }
+
+    public ListenableFuture<FptnServerDto> getSelected() {
+        return database.fptnServerDAO().getSelected();
+    }
 }

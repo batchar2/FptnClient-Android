@@ -21,6 +21,15 @@ public interface FptnServerDAO {
     @Query("SELECT * FROM server_table")
     ListenableFuture<List<FptnServerDto>> getAllServersListFuture();
 
+    @Query("UPDATE server_table SET isSelected = 1 WHERE id = :id")
+    ListenableFuture<Integer> setIsSelected(int id);
+
+    @Query("SELECT * FROM server_table WHERE isSelected = 1")
+    ListenableFuture<FptnServerDto> getSelected();
+
+    @Query("UPDATE server_table SET isSelected = 0 WHERE 1")
+    ListenableFuture<Integer> resetSelected();
+
     @Query("DELETE FROM server_table")
     void deleteAll();
 }

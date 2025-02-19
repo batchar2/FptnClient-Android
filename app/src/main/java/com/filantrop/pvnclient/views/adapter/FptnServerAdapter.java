@@ -39,7 +39,7 @@ public class FptnServerAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return fptnServerDtoList.get(position).getId();
+        return fptnServerDtoList.get(position).id;
     }
 
     @Override
@@ -50,10 +50,10 @@ public class FptnServerAdapter extends BaseAdapter {
         FptnServerDto server = fptnServerDtoList.get(position);
 
         TextView host = view.findViewById(R.id.fptn_server_host);
-        host.setText(server.getHost());
+        host.setText(server.host);
 
         TextView name = view.findViewById(R.id.fptn_server_name);
-        name.setText(server.getName());
+        name.setText(server.name);
 
         return view;
     }
