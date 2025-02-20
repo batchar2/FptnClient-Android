@@ -1,6 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-import com.filantrop.pvnclient.gradle.DetektOptions.applyDetektOptions
-import com.filantrop.pvnclient.gradle.FormattingOptions.applyPrecheckOptions
+import org.fptn.vpnclient.gradle.DetektOptions.applyDetektOptions
+import org.fptn.vpnclient.gradle.FormattingOptions.applyPrecheckOptions
 
 buildscript {
 

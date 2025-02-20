@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.filantrop.pvnclient"
+    namespace = "org.fptn.vpnclient"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
 
     defaultConfig {
-        applicationId = "com.filantrop.pvnclient"
+        applicationId = "org.fptn.vpnclient"
         val versionMajor: Int by rootProject.extra
         val versionMinor: Int by rootProject.extra
         val versionPatch: Int by rootProject.extra
