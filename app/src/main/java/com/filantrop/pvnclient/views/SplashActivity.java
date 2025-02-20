@@ -39,8 +39,10 @@ public class SplashActivity extends AppCompatActivity {
             boolean isLoggedIn = (serverDtoList != null && !serverDtoList.isEmpty()); // miss login
             if (isLoggedIn) {
                 startActivity(new Intent(SplashActivity.this, HomeActivity.class));
+                finish();
             } else {
                 startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                finish();
             }
         }, this.getMainExecutor());
     }
