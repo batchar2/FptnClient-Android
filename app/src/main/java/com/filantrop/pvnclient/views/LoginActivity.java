@@ -78,6 +78,7 @@ public class LoginActivity extends AppCompatActivity {
         if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
+            finish();
         } else {
             Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
         }

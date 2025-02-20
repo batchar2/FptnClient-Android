@@ -81,6 +81,7 @@ public class SettingsActivity extends AppCompatActivity {
                 // goto Login activity
                 Intent intent = new Intent(SettingsActivity.this, SplashActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
         serverListView = findViewById(R.id.settings_servers_list);
