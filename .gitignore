@@ -1,7 +1,7 @@
 app/.classpath
 app/.project
 auth/
-core/
+#core/
 .idea/
 .project
 .settings/
