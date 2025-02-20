@@ -204,7 +204,6 @@ public class OkHttpClientWrapper {
             System.arraycopy(buffer.array(), 0, copyBuffer, 0, length);
             ByteString payload = ByteString.copyFrom(copyBuffer);
 
-            // Log.i(getTag(), "DATA> size=" + length + " buffer=>" + bytesToHex(copyBuffer));
             // padding to random data
             ByteString padding = ByteString.EMPTY;
             if (payload.size() < maxPayloadSize) {

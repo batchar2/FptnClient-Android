@@ -5,6 +5,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.filantrop.pvnclient.services.websocket.callback.OnFailureCallback;
+import com.filantrop.pvnclient.services.websocket.callback.OnMessageReceivedCallback;
+import com.filantrop.pvnclient.services.websocket.callback.OnOpenCallback;
+
 import org.fptn.protocol.Protocol;
 
 import java.io.IOException;
@@ -16,35 +20,37 @@ import okio.ByteString;
 
 public class CustomWebSocketListener extends WebSocketListener {
 
-    private final WebSocketMessageCallback messageCallback;
+    private final OnMessageReceivedCallback onMessageReceivedCallback;
+    private final OnFailureCallback onFailureCallback;
+    private final OnOpenCallback onOpenCallback;
 
-    public CustomWebSocketListener(WebSocketMessageCallback messageCallback) {
-        super();
-        this.messageCallback = messageCallback;
+    public CustomWebSocketListener(OnMessageReceivedCallback onMessageReceivedCallback,
+                                   OnFailureCallback onFailureCallback,
+                                   OnOpenCallback onOpenCallback) {
+        this.onMessageReceivedCallback = onMessageReceivedCallback;
+        this.onFailureCallback = onFailureCallback;
+        this.onOpenCallback = onOpenCallback;
     }
 
     @Override
     public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
         Log.d(getTag(), "=== WebSocketListener.onClosing ===");
-        super.onClosed(webSocket, code, reason);
     }
 
     @Override
     public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
         Log.d(getTag(), "=== WebSocketListener.onClosing ===");
-        super.onClosing(webSocket, code, reason);
     }
 
     @Override
     public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
         Log.d(getTag(), "=== WebSocketListener.onFailure ===");
-        super.onFailure(webSocket, t, response);
+        onFailureCallback.onFailure();
     }
 
     @Override
     public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
         Log.d(getTag(), "=== WebSocketListener.onMessage(text) ===");
-        super.onMessage(webSocket, text);
     }
 
     @Override
@@ -53,7 +59,7 @@ public class CustomWebSocketListener extends WebSocketListener {
             Protocol.Message message = Protocol.Message.parseFrom(bytes.toByteArray());
             if (message.getMsgType() == Protocol.MessageType.MSG_IP_PACKET) {
                 byte[] rawData = message.getPacket().getPayload().toByteArray();
-                messageCallback.onMessageReceived(rawData);
+                onMessageReceivedCallback.onMessageReceived(rawData);
             } else {
                 Log.i(getTag(), "Received a non-IP packet message type.");
             }
@@ -65,7 +71,7 @@ public class CustomWebSocketListener extends WebSocketListener {
     @Override
     public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
         Log.i(getTag(), "=== OnOpen Thread: ===" + Thread.currentThread().getId());
-        super.onOpen(webSocket, response);
+        onOpenCallback.onOpen();
     }
 
     private String getTag() {

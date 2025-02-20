@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -89,13 +88,6 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.home_layout);
 
         initializeVariable();
-
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // miss back button
-            }
-        });
     }
 
     @Override
@@ -178,6 +170,10 @@ public class HomeActivity extends AppCompatActivity {
                 spinnerServers.setAdapter(new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item));
 
                 spinnerServers.performClosedEvent(); // FIX SPINNER BACKGROUND
+            } else {
+                // goto Login activity
+                Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                startActivity(intent);
             }
         });
         fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
@@ -188,8 +184,12 @@ public class HomeActivity extends AppCompatActivity {
                 case CONNECTED:
                     connectedStateUiItems();
                     break;
+                case RECONNECTING:
+                    reconnectedStateUiItems();
+                    break;
                 case DISCONNECTED:
                     disconnectedStateUiItems();
+                    break;
             }
         });
         fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
@@ -291,6 +291,10 @@ public class HomeActivity extends AppCompatActivity {
         settingsMenuItem.setEnabled(false);
     }
 
+    private void reconnectedStateUiItems() {
+        statusTextView.setText(R.string.reconnection);
+    }
+
     private void hideView(View view) {
         if (view != null) {
             view.setVisibility(View.GONE);
@@ -304,6 +308,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
+        //todo: add check network!
         if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.DISCONNECTED) {
             Intent intent = VpnService.prepare(HomeActivity.this);
             if (intent != null) {

@@ -18,11 +18,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:src="@drawable/icon_settings_circle_100"
                 android:layout_gravity="center"
-                android:layout_marginTop="100dp" />
+                android:layout_marginTop="30dp" />
         </LinearLayout>
 
         <LinearLayout

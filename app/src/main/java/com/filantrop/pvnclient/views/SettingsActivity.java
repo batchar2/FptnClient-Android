@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
@@ -14,7 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -41,13 +42,6 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_layout);
         initializeVariable();
-
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // miss back button
-            }
-        });
     }
 
     @SuppressLint("InlinedApi")
@@ -83,6 +77,10 @@ public class SettingsActivity extends AppCompatActivity {
             if (fptnServerDtos != null && !fptnServerDtos.isEmpty()) {
                 serverListView.setAdapter(new FptnServerAdapter(fptnServerDtos, R.layout.settings_server_list_item)); // NEED TO CHANGE THE ITEM LAYOUT
                 setListViewHeightBasedOnChildren(serverListView);
+            } else {
+                // goto Login activity
+                Intent intent = new Intent(SettingsActivity.this, SplashActivity.class);
+                startActivity(intent);
             }
         });
         serverListView = findViewById(R.id.settings_servers_list);
@@ -96,6 +94,12 @@ public class SettingsActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        // about
+        TextView about = findViewById(R.id.settings_about);
+        about.setText(Html.fromHtml(getString(R.string.info_message_html), Html.FROM_HTML_MODE_LEGACY));
+        about.setMovementMethod(LinkMovementMethod.getInstance());
+        about.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     public void onLogout(View v) {
@@ -106,7 +110,7 @@ public class SettingsActivity extends AppCompatActivity {
                     dialog.dismiss();
                     fptnViewModel.deleteAll();
                     // goto Login activity
-                    Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                    Intent intent = new Intent(SettingsActivity.this, SplashActivity.class);
                     startActivity(intent);
                 })
                 .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
