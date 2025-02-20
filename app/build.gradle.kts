@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("pvnclient.android.application")
     alias(libs.plugins.protobuf)
@@ -6,6 +9,22 @@ plugins {
 android {
     namespace = "org.fptn.vpnclient"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
+
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile: File = rootProject.file("keystore.properties")
+            val keystoreProperties = Properties()
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+            } else {
+                println("Warning: keystore.properties file not found. Release signing configuration will not be applied.")
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "org.fptn.vpnclient"
