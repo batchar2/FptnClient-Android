@@ -21,13 +21,23 @@
     <string name="settings_token_info">Доступные сервера зашифрованы в токене. Для обновления списка серверов обновите токен</string>
 
     <string name="share_title">Поделиться через</string>
-    <string name="share_message">FPTN — это бесплатный VPN для обхода цензуры. Здесь нет регистрации!
+    <string name="share_message">FPTN — это некоммерческий VPN, волонтерский проект для обхода цензуры.
 https://batchar2.github.io/fptn/
     </string>
-
+    <string name="info_message_html">
+        <![CDATA[
+        FPTN — это некоммерческий VPN, волонтерский проект для обхода цензуры.
+        <br/>
+        <br/>
+        Наш сайт: <a href="https://batchar2.github.io/fptn/">https://batchar2.github.io/fptn/</a>
+        <br/>
+        Наша группа в Telegram <a href="https://t.me/fptn_project">@fptn_project</a>
+        ]]>
+</string>
     <string name="vpn_permission_warning">Для работы FPTN необходимы разрешения!</string>
 
     <string name="connecting">Подключаемся...</string>
+    <string name="reconnection">Переподключаемся...</string>
     <string name="connected">Подключен</string>
     <string name="disconnected">Отключен</string>
     <string name="error">Ошибка подключения!</string>
@@ -44,8 +54,11 @@ https://batchar2.github.io/fptn/
 
     <string name="server_label">Сервер:</string>
 
-    <string name="telegram_bot">Телеграм-бот</string>
-    <string name="telegram_text_template">Используйте {} чтобы получить токен</string>
+    <string name="telegram_bot_html">
+        <![CDATA[
+        Используйте Телеграм-бот <a href="https://t.me/fptn_bot">@fptn_bot</a> чтобы получить токен
+        ]]>
+    </string>
 
     <string name="notification_channel_name">Когда подключено</string>
     <string name="notification_group_name">Основные</string>

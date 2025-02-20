@@ -35,9 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_layout);
-
         initializeVariable();
-
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -49,25 +47,14 @@ public class LoginActivity extends AppCompatActivity {
     @SuppressLint({"InlinedApi", "ClickableViewAccessibility"})
     private void initializeVariable() {
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
-
         ListenableFuture<List<FptnServerDto>> allServersListFuture = fptnViewModel.getAllServers();
         Futures.addCallback(allServersListFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
-            if (result != null && !result.isEmpty()) { // miss login
-                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                startActivity(intent);
-            }
+            fptnViewModel.deleteAll(); // delete all
         }, this.getMainExecutor());
 
         // Show HTML
-        final String telegramBot = getString(R.string.telegram_bot);
-        final String textTemplate = getString(R.string.telegram_text_template);
-        final String telegramBotLink = getString(R.string.telegram_bot_link);
-
-        final String replacedText = textTemplate.replace("{}", "<a href=\"" + telegramBotLink + "\">" + telegramBot + "</a> ");
-        String html = "<div style=\"text-align:center;\">" + replacedText + "</div>";
-
         TextView label = findViewById(R.id.fptn_login_html_label);
-        label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
+        label.setText(Html.fromHtml(getString(R.string.telegram_bot_html), Html.FROM_HTML_MODE_LEGACY));
         label.setMovementMethod(LinkMovementMethod.getInstance());
 
         // HIDE KEYBOARD

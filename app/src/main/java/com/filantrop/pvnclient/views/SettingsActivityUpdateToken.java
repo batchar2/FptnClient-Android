@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.InputType;
 import android.text.method.LinkMovementMethod;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -39,13 +37,6 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_layout_update_token);
         initializeVariable();
-
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // miss back button
-            }
-        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -79,12 +70,8 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
             return false;
         });
         // Show HTML
-        final String telegramBot = getString(R.string.telegram_bot);
-        final String textTemplate = getString(R.string.telegram_text_template);
-        final String replacedText = textTemplate.replace("{}", "<a href=\"https://t.me/fptn_bot\">" + telegramBot +"</a> ");
-        String html = "<div style=\"text-align:center;\">" + replacedText + "</div>";
         TextView label = findViewById(R.id.fptn_login_html_label);
-        label.setText(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
+        label.setText(Html.fromHtml(getString(R.string.telegram_bot_html), Html.FROM_HTML_MODE_LEGACY));
         label.setMovementMethod(LinkMovementMethod.getInstance());
 
         // HIDE KEYBOARD

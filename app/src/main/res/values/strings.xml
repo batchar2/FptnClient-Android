@@ -21,8 +21,18 @@
     <string name="settings_token_info">Available servers are encrypted in the token. To update the server list, update the token.</string>
 
     <string name="share_title">Share via</string>
-    <string name="share_message">FPTN is a free VPN designed to bypass censorship. No registration required!
+    <string name="share_message">FPTN is a non-commercial VPN, a volunteer project for bypassing censorship.
 https://batchar2.github.io/fptn/
+    </string>
+    <string name="info_message_html">
+        <![CDATA[
+        FPTN is a non-commercial VPN, a volunteer project for bypassing censorship.
+        <br/>
+        <br/>
+        Our Telegram group <a href="https://t.me/fptn_project">@fptn_project</a>
+        <br/>
+        Our website <a href="https://batchar2.github.io/fptn/">https://batchar2.github.io/fptn/</a>
+        ]]>
     </string>
 
     <string name="connecting">FptnVPN is connecting...</string>
@@ -31,6 +41,7 @@ https://batchar2.github.io/fptn/
     <string name="error">Error on connecting occurs!</string>
     <string name="paste_your_token">Paste your token here...</string>
     <string name="running">FptnVPN is running</string>
+    <string name="reconnection">FptnVPN is reconnecting...</string>
 
     <string name="vpn_permission_warning">For running FptnVPN need permissions!</string>
 
@@ -45,8 +56,11 @@ https://batchar2.github.io/fptn/
 
     <string name="server_label">Server:</string>
 
-    <string name="telegram_bot">the Telegram-bot</string>
-    <string name="telegram_text_template">Use {} to get a token</string>
+    <string name="telegram_bot_html">
+        <![CDATA[
+        Use the Telegram-bot <a href="https://t.me/fptn_bot">@fptn_bot</a> to get a token
+        ]]>
+    </string>
 
     <string name="notification_channel_name">When connected</string>
     <string name="notification_group_name">Main</string>
