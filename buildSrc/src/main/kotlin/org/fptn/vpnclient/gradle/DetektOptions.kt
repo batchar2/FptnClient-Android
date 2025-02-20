@@ -1,8 +1,8 @@
 package org.fptn.vpnclient.gradle
 
-import org.fptn.vpnclient.gradle.task.TomlFileValidationTask
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
+import org.fptn.vpnclient.gradle.task.TomlFileValidationTask
 import org.gradle.api.Project
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.tasks.SourceTask
