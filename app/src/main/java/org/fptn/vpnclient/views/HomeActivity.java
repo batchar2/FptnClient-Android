@@ -1,6 +1,7 @@
 package org.fptn.vpnclient.views;
 
 import static org.fptn.vpnclient.core.common.Constants.SELECTED_SERVER;
+import static org.fptn.vpnclient.core.common.Constants.SELECTED_SERVER_ID_AUTO;
 import static org.fptn.vpnclient.utils.ResourcesUtils.getStringResourceByName;
 
 import android.annotation.SuppressLint;
@@ -13,7 +14,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -32,11 +32,13 @@ import org.fptn.vpnclient.views.adapter.FptnServerAdapter;
 import org.fptn.vpnclient.services.CustomVpnService;
 import org.fptn.vpnclient.viewmodel.FptnServerViewModel;
 import org.fptn.vpnclient.vpnclient.exception.ErrorCode;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.Getter;
 
@@ -123,24 +125,6 @@ public class HomeActivity extends AppCompatActivity {
     @SuppressLint("InlinedApi")
     private void initializeVariable() {
         spinnerServers = findViewById(R.id.home_server_spinner);
-        spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (parent.isEnabled()) {
-                    Object itemAtPosition = parent.getItemAtPosition(position);
-                    if (itemAtPosition instanceof FptnServerDto fptnServerDto) {
-                        if (fptnViewModel.getSelectedServerLiveData().getValue() != fptnServerDto) {
-                            fptnViewModel.getSelectedServerLiveData().postValue(fptnServerDto);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
 
         startStopButton = findViewById(R.id.home_do_connect_button);
         startStopButton.setOnClickListener(this::onClickToStartStop);
@@ -167,7 +151,17 @@ public class HomeActivity extends AppCompatActivity {
                 List<FptnServerDto> fixedServers = new ArrayList<>();
                 fixedServers.add(FptnServerDto.AUTO);
                 fixedServers.addAll(fptnServerDtos);
-                spinnerServers.setAdapter(new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item));
+                FptnServerAdapter fptnServerAdapter = new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item);
+                spinnerServers.setAdapter(fptnServerAdapter);
+
+                int i = 0;
+                for (FptnServerDto fixedServer : fixedServers) {
+                    if (fixedServer.isSelected) {
+                        spinnerServers.setSelection(i);
+                        connectedServerTextView.setText(fixedServer.getServerInfo());
+                    }
+                    i++;
+                }
 
                 spinnerServers.performClosedEvent(); // FIX SPINNER BACKGROUND
             } else {
@@ -217,11 +211,6 @@ public class HomeActivity extends AppCompatActivity {
                     snackbar.show();
                 }
             }
-        });
-
-        // set info about selected server
-        fptnViewModel.getSelectedServerLiveData().observe(this, fptnServerDto -> {
-            connectedServerTextView.setText(fptnServerDto.getServerInfo());
         });
 
         // FIXME
@@ -327,7 +316,10 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private Intent enrichIntent(Intent intent) {
-        return intent.putExtra(SELECTED_SERVER, fptnViewModel.getSelectedServerLiveData().getValue().id);
+        FptnServerDto selectedItem = (FptnServerDto) spinnerServers.getSelectedItem();
+
+        return intent.putExtra(SELECTED_SERVER,
+                Optional.ofNullable(selectedItem).map(s -> s.id).orElse(SELECTED_SERVER_ID_AUTO));
     }
 
 }

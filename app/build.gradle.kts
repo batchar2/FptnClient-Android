@@ -21,7 +21,10 @@ android {
                 storeFile = file(keystoreProperties["storeFile"]!!)
                 storePassword = keystoreProperties["storePassword"] as String
             } else {
-                println("Warning: keystore.properties file not found. Release signing configuration will not be applied.")
+                println(
+                    "Warning: keystore.properties file not found. " +
+                        "Release signing configuration will not be applied.",
+                )
             }
         }
     }
@@ -32,7 +35,8 @@ android {
         val versionMinor: Int by rootProject.extra
         val versionPatch: Int by rootProject.extra
         val versionBuild: Int by rootProject.extra
-        versionCode = 1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
+        versionCode =
+            1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch.$versionBuild"
 
         minSdk = rootProject.extra.get("minSdkVersion") as Int
