@@ -12,6 +12,7 @@ import org.fptn.vpnclient.database.model.FptnServerDto;
 import org.fptn.vpnclient.enums.ConnectionState;
 import org.fptn.vpnclient.repository.FptnServerRepository;
 import org.fptn.vpnclient.utils.DataRateCalculator;
+
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONArray;
@@ -48,8 +49,6 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
     @Getter
     private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
-    @Getter
-    private final MutableLiveData<FptnServerDto> selectedServerLiveData = new MutableLiveData<>(FptnServerDto.AUTO);
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledFuture;

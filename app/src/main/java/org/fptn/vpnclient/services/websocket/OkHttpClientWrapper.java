@@ -2,10 +2,14 @@ package org.fptn.vpnclient.services.websocket;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import org.fptn.vpnclient.database.model.FptnServerDto;
 import org.fptn.vpnclient.utils.ChromeCiphers;
 import org.fptn.vpnclient.utils.MySSLSocketFactory;
 import org.fptn.vpnclient.vpnclient.exception.ErrorCode;
 import org.fptn.vpnclient.vpnclient.exception.PVNClientException;
+
 import com.google.protobuf.ByteString;
 
 import org.fptn.protocol.Protocol;
@@ -34,7 +38,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 
-
 public class OkHttpClientWrapper {
     public static final MediaType JSON = MediaType.get("application/json");
     public static final String DNS_URL_PATTERN = "https://%s:%d/api/v1/dns";
@@ -42,22 +45,14 @@ public class OkHttpClientWrapper {
     public static final String WEBSOCKET_URL = "wss://%s:%d/fptn";
 
     private final OkHttpClient client;
-
-    private final String username;
-    private final String password;
-
-    private final String host;
-    private final int port;
+    private final FptnServerDto fptnServerDto;
 
     private String token;
 
     private WebSocket webSocket;
 
-    public OkHttpClientWrapper(String username, String password, String host, int port) throws PVNClientException {
-        this.username = username;
-        this.password = password;
-        this.host = host;
-        this.port = port;
+    public OkHttpClientWrapper(final FptnServerDto fptnServerDto) throws PVNClientException {
+        this.fptnServerDto = fptnServerDto;
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
@@ -102,13 +97,12 @@ public class OkHttpClientWrapper {
 
     public String getAuthToken() throws PVNClientException {
         Map<String, String> map = new HashMap<>();
-        map.put("username", username);
-        map.put("password", password);
+        map.put("username", fptnServerDto.username);
+        map.put("password", fptnServerDto.password);
         JSONObject json = new JSONObject(map);
 
-        final String url = String.format(Locale.getDefault(), LOGIN_URL_PATTERN, host, port);
         Request request = new Request.Builder()
-                .url(url)
+                .url(getUrlFromPattern(LOGIN_URL_PATTERN))
                 .post(RequestBody.create(json.toString(), JSON))
                 .build();
 
@@ -132,9 +126,8 @@ public class OkHttpClientWrapper {
     }
 
     public String getDnsServerIPv4() throws PVNClientException {
-        final String url = String.format(Locale.getDefault(), DNS_URL_PATTERN, host, port);
         Request request = new Request.Builder()
-                .url(url)
+                .url(getUrlFromPattern(DNS_URL_PATTERN))
                 .get()
                 .build();
 
@@ -162,12 +155,17 @@ public class OkHttpClientWrapper {
             token = getAuthToken();
         }
         Request request = new Request.Builder()
-                .url(String.format(Locale.getDefault(), WEBSOCKET_URL, host, port))
+                .url(getUrlFromPattern(WEBSOCKET_URL))
                 .addHeader("Authorization", "Bearer " + token)
                 // The server needs to know the client's virtual interface for simplicity.
                 .addHeader("ClientIP", "10.10.0.1")
                 .build();
         webSocket = client.newWebSocket(request, webSocketListener);
+    }
+
+    @NonNull
+    private String getUrlFromPattern(String urlPattern) {
+        return String.format(Locale.getDefault(), urlPattern, fptnServerDto.host, fptnServerDto.port);
     }
 
     public void stopWebSocket() {
@@ -197,6 +195,7 @@ public class OkHttpClientWrapper {
     private boolean isIPv6(ByteBuffer buffer, int length) {
         return length != 0 && buffer.get(0) == 0x60;
     }
+
     public void send(ByteBuffer buffer, int length) {
         final int maxPayloadSize = 1450;
         if (webSocket != null && !isIPv6(buffer, length)) { // block IPv6

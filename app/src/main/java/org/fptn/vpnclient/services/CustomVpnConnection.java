@@ -7,8 +7,8 @@ import android.os.Build;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import android.util.Pair;
 
+import org.fptn.vpnclient.database.model.FptnServerDto;
 import org.fptn.vpnclient.enums.ConnectionState;
 import org.fptn.vpnclient.enums.HandlerMessageTypes;
 import org.fptn.vpnclient.services.websocket.CustomWebSocketListener;
@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
+import kotlin.Triple;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,7 +56,7 @@ public class CustomVpnConnection extends Thread {
     @Getter
     private final int connectionId;
 
-    private final String serverHost;
+    private final FptnServerDto fptnServerDto;
 
     private OkHttpClientWrapper okHttpClientWrapper;
 
@@ -80,12 +81,12 @@ public class CustomVpnConnection extends Thread {
     private final AtomicInteger reconnectCount = new AtomicInteger(0);
 
 
-    public CustomVpnConnection(final CustomVpnService service, final int connectionId, final String serverHost, final int serverPort, final String username, final String password) {
+    public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto) {
         this.service = service;
         this.connectionId = connectionId;
-        this.serverHost = serverHost;
+        this.fptnServerDto = fptnServerDto;
         try {
-            this.okHttpClientWrapper = new OkHttpClientWrapper(username, password, serverHost, serverPort);
+            this.okHttpClientWrapper = new OkHttpClientWrapper(fptnServerDto);
         } catch (PVNClientException ex) {
             sendErrorMessageToUI(ex.getMessage());
         }
@@ -117,7 +118,7 @@ public class CustomVpnConnection extends Thread {
             builder.addDnsServer(dnsServer);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                builder.excludeRoute(new IpPrefix(InetAddress.getByName(serverHost), 32));
+                builder.excludeRoute(new IpPrefix(InetAddress.getByName(fptnServerDto.host), 32));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("172.16.0.0"), 12));
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName("192.168.0.0"), 16));
@@ -125,7 +126,7 @@ public class CustomVpnConnection extends Thread {
             } else {
                 IPAddress rootSubnet = new IPAddressString("0.0.0.0/0").getAddress();
                 List<IPAddress> subnetsToExclude = Stream.of(
-                                serverHost + "/32",
+                                fptnServerDto.host + "/32",
                                 "10.10.0.0/16",
                                 "172.16.0.0/12",
                                 "192.168.0.0/16")
@@ -141,7 +142,7 @@ public class CustomVpnConnection extends Thread {
                 }
             }
 
-            builder.setSession(serverHost).setConfigureIntent(mConfigureIntent);
+            builder.setSession(fptnServerDto.name).setConfigureIntent(mConfigureIntent);
 
             synchronized (service) {
                 vpnInterface = builder.establish();
@@ -240,15 +241,21 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void sendErrorMessageToUI(String msg) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
+        service.getHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
     }
 
     private void sendSpeedInfoToUI(String downloadSpeed, String uploadSpeed) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.SPEED_INFO.getValue(), 0, 0, Pair.create(downloadSpeed, uploadSpeed)));
+        service.getHandler().sendMessage(
+                Message.obtain(null, HandlerMessageTypes.SPEED_INFO.getValue(), 0, 0,
+                        new Triple<>(downloadSpeed, uploadSpeed, fptnServerDto.getServerInfo()))
+        );
     }
 
     private void sendConnectionStateToUI(ConnectionState connectionState) {
-        service.getMHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0, Pair.create(connectionState, Instant.now())));
+        service.getHandler().sendMessage(
+                Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0,
+                        new Triple<>(connectionState, Instant.now(), fptnServerDto.getServerInfo()))
+        );
     }
 
     private boolean isTunInterfaceValid(ParcelFileDescriptor vpnInterface) {
