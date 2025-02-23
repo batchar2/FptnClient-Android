@@ -86,5 +86,6 @@ https://batchar2.github.io/fptn/
     <string name="ssl_context_init_failed">SSL context initialization failed!</string>
 
     <string name="unknown_error">Error unknown! We don\'t know what has happened and it\'s scary</string>
+    <string name="list_point" translatable="false">•</string>
 
 </resources>
