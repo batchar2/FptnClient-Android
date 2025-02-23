@@ -87,7 +87,6 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
-
     androidTestImplementation(libs.androidx.junit)
 }
 java {
