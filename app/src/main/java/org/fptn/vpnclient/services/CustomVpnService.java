@@ -28,6 +28,7 @@ import org.fptn.vpnclient.database.model.FptnServerDto;
 import org.fptn.vpnclient.enums.ConnectionState;
 import org.fptn.vpnclient.enums.HandlerMessageTypes;
 import org.fptn.vpnclient.repository.FptnServerRepository;
+import org.fptn.vpnclient.utils.NetworkMonitor;
 import org.fptn.vpnclient.viewmodel.FptnServerViewModel;
 import org.fptn.vpnclient.views.HomeActivity;
 import org.fptn.vpnclient.views.speedtest.SpeedTestService;
@@ -138,7 +139,14 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             // stop running threads
             disconnect();
             return START_NOT_STICKY;
-        } else if (ACTION_CONNECT.equals(intent.getAction())) {
+        }
+        if (!NetworkMonitor.isOnline(this)){
+            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS.getValue()));
+            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED));
+            return START_NOT_STICKY;
+        }
+
+        if (ACTION_CONNECT.equals(intent.getAction())) {
             int serverId = intent.getIntExtra(SELECTED_SERVER, SELECTED_SERVER_ID_AUTO);
             if (serverId == SELECTED_SERVER_ID_AUTO) {
                 try {

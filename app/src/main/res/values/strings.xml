@@ -79,6 +79,7 @@ https://batchar2.github.io/fptn/
     <string name="dns_server_error">Network error! Failed to retrieve DNS from the server.</string>
     <string name="vpn_interface_error">Failed to create the VPN interface!</string>
     <string name="ciphers_error">The list of supported ciphers is empty!</string>
+    <string name="no_active_internet_connections">Not connected to Internet!</string>
 
     <string name="access_token_error">Authentication error! Please refresh your access token in the application settings.</string>
 
