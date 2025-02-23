@@ -89,7 +89,7 @@ public class FptnServerViewModel extends AndroidViewModel {
                 int port = serverObject.getInt("port");
 
                 serverDtoList.add(new FptnServerDto(0, false, name, username, password, host, port));
-                Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
+                //Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
             }
             if (!serverDtoList.isEmpty()) {
                 deleteAll(); // delete old
