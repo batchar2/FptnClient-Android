@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import org.fptn.vpnclient.database.dao.FptnServerDAO;
 import org.fptn.vpnclient.database.model.FptnServerDto;
 
-@Database(entities = {FptnServerDto.class}, version = 8, exportSchema = false)
+@Database(entities = {FptnServerDto.class}, version = 9, exportSchema = false)
 public abstract class FptnDatabase extends RoomDatabase {
     public abstract FptnServerDAO fptnServerDAO();
 

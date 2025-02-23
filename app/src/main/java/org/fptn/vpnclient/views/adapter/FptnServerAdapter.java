@@ -1,5 +1,8 @@
 package org.fptn.vpnclient.views.adapter;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +11,7 @@ import android.widget.TextView;
 
 import org.fptn.vpnclient.R;
 import org.fptn.vpnclient.database.model.FptnServerDto;
+import org.fptn.vpnclient.utils.CountryFlags;
 
 import java.util.List;
 
@@ -50,7 +54,20 @@ public class FptnServerAdapter extends BaseAdapter {
         FptnServerDto server = fptnServerDtoList.get(position);
 
         TextView host = view.findViewById(R.id.fptn_server_host);
-        host.setText(server.host);
+        if (server.countryCode != null) {
+            host.setText(CountryFlags.getCountryFlagByCountryCode(server.countryCode));
+            host.setVisibility(VISIBLE);
+
+            if (layoutViewResourceId == R.layout.home_list_recycler_server_item) {
+                view.findViewById(R.id.ivCountry).setVisibility(GONE);
+            }
+        } else {
+            host.setVisibility(GONE);
+
+            if (layoutViewResourceId == R.layout.home_list_recycler_server_item) {
+                view.findViewById(R.id.ivCountry).setVisibility(VISIBLE);
+            }
+        }
 
         TextView name = view.findViewById(R.id.fptn_server_name);
         name.setText(server.name);

@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData;
 import org.fptn.vpnclient.database.model.FptnServerDto;
 import org.fptn.vpnclient.enums.ConnectionState;
 import org.fptn.vpnclient.repository.FptnServerRepository;
+import org.fptn.vpnclient.utils.CountryFlags;
 import org.fptn.vpnclient.utils.DataRateCalculator;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -84,11 +85,12 @@ public class FptnServerViewModel extends AndroidViewModel {
             JSONArray serversArray = jsonObject.getJSONArray("servers");
             for (int i = 0; i < serversArray.length(); i++) {
                 JSONObject serverObject = serversArray.getJSONObject(i);
-                String name = serverObject.getString("name");
+                String hostname = serverObject.getString("name");
                 String host = serverObject.getString("host");
                 int port = serverObject.getInt("port");
 
-                serverDtoList.add(new FptnServerDto(0, false, name, username, password, host, port));
+                String countryCode = getCountryCodeFromJson(serverObject, hostname);
+                serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode));
                 //Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
             }
             if (!serverDtoList.isEmpty()) {
@@ -103,6 +105,15 @@ public class FptnServerViewModel extends AndroidViewModel {
             Log.e(TAG, "Undefined error:", e);
         }
         return false;
+    }
+
+    private String getCountryCodeFromJson(JSONObject serverObject, String hostname) {
+        try {
+            return serverObject.getString("country_code");
+        } catch (JSONException ignored) {
+            Log.w(TAG, "CountryCode not found!");
+        }
+        return CountryFlags.getCountryCodeFromHostName(hostname);
     }
 
     public void clearErrorTextMessage() {
