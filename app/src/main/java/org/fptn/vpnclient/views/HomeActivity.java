@@ -4,12 +4,18 @@ import static org.fptn.vpnclient.core.common.Constants.SELECTED_SERVER;
 import static org.fptn.vpnclient.core.common.Constants.SELECTED_SERVER_ID_AUTO;
 import static org.fptn.vpnclient.utils.ResourcesUtils.getStringResourceByName;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.VpnService;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -22,9 +28,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.fptn.vpnclient.R;
+import org.fptn.vpnclient.core.common.Constants;
 import org.fptn.vpnclient.database.model.FptnServerDto;
 import org.fptn.vpnclient.enums.ConnectionState;
 import org.fptn.vpnclient.utils.CustomSpinner;
@@ -43,6 +51,8 @@ import java.util.Optional;
 import lombok.Getter;
 
 public class HomeActivity extends AppCompatActivity {
+    private static final String KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested";
+
     private final String TAG = this.getClass().getName();
 
     @Getter
@@ -83,6 +93,18 @@ public class HomeActivity extends AppCompatActivity {
             fptnViewModel.getErrorTextLiveData().postValue(getString(R.string.vpn_permission_warning));
         }
     });
+
+    // On Android >= 13.0 we need to require permissions on notifications
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    Log.i(TAG, "Notifications enabled!");
+                } else {
+                    Log.i(TAG, "Notifications disabled!");
+                }
+            }
+    );
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -238,6 +260,8 @@ public class HomeActivity extends AppCompatActivity {
         });
         // hide
         disconnectedStateUiItems();
+
+        checkAndRequestNotificationPermission();
     }
 
     private void connectingStateUiItems() {
@@ -297,7 +321,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
-        //todo: add check network!
         if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.DISCONNECTED) {
             Intent intent = VpnService.prepare(HomeActivity.this);
             if (intent != null) {
@@ -320,6 +343,41 @@ public class HomeActivity extends AppCompatActivity {
 
         return intent.putExtra(SELECTED_SERVER,
                 Optional.ofNullable(selectedItem).map(s -> s.id).orElse(SELECTED_SERVER_ID_AUTO));
+    }
+
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // On Android >= 13.0 we need to require permissions on notifications
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                SharedPreferences sharedPreferences = getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+                boolean hasRequestedBefore = sharedPreferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false);
+                if (hasRequestedBefore) {
+                    return;
+                }
+                // Permission is not granted, show a dialog to explain reason
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.notifications_request_title)
+                        .setMessage(R.string.notifications_request_reason)
+                        .setPositiveButton(R.string.grant, (dialog, which) -> {
+                            // Request the permission
+                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                            sharedPreferences.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true).apply();
+                        })
+                        .setNegativeButton(R.string.deny, (dialog, which) -> {
+                            Log.i(TAG, "Notifications denied!");
+                            sharedPreferences.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true).apply();
+                        })
+                        .create()
+                        .show();
+            } else {
+                Log.i(TAG, "Notifications already allowed!");
+            }
+        } else {
+            // On Android < 13.0 notifications enabled by default
+            Log.i(TAG, "No need to request notification!");
+        }
     }
 
 }
