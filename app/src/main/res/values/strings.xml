@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_version" >Version 1.0.0 </string>
+    <string name="app_version">Version 1.0.0 </string>
     <string name="app_name" translatable="false">FPTN VPN</string>
 
 
@@ -87,5 +87,10 @@ https://batchar2.github.io/fptn/
 
     <string name="unknown_error">Error unknown! We don\'t know what has happened and it\'s scary</string>
     <string name="list_point" translatable="false">•</string>
+
+    <string name="notifications_request_title">You need to enable notifications.</string>
+    <string name="notifications_request_reason">For a stable connection, the application have to display a notification about the established connection.</string>
+    <string name="grant">Grant</string>
+    <string name="deny">Deny</string>
 
 </resources>

@@ -84,6 +84,8 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     // Binder given to clients.
     private final IBinder binder = new LocalBinder();
 
+    private boolean isNotificationAllowed = false;
+
     /**
      * Class used for the client Binder.  Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -132,21 +134,31 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "CustomVpnService.onStartCommand: " + intent);
+        if (intent == null) {
+            /* restart after service destruction because all fields of intent is null */
+            Log.w(TAG, "onStartCommand: restart after error");
+            return connectToPreviouslySelectedServer();
+        }
+
+        if (!NetworkMonitor.isOnline(this)) {
+            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS.getValue()));
+            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED));
+            Log.e(TAG, "onStartCommand: no active internet connections!");
+            return START_NOT_STICKY;
+        }
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        isNotificationAllowed = notificationManager.areNotificationsEnabled();
+
         if (ACTION_DISCONNECT.equals(intent.getAction())) {
+            Log.i(TAG, "onStartCommand: disconnect!");
             /* if we need disconnect */
             // reset selected
             fptnServerRepository.resetSelected();
             // stop running threads
             disconnect();
             return START_NOT_STICKY;
-        }
-        if (!NetworkMonitor.isOnline(this)){
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS.getValue()));
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED));
-            return START_NOT_STICKY;
-        }
-
-        if (ACTION_CONNECT.equals(intent.getAction())) {
+        } else if (ACTION_CONNECT.equals(intent.getAction())) {
             int serverId = intent.getIntExtra(SELECTED_SERVER, SELECTED_SERVER_ID_AUTO);
             if (serverId == SELECTED_SERVER_ID_AUTO) {
                 try {
@@ -167,9 +179,10 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 return connectToServer(serverId);
             }
         } else {
-            /* restart after service destruction because all fields of intent is null */
-            Log.i(TAG, "onStartCommand: restart after error");
-            return connectToPreviouslySelectedServer();
+            // should not happen
+            Log.e(TAG, "onStartCommand: action not recognize!");
+            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue("onStartCommand: action not recognize!"));
+            return START_NOT_STICKY;
         }
     }
 
@@ -319,6 +332,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     }
 
     private void startForegroundWithNotification(String title) {
+        if (!isNotificationAllowed) {
+            return;
+        }
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         NotificationChannel notificationChannel = notificationManager.getNotificationChannel(Constants.MAIN_NOTIFICATION_CHANNEL_ID);
@@ -341,6 +357,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     }
 
     private void updateNotificationWithMessage(String title, String message) {
+        if (!isNotificationAllowed) {
+            return;
+        }
         NotificationManager notificationManager = (NotificationManager) getSystemService(
                 NOTIFICATION_SERVICE);
         Notification notification = createNotification(title, message);

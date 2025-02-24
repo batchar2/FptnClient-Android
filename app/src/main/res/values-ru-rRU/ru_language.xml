@@ -83,4 +83,9 @@ https://batchar2.github.io/fptn/
     <string name="ssl_context_init_failed">Ошибка при инициализации контекста SSL!</string>
 
     <string name="unknown_error">Произошла неизвестная ошибка!</string>
+
+    <string name="notifications_request_title">Необходимо разрешение на вывод уведомлений!</string>
+    <string name="notifications_request_reason">Для устойчивой работы сервиса приложению необходимо выводить уведомление об активном соединении</string>
+    <string name="grant">Предоставить</string>
+    <string name="deny">Отказать</string>
 </resources>
