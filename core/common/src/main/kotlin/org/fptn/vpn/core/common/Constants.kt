@@ -7,4 +7,5 @@ object Constants {
     const val SELECTED_SERVER: String = "fptn.selected.server"
     const val SELECTED_SERVER_ID_AUTO: Int = -1
     const val MAIN_CONNECTED_NOTIFICATION_ID = 8975
+    const val INFO_NOTIFICATION_NOTIFICATION_ID = 8979
 }

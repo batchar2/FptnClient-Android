@@ -85,14 +85,15 @@ public class HomeActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
 
-    private final ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
-        if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
-            startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
-        } else {
-            Toast.makeText(this, R.string.vpn_permission_warning, Toast.LENGTH_SHORT).show();
-            fptnViewModel.getErrorTextLiveData().postValue(getString(R.string.vpn_permission_warning));
-        }
-    });
+    private final ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), activityResult -> {
+                if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
+                    startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
+                } else {
+                    Toast.makeText(this, R.string.vpn_permission_warning, Toast.LENGTH_SHORT).show();
+                    fptnViewModel.getErrorTextLiveData().postValue(getString(R.string.vpn_permission_warning));
+                }
+            });
 
     // On Android >= 13.0 we need to require permissions on notifications
     private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
@@ -173,7 +174,8 @@ public class HomeActivity extends AppCompatActivity {
                 List<FptnServerDto> fixedServers = new ArrayList<>();
                 fixedServers.add(FptnServerDto.AUTO);
                 fixedServers.addAll(fptnServerDtos);
-                FptnServerAdapter fptnServerAdapter = new FptnServerAdapter(fixedServers, R.layout.home_list_recycler_server_item);
+                FptnServerAdapter fptnServerAdapter = new FptnServerAdapter(fixedServers,
+                        R.layout.home_list_recycler_server_item);
                 spinnerServers.setAdapter(fptnServerAdapter);
 
                 int i = 0;
@@ -192,8 +194,8 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionState -> {
-            switch (connectionState) {
+        fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionStateInstantPair -> {
+            switch (connectionStateInstantPair.first) {
                 case CONNECTING:
                     connectingStateUiItems();
                     break;
@@ -210,7 +212,6 @@ public class HomeActivity extends AppCompatActivity {
         });
         fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
         fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
-        fptnViewModel.getTimerTextLiveData().observe(this, text -> connectionTimer.setText(text));
         fptnViewModel.getErrorTextLiveData().observe(this, errorCodeText -> {
             Log.d(TAG, "ErrorCodeText: " + errorCodeText);
             if (errorCodeText != null && !errorCodeText.isEmpty()) {
@@ -223,7 +224,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), stringResourceByName, 8000);
                     if (ErrorCode.Companion.isNeedToOfferRefreshToken(errorCode)) {
-                        snackbar.setAction("Refresh token...", v -> {
+                        snackbar.setAction(getString(R.string.refresh_token), v -> {
                             Intent browserIntent = new
                                     Intent(Intent.ACTION_VIEW,
                                     Uri.parse(getString(R.string.telegram_bot_link)));
@@ -235,7 +236,8 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        // FIXME
+        fptnViewModel.getTimerTextLiveData().observe(this, timerText -> connectionTimer.setText(timerText));
+
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuHome);
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -266,8 +268,6 @@ public class HomeActivity extends AppCompatActivity {
 
     private void connectingStateUiItems() {
         startStopButton.setChecked(true);
-        // todo: just to prevent auth exception - fix later
-        startStopButton.setEnabled(false);
 
         spinnerServers.setEnabled(false);
         statusTextView.setText(R.string.connecting);
@@ -275,13 +275,11 @@ public class HomeActivity extends AppCompatActivity {
 
     private void disconnectedStateUiItems() {
         startStopButton.setChecked(false);
-        // todo: just to prevent auth exception - fix later
-        startStopButton.setEnabled(true);
 
         statusTextView.setText(R.string.disconnected);
-        connectionTimer.setText("00:00:00");
-        downloadTextView.setText("0 Mb/s");
-        uploadTextView.setText("0 Mb/s");
+        connectionTimer.setText(R.string.zero_time);
+        downloadTextView.setText(R.string.zero_speed);
+        uploadTextView.setText(R.string.zero_speed);
         spinnerServers.setEnabled(true);
 
         hideView(connectionTimer);
@@ -296,8 +294,6 @@ public class HomeActivity extends AppCompatActivity {
 
     private void connectedStateUiItems() {
         startStopButton.setChecked(true);
-        // todo: just to prevent auth exception - fix later
-        startStopButton.setEnabled(true);
 
         statusTextView.setText(R.string.running);
         fptnViewModel.clearErrorTextMessage();
@@ -333,16 +329,20 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
-        if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.DISCONNECTED) {
+        ConnectionState currentConnectionState = Optional.ofNullable(fptnViewModel.getConnectionStateMutableLiveData().getValue()).map(pair -> pair.first)
+                .orElse(ConnectionState.DISCONNECTED);
+        if (currentConnectionState == ConnectionState.DISCONNECTED) {
             Intent intent = VpnService.prepare(HomeActivity.this);
             if (intent != null) {
-                // Запрос на предоставление приложению возможности запускать впн
+                // Request to user on launch vpn
                 intentActivityResultLauncher.launch(intent);
             } else {
                 startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
             }
-        } else if (Optional.ofNullable(fptnViewModel.getConnectionStateMutableLiveData().getValue()).map(ConnectionState::isActiveState).orElse(false)) {
-            startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
+        } else {
+            if (currentConnectionState.isActiveState()) {
+                startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
+            }
         }
     }
 
