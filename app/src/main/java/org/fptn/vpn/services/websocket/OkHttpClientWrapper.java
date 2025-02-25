@@ -23,7 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.net.ssl.SSLContext;
@@ -31,6 +30,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import lombok.Getter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -51,7 +51,8 @@ public class OkHttpClientWrapper {
 
     private WebSocket webSocket;
 
-    private boolean expired = false;
+    @Getter
+    private boolean shutdown = false;
 
     public OkHttpClientWrapper(final FptnServerDto fptnServerDto) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
@@ -59,22 +60,20 @@ public class OkHttpClientWrapper {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         // Create a trust manager that does not validate certificate chains
-        final TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                    }
+        final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+            }
 
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                    }
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+            }
 
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return new X509Certificate[]{};
-                    }
-                }
-        };
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[]{};
+            }
+        }};
 
         // Install the all-trusting trust manager
         final SSLContext sslContext;
@@ -97,80 +96,38 @@ public class OkHttpClientWrapper {
         this.client = builder.build();
     }
 
-    public String getAuthToken() throws PVNClientException {
-        Map<String, String> map = new HashMap<>();
-        map.put("username", fptnServerDto.username);
-        map.put("password", fptnServerDto.password);
-        JSONObject json = new JSONObject(map);
-
-        Request request = new Request.Builder()
-                .url(getUrlFromPattern(LOGIN_URL_PATTERN))
-                .post(RequestBody.create(json.toString(), JSON))
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == 200 && response.body() != null) {
-                JSONObject jsonResponse = new JSONObject(response.body().string());
-                if (jsonResponse.has("access_token")) {
-                    final String token = jsonResponse.getString("access_token");
-                    Log.i(getTag(), "Login successful.");
-                    return token;
-                } else {
-                    Log.e(getTag(), "Error: Access token not found in the response.");
-                }
-            } else {
-                Log.e(getTag(), "Error response: " + response);
-            }
-        } catch (JSONException | IOException e) {
-            Log.e(getTag(), "Login failed", e);
-        }
-        throw new PVNClientException(ErrorCode.ACCESS_TOKEN_ERROR.getValue());
-    }
-
     public String getDnsServerIPv4() throws PVNClientException {
         Request request = new Request.Builder()
                 .url(getUrlFromPattern(DNS_URL_PATTERN))
                 .get()
                 .build();
-
         try (Response response = client.newCall(request).execute()) {
             if (response.code() == 200 && response.body() != null) {
                 JSONObject jsonResponse = new JSONObject(response.body().string());
-                if (jsonResponse.has("dns")) {
-                    final String dnsServer = jsonResponse.getString("dns");
-                    Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
-                    return dnsServer;
-                } else {
-                    Log.e(getTag(), "Error: DNS not found in the response.");
-                }
+                String dnsServer = jsonResponse.getString("dns");
+                Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
+                return dnsServer;
             } else {
                 Log.e(getTag(), "Error response: " + response);
+                throw new PVNClientException(ErrorCode.DNS_SERVER_ERROR.getValue());
             }
         } catch (JSONException | IOException e) {
-            Log.e(getTag(), "Receiving DNS failed", e);
+            Log.e(getTag(), "Some error occurs on receiving DNS response: " + e);
+            throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
         }
-        throw new PVNClientException(ErrorCode.DNS_SERVER_ERROR.getValue());
     }
 
-    public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException, InterruptedException {
-        if (expired) {
-            throw new InterruptedException();
+    public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException, WebSocketAlreadyShutdownException {
+        if (isShutdown()) {
+            throw new WebSocketAlreadyShutdownException();
         }
         if (!isValid(token)) {
-            token = getAuthToken();
+            token = getAccessToken();
         }
-        Request request = new Request.Builder()
-                .url(getUrlFromPattern(WEBSOCKET_URL))
-                .addHeader("Authorization", "Bearer " + token)
+        Request request = new Request.Builder().url(getUrlFromPattern(WEBSOCKET_URL)).addHeader("Authorization", "Bearer " + token)
                 // The server needs to know the client's virtual interface for simplicity.
-                .addHeader("ClientIP", "10.10.0.1")
-                .build();
+                .addHeader("ClientIP", "10.10.0.1").build();
         webSocket = client.newWebSocket(request, webSocketListener);
-    }
-
-    @NonNull
-    private String getUrlFromPattern(String urlPattern) {
-        return String.format(Locale.getDefault(), urlPattern, fptnServerDto.host, fptnServerDto.port);
     }
 
     public void stopWebSocket() {
@@ -181,31 +138,33 @@ public class OkHttpClientWrapper {
     }
 
     public void shutdown() {
-        if (!expired) {
-            stopWebSocket();
-            expired = true;
+        shutdown = true;
+        stopWebSocket();
+    }
+
+    private String getAccessToken() throws PVNClientException {
+        Map<String, String> map = new HashMap<>();
+        map.put("username", fptnServerDto.username);
+        map.put("password", fptnServerDto.password);
+        RequestBody requestBody = RequestBody.create(new JSONObject(map).toString(), JSON);
+        Request request = new Request.Builder()
+                .url(getUrlFromPattern(LOGIN_URL_PATTERN))
+                .post(requestBody)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 200 && response.body() != null) {
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                String accessToken = jsonResponse.getString("access_token");
+                Log.i(getTag(), "Getting accessToken successful.");
+                return accessToken;
+            } else {
+                Log.e(getTag(), "Error response: " + response);
+                throw new PVNClientException(ErrorCode.ACCESS_TOKEN_ERROR.getValue());
+            }
+        } catch (JSONException | IOException e) {
+            Log.e(getTag(), "Some error occurs on parsing accessToken response: " + e);
+            throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
         }
-    }
-
-    private boolean isValid(String token) {
-        //todo: Add token validation
-        return token != null;
-    }
-
-    private String getTag() {
-        return this.getClass().getCanonicalName();
-    }
-
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            hexString.append(String.format("%02X ", b));
-        }
-        return hexString.toString();
-    }
-
-    private boolean isIPv6(ByteBuffer buffer, int length) {
-        return length != 0 && buffer.get(0) == 0x60;
     }
 
     public void send(ByteBuffer buffer, int length) {
@@ -237,7 +196,33 @@ public class OkHttpClientWrapper {
         }
     }
 
-    public static ByteString generateRandomBytes(int size) {
+    @NonNull
+    private String getUrlFromPattern(String urlPattern) {
+        return String.format(urlPattern, fptnServerDto.host, fptnServerDto.port);
+    }
+
+    private boolean isValid(String token) {
+        //todo: Add token validation
+        return token != null;
+    }
+
+    private String getTag() {
+        return this.getClass().getCanonicalName();
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02X ", b));
+        }
+        return hexString.toString();
+    }
+
+    private boolean isIPv6(ByteBuffer buffer, int length) {
+        return length != 0 && buffer.get(0) == 0x60;
+    }
+
+    private ByteString generateRandomBytes(int size) {
         byte[] randomBytes = new byte[size];
         SecureRandom secureRandom = new SecureRandom(); // Use SecureRandom for cryptographic safety
         secureRandom.nextBytes(randomBytes);

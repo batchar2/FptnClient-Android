@@ -13,6 +13,7 @@ import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.HandlerMessageTypes;
 import org.fptn.vpn.services.websocket.CustomWebSocketListener;
 import org.fptn.vpn.services.websocket.OkHttpClientWrapper;
+import org.fptn.vpn.services.websocket.WebSocketAlreadyShutdownException;
 import org.fptn.vpn.utils.DataRateCalculator;
 import org.fptn.vpn.utils.IPUtils;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
@@ -27,6 +28,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,11 +42,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class CustomVpnConnection extends Thread {
-
-    public interface OnEstablishListener {
-        void onEstablish(ParcelFileDescriptor tunInterface);
-    }
-
     /**
      * Maximum packet size is constrained by the MTU
      */
@@ -52,21 +49,13 @@ public class CustomVpnConnection extends Thread {
     private static final int MAX_RECONNECT_COUNT = 10;
 
     private final CustomVpnService service;
-
     @Getter
     private final int connectionId;
-
     private final FptnServerDto fptnServerDto;
-
-    private OkHttpClientWrapper okHttpClientWrapper;
-
-    private PendingIntent mConfigureIntent;
+    private final OkHttpClientWrapper okHttpClientWrapper;
 
     @Setter
-    private OnEstablishListener onEstablishListener;
-
-    @Getter
-    private Instant connectionTime;
+    private PendingIntent configureVpnIntent;
 
     private CustomWebSocketListener customWebSocketListener;
 
@@ -76,39 +65,26 @@ public class CustomVpnConnection extends Thread {
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
     private final DataRateCalculator uploadRate = new DataRateCalculator(1000);
 
-    private Thread currentConnectionThread;
-
+    private final Thread currentThread = this;
     private final AtomicInteger reconnectCount = new AtomicInteger(0);
+    @Getter
+    private volatile ConnectionState currentConnectionState = ConnectionState.DISCONNECTED;
+    @Getter
+    private Instant connectionTime;
 
 
-    public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto) {
+    public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto) throws PVNClientException {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-        try {
-            this.okHttpClientWrapper = new OkHttpClientWrapper(fptnServerDto);
-        } catch (PVNClientException ex) {
-            sendErrorMessageToUI(ex.getMessage());
-        }
-    }
-
-    /**
-     * Optionally, set an intent to configure the VPN. This is {@code null} by default.
-     */
-    public void setConfigureIntent(PendingIntent intent) {
-        mConfigureIntent = intent;
+        this.okHttpClientWrapper = new OkHttpClientWrapper(fptnServerDto);
     }
 
     @Override
     public void run() {
         vpnInterface = null;
         try {
-            sendConnectionStateToUI(ConnectionState.CONNECTING);
-
-            final String token = okHttpClientWrapper.getAuthToken();
-            if (token == null) {
-                throw new PVNClientException(ErrorCode.AUTHENTICATION_ERROR.getValue());
-            }
+            sendConnectionStateToService(ConnectionState.CONNECTING);
 
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
@@ -142,26 +118,27 @@ public class CustomVpnConnection extends Thread {
                 }
             }
 
-            builder.setSession(fptnServerDto.name).setConfigureIntent(mConfigureIntent);
+            builder.setSession(fptnServerDto.name).setConfigureIntent(configureVpnIntent);
 
             synchronized (service) {
                 vpnInterface = builder.establish();
             }
             if (vpnInterface == null) {
                 throw new PVNClientException(ErrorCode.VPN_INTERFACE_ERROR.getValue());
-            } else {
-                if (onEstablishListener != null) {
-                    onEstablishListener.onEstablish(vpnInterface);
-                }
             }
             Log.i(getTag(), "New interface: " + vpnInterface);
 
-            scheduler.scheduleWithFixedDelay(() -> {
-                // Get download and upload speeds
-                String downloadSpeed = downloadRate.getFormatString();
-                String uploadSpeed = uploadRate.getFormatString();
-                sendSpeedInfoToUI(downloadSpeed, uploadSpeed);
-            }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
+            try {
+                scheduler.scheduleWithFixedDelay(() -> {
+                    // Get download and upload speeds
+                    String downloadSpeed = downloadRate.getFormatString();
+                    String uploadSpeed = uploadRate.getFormatString();
+                    sendSpeedInfoToService(downloadSpeed, uploadSpeed);
+                }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
+            } catch (RejectedExecutionException e) {
+                Log.w(getTag(), "update speed task rejected by scheduler", e);
+            }
+
 
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
@@ -173,8 +150,7 @@ public class CustomVpnConnection extends Thread {
             FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
             ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
 
-            currentConnectionThread = Thread.currentThread();
-            while (!isInterrupted()) {
+            while (!currentThread.isInterrupted()) {
                 try {
                     int length = inputStream.read(buffer.array());
                     if (length > 0) {
@@ -185,25 +161,37 @@ public class CustomVpnConnection extends Thread {
                     Log.d(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
-        } catch (PVNClientException | IOException | InterruptedException e) {
-            sendErrorMessageToUI(e.getMessage());
+        } catch (PVNClientException | IOException e) {
+            sendErrorMessageToService(e.getMessage());
+        } catch (WebSocketAlreadyShutdownException e) {
+            Log.w(getTag(), "The websocket already shutdown", e);
         } finally {
-            sendConnectionStateToUI(ConnectionState.DISCONNECTED);
-            if (vpnInterface != null) {
-                try {
-                    vpnInterface.close();
-                } catch (IOException e) {
-                    Log.e(getTag(), "Unable to close interface", e);
-                }
-            }
-            okHttpClientWrapper.shutdown();
-            scheduler.shutdown();
+            shutdown();
         }
     }
 
+    public void shutdown() {
+        if (!currentThread.isInterrupted()) {
+            currentThread.interrupt();
+        }
+        if (vpnInterface != null) {
+            try {
+                vpnInterface.close();
+            } catch (IOException e) {
+                Log.e(getTag(), "Unable to close interface", e);
+            }
+        }
+        okHttpClientWrapper.shutdown();
+        scheduler.shutdown();
+
+        sendConnectionStateToService(ConnectionState.DISCONNECTED);
+    }
+
     private void onConnectionOpen() {
-        sendConnectionStateToUI(ConnectionState.CONNECTED);
-        reconnectCount.set(0);
+        if (!currentThread.isInterrupted()) {
+            sendConnectionStateToService(ConnectionState.CONNECTED);
+            reconnectCount.set(0);
+        }
     }
 
     private void onMessageReceived(byte[] data, FileOutputStream outputStream) {
@@ -216,50 +204,49 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void onConnectionFailure() {
-        if (currentConnectionThread != null && !currentConnectionThread.isInterrupted()) {
+        if (!currentThread.isInterrupted()) {
             int currentCount = reconnectCount.incrementAndGet();
             Log.i(getTag(), "Reconnect WebSocket... currentCount: " + currentCount);
             if (isTunInterfaceValid(vpnInterface) && currentCount < MAX_RECONNECT_COUNT) {
                 try {
-                    sendConnectionStateToUI(ConnectionState.RECONNECTING);
+                    sendConnectionStateToService(ConnectionState.RECONNECTING);
                     okHttpClientWrapper.stopWebSocket();
                     Thread.sleep(2000);
                     okHttpClientWrapper.startWebSocket(customWebSocketListener);
                 } catch (PVNClientException e) {
-                    sendErrorMessageToUI(e.getMessage());
+                    sendErrorMessageToService(e.getMessage());
                 } catch (InterruptedException e) {
                     Log.w(getTag(), "The thread was interrupted", e);
+                } catch (WebSocketAlreadyShutdownException e) {
+                    Log.w(getTag(), "The websocket already shutdown", e);
                 }
             } else {
-                //todo: change on check network connection with recreating vpnInterface
-                if (!currentConnectionThread.isInterrupted()) {
-                    currentConnectionThread.interrupt();
-                }
-                //todo: send notification to user that we can't connect maybe with reconnect intent button
+                currentThread.interrupt();
+                sendErrorMessageToService(ErrorCode.RECONNECTING_FAILED.getValue());
             }
         }
     }
 
-    private void sendErrorMessageToUI(String msg) {
-        service.getHandler().sendMessage(Message.obtain(null, HandlerMessageTypes.ERROR.getValue(), 0, 0, msg));
+    private void sendErrorMessageToService(String msg) {
+        service.getHandler().sendMessage(Message.obtain(service.getHandler(), HandlerMessageTypes.ERROR.getValue(), connectionId, 0, msg));
     }
 
-    private void sendSpeedInfoToUI(String downloadSpeed, String uploadSpeed) {
+    private void sendSpeedInfoToService(String downloadSpeed, String uploadSpeed) {
         service.getHandler().sendMessage(
-                Message.obtain(null, HandlerMessageTypes.SPEED_INFO.getValue(), 0, 0,
+                Message.obtain(service.getHandler(), HandlerMessageTypes.SPEED_INFO.getValue(), connectionId, 0,
                         new Triple<>(downloadSpeed, uploadSpeed, fptnServerDto.getServerInfo()))
         );
     }
 
-    private void sendConnectionStateToUI(ConnectionState connectionState) {
+    private void sendConnectionStateToService(ConnectionState connectionState) {
+        currentConnectionState = connectionState;
         service.getHandler().sendMessage(
-                Message.obtain(null, HandlerMessageTypes.CONNECTION_STATE.getValue(), 0, 0,
+                Message.obtain(service.getHandler(), HandlerMessageTypes.CONNECTION_STATE.getValue(), connectionId, reconnectCount.get(),
                         new Triple<>(connectionState, Instant.now(), fptnServerDto.getServerInfo()))
         );
     }
 
     private boolean isTunInterfaceValid(ParcelFileDescriptor vpnInterface) {
-        //todo: add check change network condition
         return vpnInterface.getFileDescriptor() != null;
     }
 

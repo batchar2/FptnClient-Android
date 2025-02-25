@@ -7,7 +7,8 @@ enum class ErrorCode(
     FIND_FASTEST_SERVER_TIMEOUT("find_fastest_server_timeout"),
     ALL_SERVERS_UNREACHABLE("all_servers_are_unreachable"),
     NO_ACTIVE_INTERNET_CONNECTIONS("no_active_internet_connections"),
-    AUTHENTICATION_ERROR("authentication_error"),
+    CONNECT_TO_SERVER_ERROR("connect_to_server_error"),
+    RECONNECTING_FAILED("reconnecting_failed"),
     DNS_SERVER_ERROR("dns_server_error"),
     VPN_INTERFACE_ERROR("vpn_interface_error"),
     CIPHERS_ERROR("ciphers_error"),
@@ -22,7 +23,6 @@ enum class ErrorCode(
                 SERVER_LIST_NULL_OR_EMPTY,
                 FIND_FASTEST_SERVER_TIMEOUT,
                 ALL_SERVERS_UNREACHABLE,
-                AUTHENTICATION_ERROR,
                 ACCESS_TOKEN_ERROR,
             )
 

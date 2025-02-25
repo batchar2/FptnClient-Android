@@ -71,10 +71,10 @@ https://batchar2.github.io/fptn/
     <string name="server_list_is_empty">Список серверов пуст!</string>
     <string name="find_fastest_server_timeout">Превышен временной лимит при поиске самого быстрого сервера!</string>
     <string name="all_servers_are_unreachable">Все сервера недоступны!</string>
-    <string name="authentication_error">Ошибка аутентификации! Обновите ваш токен доступа в настройках приложения</string>
+    <string name="connect_to_server_error">При подключению к серверу произошла техническая ошибка!</string>
     <string name="dns_server_error">Ошибка сети! Не удалось получить DNS сервер!</string>
     <string name="no_active_internet_connections">Нет подключения к интернету!</string>
-
+    <string name="reconnecting_failed">Переподключение не удалось!</string>
     <string name="vpn_interface_error">Не удалось создать VPN тунель!</string>
     <string name="ciphers_error">Не удалось найти поддерживаемые шифры!</string>
 
@@ -88,4 +88,11 @@ https://batchar2.github.io/fptn/
     <string name="notifications_request_reason">Для устойчивой работы сервиса приложению необходимо выводить уведомление об активном соединении</string>
     <string name="grant">Предоставить</string>
     <string name="deny">Отказать</string>
+
+    <string name="connecting_to">Подключаемся к </string>
+    <string name="connected_to">Подключен к </string>
+    <string name="reconnection_to">Переподключаемся к </string>
+    <string name="try_number">Попытка номер: </string>
+    <string name="download_upload_speed_pattern">Загрузка: %s Выгрузка: %s</string>
+    <string name="refresh_token">Обновить токен...</string>
 </resources>
