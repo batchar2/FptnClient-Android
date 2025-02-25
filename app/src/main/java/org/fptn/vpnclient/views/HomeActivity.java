@@ -265,16 +265,23 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void connectingStateUiItems() {
+        startStopButton.setChecked(true);
+        // todo: just to prevent auth exception - fix later
+        startStopButton.setEnabled(false);
+
         spinnerServers.setEnabled(false);
         statusTextView.setText(R.string.connecting);
     }
 
     private void disconnectedStateUiItems() {
+        startStopButton.setChecked(false);
+        // todo: just to prevent auth exception - fix later
+        startStopButton.setEnabled(true);
+
         statusTextView.setText(R.string.disconnected);
         connectionTimer.setText("00:00:00");
         downloadTextView.setText("0 Mb/s");
         uploadTextView.setText("0 Mb/s");
-        startStopButton.setChecked(false);
         spinnerServers.setEnabled(true);
 
         hideView(connectionTimer);
@@ -288,9 +295,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void connectedStateUiItems() {
+        startStopButton.setChecked(true);
+        // todo: just to prevent auth exception - fix later
+        startStopButton.setEnabled(true);
+
         statusTextView.setText(R.string.running);
         fptnViewModel.clearErrorTextMessage();
-        startStopButton.setChecked(true);
         spinnerServers.setEnabled(false);
         errorTextView.setText("");
 
@@ -305,7 +315,9 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void reconnectedStateUiItems() {
-        statusTextView.setText(R.string.reconnection);
+        if (startStopButton.isChecked()) {
+            statusTextView.setText(R.string.reconnection);
+        }
     }
 
     private void hideView(View view) {
@@ -329,7 +341,7 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
             }
-        } else if (fptnViewModel.getConnectionStateMutableLiveData().getValue() == ConnectionState.CONNECTED) {
+        } else if (Optional.ofNullable(fptnViewModel.getConnectionStateMutableLiveData().getValue()).map(ConnectionState::isActiveState).orElse(false)) {
             startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
         }
     }

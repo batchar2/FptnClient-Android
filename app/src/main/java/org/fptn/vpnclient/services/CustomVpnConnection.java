@@ -165,7 +165,7 @@ public class CustomVpnConnection extends Thread {
 
             // Packets received need to be written to this output stream.
             FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            customWebSocketListener = new CustomWebSocketListener(data -> onMessageReceived(data, outputStream), this::onConnectionClosed, this::onConnectionOpen);
+            customWebSocketListener = new CustomWebSocketListener(data -> onMessageReceived(data, outputStream), this::onConnectionFailure, this::onConnectionOpen);
             okHttpClientWrapper.startWebSocket(customWebSocketListener);
             connectionTime = Instant.now();
 
@@ -185,7 +185,7 @@ public class CustomVpnConnection extends Thread {
                     Log.d(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
-        } catch (PVNClientException | IOException e) {
+        } catch (PVNClientException | IOException | InterruptedException e) {
             sendErrorMessageToUI(e.getMessage());
         } finally {
             sendConnectionStateToUI(ConnectionState.DISCONNECTED);
@@ -196,7 +196,7 @@ public class CustomVpnConnection extends Thread {
                     Log.e(getTag(), "Unable to close interface", e);
                 }
             }
-            okHttpClientWrapper.stopWebSocket();
+            okHttpClientWrapper.shutdown();
             scheduler.shutdown();
         }
     }
@@ -215,7 +215,7 @@ public class CustomVpnConnection extends Thread {
         }
     }
 
-    private void onConnectionClosed() {
+    private void onConnectionFailure() {
         if (currentConnectionThread != null && !currentConnectionThread.isInterrupted()) {
             int currentCount = reconnectCount.incrementAndGet();
             Log.i(getTag(), "Reconnect WebSocket... currentCount: " + currentCount);

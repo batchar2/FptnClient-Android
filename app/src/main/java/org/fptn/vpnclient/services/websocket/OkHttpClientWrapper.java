@@ -51,6 +51,8 @@ public class OkHttpClientWrapper {
 
     private WebSocket webSocket;
 
+    private boolean expired = false;
+
     public OkHttpClientWrapper(final FptnServerDto fptnServerDto) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
 
@@ -150,7 +152,10 @@ public class OkHttpClientWrapper {
         throw new PVNClientException(ErrorCode.DNS_SERVER_ERROR.getValue());
     }
 
-    public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException {
+    public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException, InterruptedException {
+        if (expired) {
+            throw new InterruptedException();
+        }
         if (!isValid(token)) {
             token = getAuthToken();
         }
@@ -172,6 +177,13 @@ public class OkHttpClientWrapper {
         if (webSocket != null) {
             webSocket.close(1000, "stopWebSocket");
             webSocket = null;
+        }
+    }
+
+    public void shutdown() {
+        if (!expired) {
+            stopWebSocket();
+            expired = true;
         }
     }
 
@@ -231,4 +243,5 @@ public class OkHttpClientWrapper {
         secureRandom.nextBytes(randomBytes);
         return ByteString.copyFrom(randomBytes);
     }
+
 }
