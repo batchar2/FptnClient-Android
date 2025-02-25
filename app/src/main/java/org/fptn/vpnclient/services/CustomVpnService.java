@@ -134,23 +134,24 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "CustomVpnService.onStartCommand: " + intent);
+
+        /* check if notification allowed */
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        isNotificationAllowed = notificationManager.areNotificationsEnabled();
+
+        /* check is internet connection available */
+        if (!NetworkMonitor.isOnline(this)) {
+            Log.e(TAG, "onStartCommand: no active internet connections!");
+            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS.getValue()));
+            disconnect();
+            return START_NOT_STICKY;
+        }
+
         if (intent == null) {
             /* restart after service destruction because all fields of intent is null */
             Log.w(TAG, "onStartCommand: restart after error");
             return connectToPreviouslySelectedServer();
-        }
-
-        if (!NetworkMonitor.isOnline(this)) {
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS.getValue()));
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED));
-            Log.e(TAG, "onStartCommand: no active internet connections!");
-            return START_NOT_STICKY;
-        }
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        isNotificationAllowed = notificationManager.areNotificationsEnabled();
-
-        if (ACTION_DISCONNECT.equals(intent.getAction())) {
+        } else if (ACTION_DISCONNECT.equals(intent.getAction())) {
             Log.i(TAG, "onStartCommand: disconnect!");
             /* if we need disconnect */
             // reset selected
@@ -345,7 +346,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             NotificationChannel newNotificationChannel = new NotificationChannel(
                     Constants.MAIN_NOTIFICATION_CHANNEL_ID,
                     getString(R.string.notification_channel_name),
-                    NotificationManager.IMPORTANCE_LOW);
+                    NotificationManager.IMPORTANCE_HIGH);
             newNotificationChannel.setGroup(Constants.MAIN_NOTIFICATION_CHANNEL_GROUP_ID);
             notificationManager.createNotificationChannel(
                     newNotificationChannel
