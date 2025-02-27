@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "org.fptn.vpnclient"
+    namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
 
     signingConfigs {

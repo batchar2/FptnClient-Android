@@ -16,7 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:context="org.fptn.vpnclient.views.HomeActivity">
+        tools:context="org.fptn.vpn.views.HomeActivity">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -198,7 +198,7 @@
                 android:padding="5dp"
                 tools:ignore="MissingConstraints">
 
-                <org.fptn.vpnclient.utils.CustomSpinner
+                <org.fptn.vpn.utils.CustomSpinner
                     android:id="@+id/home_server_spinner"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
