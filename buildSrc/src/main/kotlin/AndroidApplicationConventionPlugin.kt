@@ -1,5 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
-import org.fptn.vpnclient.gradle.extensions.configureKotlinAndroid
+import org.fptn.vpn.gradle.extensions.configureKotlinAndroid
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
