@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.fptn.vpnclient"
+        applicationId = "org.fptn.vpn"
         val versionMajor: Int by rootProject.extra
         val versionMinor: Int by rootProject.extra
         val versionPatch: Int by rootProject.extra
