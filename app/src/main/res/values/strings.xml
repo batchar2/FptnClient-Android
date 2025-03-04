@@ -3,6 +3,7 @@
     <string name="app_version">Version 1.0.0 </string>
     <string name="app_name" translatable="false">FPTN VPN</string>
 
+    <string name="SNI_VALUE" translatable="false">samsung.com</string>
 
     <string name="select_server">Select server</string>
     <string name="connection_time">Connection Time</string>

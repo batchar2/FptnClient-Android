@@ -1,9 +1,13 @@
 package org.fptn.vpn.services.websocket;
 
+import static org.fptn.vpn.core.common.Constants.DEFAULT_SNI;
+
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.fptn.vpn.R;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.utils.ChromeCiphers;
 import org.fptn.vpn.utils.MySSLSocketFactory;
@@ -21,10 +25,15 @@ import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -37,6 +46,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
+import org.conscrypt.Conscrypt;
+
 
 public class OkHttpClientWrapper {
     public static final MediaType JSON = MediaType.get("application/json");
@@ -55,6 +66,8 @@ public class OkHttpClientWrapper {
     private boolean shutdown = false;
 
     public OkHttpClientWrapper(final FptnServerDto fptnServerDto) throws PVNClientException {
+        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+
         this.fptnServerDto = fptnServerDto;
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -78,6 +91,9 @@ public class OkHttpClientWrapper {
         // Install the all-trusting trust manager
         final SSLContext sslContext;
         try {
+            System.setProperty("javax.net.ssl.SSLContext", "TLSv1.3"); // ?
+            System.setProperty("jsse.enableSNIExtension", "true"); // ?
+
             sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAllCerts, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
@@ -89,10 +105,14 @@ public class OkHttpClientWrapper {
         final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
         final String[] availableCiphers = chromeCipers.getAvailableCiphers();
 
-        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers);
+        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(
+                sslContext.getSocketFactory(),
+                availableCiphers,
+                DEFAULT_SNI
+        );
+
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
-
         this.client = builder.build();
     }
 
@@ -124,7 +144,9 @@ public class OkHttpClientWrapper {
         if (!isValid(token)) {
             token = getAccessToken();
         }
-        Request request = new Request.Builder().url(getUrlFromPattern(WEBSOCKET_URL)).addHeader("Authorization", "Bearer " + token)
+        Request request = new Request.Builder()
+                .url(getUrlFromPattern(WEBSOCKET_URL))
+                .addHeader("Authorization", "Bearer " + token)
                 // The server needs to know the client's virtual interface for simplicity.
                 .addHeader("ClientIP", "10.10.0.1").build();
         webSocket = client.newWebSocket(request, webSocketListener);
@@ -228,5 +250,4 @@ public class OkHttpClientWrapper {
         secureRandom.nextBytes(randomBytes);
         return ByteString.copyFrom(randomBytes);
     }
-
 }

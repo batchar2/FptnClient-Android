@@ -79,6 +79,7 @@ dependencies {
     implementation(libs.ipaddress)
     implementation(libs.material)
     implementation(libs.okhttp)
+    implementation(libs.conscrypt)
     implementation(libs.protobuf.javalite)
 
     compileOnly(libs.lombock)

@@ -42,6 +42,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+conscrypt = { module = "org.conscrypt:conscrypt-android", version = "2.5.2" }
 
 [plugins]
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }

@@ -1,7 +1,11 @@
 package org.fptn.vpn.views.speedtest;
 
+import static org.fptn.vpn.core.common.Constants.DEFAULT_SNI;
+
 import android.util.Log;
 
+import org.conscrypt.Conscrypt;
+import org.fptn.vpn.R;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.utils.ChromeCiphers;
 import org.fptn.vpn.utils.MySSLSocketFactory;
@@ -11,6 +15,7 @@ import org.fptn.vpn.vpnclient.exception.PVNClientException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Comparator;
@@ -37,6 +42,8 @@ public class SpeedTestService {
     private final OkHttpClient client;
 
     public SpeedTestService() throws PVNClientException {
+        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         // Create a trust manager that does not validate certificate chains
@@ -66,12 +73,15 @@ public class SpeedTestService {
             Log.e(TAG, "SSLContext init failed", e);
             throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED.getValue());
         }
-
         // Create an SSL socket factory with our all-trusting manager
         final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
         final String[] availableCiphers = chromeCipers.getAvailableCiphers();
 
-        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers);
+        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(
+            sslContext.getSocketFactory(),
+            availableCiphers,
+            DEFAULT_SNI
+        );
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 
