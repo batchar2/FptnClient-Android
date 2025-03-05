@@ -1,9 +1,14 @@
 package org.fptn.vpn.utils;
 
+import org.fptn.vpn.core.common.Constants;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Collections;
 
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -20,6 +25,10 @@ public class MySSLSocketFactory extends SSLSocketFactory {
     private Socket getSocketWithEnabledCiphers(Socket socket) {
         if (this.enabledCiphers != null && socket instanceof SSLSocket) {
             ((SSLSocket) socket).setEnabledCipherSuites(this.enabledCiphers);
+
+            SSLParameters sslParameters = new SSLParameters();
+            sslParameters.setServerNames(Collections.singletonList(new SNIHostName(Constants.DEFAULT_SNI)));
+            ((SSLSocket) socket).setSSLParameters(sslParameters);
         }
 
         return socket;
