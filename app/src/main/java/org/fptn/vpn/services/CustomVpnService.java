@@ -10,6 +10,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Build;
@@ -27,6 +28,7 @@ import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.HandlerMessageTypes;
 import org.fptn.vpn.repository.FptnServerRepository;
 import org.fptn.vpn.utils.NetworkMonitor;
+import org.fptn.vpn.utils.NotificationUtils;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
 import org.fptn.vpn.views.HomeActivity;
 import org.fptn.vpn.views.speedtest.SpeedTestService;
@@ -331,23 +333,8 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         if (!isNotificationAllowed) {
             return;
         }
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationChannel notificationChannel = notificationManager.getNotificationChannel(Constants.MAIN_NOTIFICATION_CHANNEL_ID);
-        if (notificationChannel == null) {
-            notificationManager.createNotificationChannelGroup(
-                    new NotificationChannelGroup(Constants.MAIN_NOTIFICATION_CHANNEL_GROUP_ID, getString(R.string.notification_group_name)));
-
-            NotificationChannel newNotificationChannel = new NotificationChannel(
-                    Constants.MAIN_NOTIFICATION_CHANNEL_ID,
-                    getString(R.string.notification_channel_name),
-                    NotificationManager.IMPORTANCE_HIGH);
-            newNotificationChannel.setGroup(Constants.MAIN_NOTIFICATION_CHANNEL_GROUP_ID);
-            notificationManager.createNotificationChannel(
-                    newNotificationChannel
-            );
-        }
-
+        NotificationUtils.configureNotificationChannel(this);
         Notification notification = createNotification(title, "");
         startForeground(Constants.MAIN_CONNECTED_NOTIFICATION_ID, notification);
     }
