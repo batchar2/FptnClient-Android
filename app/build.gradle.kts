@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.conscrypt.android)
     implementation(libs.guava)
     implementation(libs.ipaddress)
     implementation(libs.material)
@@ -87,6 +88,7 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.androidx.junit)
 }
 java {

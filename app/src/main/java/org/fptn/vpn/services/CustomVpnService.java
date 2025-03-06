@@ -4,13 +4,10 @@ import static org.fptn.vpn.core.common.Constants.SELECTED_SERVER;
 import static org.fptn.vpn.core.common.Constants.SELECTED_SERVER_ID_AUTO;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Build;
@@ -21,6 +18,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.conscrypt.Conscrypt;
 import org.fptn.vpn.R;
 import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
@@ -35,6 +33,8 @@ import org.fptn.vpn.views.speedtest.SpeedTestService;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
+import java.security.Provider;
+import java.security.Security;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -103,6 +103,21 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         // The handler is only used to show messages.
         if (handler == null) {
             handler = new Handler(this);
+        }
+
+        Provider[] providers = Security.getProviders();
+        Log.d(TAG, "Security providers before: ");
+        for (Provider provider : providers) {
+            Log.d(TAG, "Provider: " + provider.getName() + " - " + provider.getVersion());
+        }
+
+        Log.i(TAG, "Insert conscrypt-" + Conscrypt.version() + " as security provider");
+        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+
+        providers = Security.getProviders();
+        Log.d(TAG, "Security providers after: ");
+        for (Provider provider : providers) {
+            Log.d(TAG, "Provider: " + provider.getName() + " - " + provider.getVersion());
         }
 
         // pending intent for open MainActivity on tap
