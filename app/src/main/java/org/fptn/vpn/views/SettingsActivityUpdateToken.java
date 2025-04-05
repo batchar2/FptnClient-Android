@@ -45,29 +45,8 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
         // FIXME
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuSettings);
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.menuHome) {
-                Intent intent = new Intent(this, HomeActivity.class);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menuSettings) {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
-            } else if (itemId == R.id.menuShare) {
-                bottomNavigationView.setSelectedItemId(R.id.menuSettings); // don't change
+        bottomNavigationView.setOnItemSelectedListener(new CustomBottomNavigationListener(this, bottomNavigationView, R.id.menuSettings));
 
-                final String shareTitle = getString(R.string.share_title);
-                final String shareMessage = getString(R.string.share_message);
-
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-                startActivity(Intent.createChooser(shareIntent, shareTitle));
-                return true;
-            }
-            return false;
-        });
         // Show HTML
         TextView label = findViewById(R.id.fptn_login_html_label);
         label.setText(Html.fromHtml(getString(R.string.telegram_bot_html), Html.FROM_HTML_MODE_LEGACY));
@@ -77,16 +56,13 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
         EditText editText = findViewById(R.id.fptn_login_link_input);
         editText.setTextIsSelectable(true);
         editText.setShowSoftInputOnFocus(false);
-        editText.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    if (motionEvent.getX() > (view.getWidth() - view.getPaddingRight() - 50)) {
-                        ((EditText) view).setText("");
-                    }
+        editText.setOnTouchListener((view, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                if (motionEvent.getX() > (view.getWidth() - view.getPaddingRight() - 50)) {
+                    ((EditText) view).setText("");
                 }
-                return false;
             }
+            return false;
         });
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);  // This just hide keyboard when activity starts
     }

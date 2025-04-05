@@ -242,26 +242,7 @@ public class HomeActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuHome);
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.menuHome) {
-                return true;
-            } else if (itemId == R.id.menuSettings) {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menuShare) {
-                bottomNavigationView.setSelectedItemId(R.id.menuHome); // don't change
-                final String shareTitle = getString(R.string.share_title);
-                final String shareMessage = getString(R.string.share_message);
-
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-                startActivity(Intent.createChooser(shareIntent, shareTitle));
-            }
-            return false;
-        });
+        bottomNavigationView.setOnItemSelectedListener(new CustomBottomNavigationListener(this, bottomNavigationView, R.id.menuHome));
         // hide
         disconnectedStateUiItems();
 

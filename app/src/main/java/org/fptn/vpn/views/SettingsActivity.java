@@ -48,28 +48,7 @@ public class SettingsActivity extends AppCompatActivity {
         // FIXME
         bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuSettings);
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.menuHome) {
-                Intent intent = new Intent(this, HomeActivity.class);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menuSettings) {
-                return true;
-            } else if (itemId == R.id.menuShare) {
-                bottomNavigationView.setSelectedItemId(R.id.menuSettings); // don't change
-
-                final String shareTitle = getString(R.string.share_title);
-                final String shareMessage = getString(R.string.share_message);
-
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-                startActivity(Intent.createChooser(shareIntent, shareTitle));
-                return true;
-            }
-            return false;
-        });
+        bottomNavigationView.setOnItemSelectedListener(new CustomBottomNavigationListener(this, bottomNavigationView, R.id.menuSettings));
 
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
         fptnViewModel.getServerDtoListLiveData().observe(this, fptnServerDtos -> {
@@ -98,7 +77,6 @@ public class SettingsActivity extends AppCompatActivity {
         // about
         TextView about = findViewById(R.id.settings_about);
         about.setText(Html.fromHtml(getString(R.string.info_message_html), Html.FROM_HTML_MODE_LEGACY));
-        about.setMovementMethod(LinkMovementMethod.getInstance());
         about.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
