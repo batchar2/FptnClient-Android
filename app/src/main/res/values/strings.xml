@@ -22,7 +22,8 @@
 
     <string name="share_title">Share via</string>
     <string name="share_message">FPTN is a non-commercial VPN, a volunteer project for bypassing censorship.
-https://batchar2.github.io/fptn/
+        https://batchar2.github.io/fptn/
+        https://play.google.com/store/apps/details?id=org.fptn.vpn
     </string>
     <string name="info_message_html">
         <![CDATA[
@@ -32,6 +33,10 @@ https://batchar2.github.io/fptn/
         Our Telegram group <a href="https://t.me/fptn_project">@fptn_project</a>
         <br/>
         Our website <a href="https://batchar2.github.io/fptn/">https://batchar2.github.io/fptn/</a>
+        <br/>
+        On <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">PlayMarket</a>
+        <br/>
+        You can support us on <a href="https://boosty.to/fptn/donate">Boosty</a>
         ]]>
     </string>
 
@@ -101,5 +106,10 @@ https://batchar2.github.io/fptn/
     <string name="try_number">"Reconnection attempt number: "</string>
     <string name="download_upload_speed_pattern">Download: %s Upload: %s</string>
     <string name="refresh_token">Refresh token...</string>
+    <string name="qr_code_image_description" translatable="false">QR-code on PlayMarket</string>
+    <string name="play_market_link" translatable="false">https://play.google.com/store/apps/details?id=org.fptn.vpn</string>
+    <string name="close_button_text">Close</string>
+    <string name="share_via_message">Share via message</string>
+
 
 </resources>

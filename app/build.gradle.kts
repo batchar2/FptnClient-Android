@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)
+    implementation(libs.zxing)
 
     compileOnly(libs.lombock)
 

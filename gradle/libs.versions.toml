@@ -5,6 +5,7 @@ autonomousappsSorting = "0.14"
 autonomousappsUnused = "2.7.0"
 conscryptAndroid = "2.5.3"
 constraintlayout = "2.2.0"
+zxing = "3.5.3"
 detektPlugin = "1.23.7"
 gradlePlugin = "8.2.2"
 guava = "33.4.0-jre"
@@ -33,6 +34,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 conscrypt-android = { module = "org.conscrypt:conscrypt-android", version.ref = "conscryptAndroid" }
+zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
