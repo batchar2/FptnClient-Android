@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,7 @@ import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -337,6 +339,8 @@ public class HomeActivity extends AppCompatActivity {
                 // Request to user on launch vpn
                 intentActivityResultLauncher.launch(intent);
             } else {
+                fptnViewModel.getConnectionStateMutableLiveData().postValue(Pair.create(ConnectionState.CONNECTING, Instant.now()));
+
                 startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
             }
         } else {
