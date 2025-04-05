@@ -19,7 +19,6 @@ import org.fptn.vpn.utils.DataRateCalculator;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.fptn.vpn.utils.ResourcesUtils;
 import org.fptn.vpn.utils.TimeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -105,7 +104,6 @@ public class FptnServerViewModel extends AndroidViewModel {
 
                 String countryCode = getCountryCodeFromJson(serverObject, hostname);
                 serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode));
-                //Log.i(TAG, "=== SERVER: " + username + " " + password + " " + host + ":" + port);
             }
             if (!serverDtoList.isEmpty()) {
                 deleteAll(); // delete old
