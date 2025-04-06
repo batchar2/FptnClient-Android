@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Build;
@@ -132,13 +133,19 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 PendingIntent.FLAG_IMMUTABLE);
 
         try {
-            speedTestService = new SpeedTestService();
+            speedTestService = new SpeedTestService(getSniHostname());
         } catch (PVNClientException e) {
             Log.e(TAG, "onCreate(): " + e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
         fptnServerRepository = new FptnServerRepository(getApplicationContext());
+    }
+
+    @NonNull
+    private String getSniHostname() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getString(R.string.default_sni));
     }
 
     @SneakyThrows
@@ -304,7 +311,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
         try {
             CustomVpnConnection connection = new CustomVpnConnection(
-                    this, nextConnectionId.getAndIncrement(), fptnServerDto);
+                    this, nextConnectionId.getAndIncrement(), fptnServerDto, getSniHostname());
             connection.setConfigureVpnIntent(launchMainActivityPendingIntent);
             connection.start();
 

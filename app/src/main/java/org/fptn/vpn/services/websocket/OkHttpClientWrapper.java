@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -46,7 +45,6 @@ public class OkHttpClientWrapper {
 
     private final OkHttpClient client;
     private final FptnServerDto fptnServerDto;
-
     private String token;
 
     private WebSocket webSocket;
@@ -54,7 +52,7 @@ public class OkHttpClientWrapper {
     @Getter
     private boolean shutdown = false;
 
-    public OkHttpClientWrapper(final FptnServerDto fptnServerDto) throws PVNClientException {
+    public OkHttpClientWrapper(FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -89,7 +87,7 @@ public class OkHttpClientWrapper {
         final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
         final String[] availableCiphers = chromeCipers.getAvailableCiphers();
 
-        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers);
+        final MySSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers, sniHostName);
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 

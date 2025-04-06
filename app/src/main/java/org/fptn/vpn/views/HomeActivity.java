@@ -53,8 +53,6 @@ import java.util.Optional;
 import lombok.Getter;
 
 public class HomeActivity extends AppCompatActivity {
-    private static final String KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested";
-
     private final String TAG = this.getClass().getName();
 
     @Getter
@@ -349,7 +347,7 @@ public class HomeActivity extends AppCompatActivity {
                     != PackageManager.PERMISSION_GRANTED) {
 
                 SharedPreferences sharedPreferences = getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
-                boolean hasRequestedBefore = sharedPreferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false);
+                boolean hasRequestedBefore = sharedPreferences.getBoolean(Constants.NOTIFICATION_PERMISSION_REQUESTED_SHARED_PREF_KEY, false);
                 if (hasRequestedBefore) {
                     return;
                 }
@@ -360,11 +358,11 @@ public class HomeActivity extends AppCompatActivity {
                         .setPositiveButton(R.string.grant, (dialog, which) -> {
                             // Request the permission
                             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-                            sharedPreferences.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true).apply();
+                            sharedPreferences.edit().putBoolean(Constants.NOTIFICATION_PERMISSION_REQUESTED_SHARED_PREF_KEY, true).apply();
                         })
                         .setNegativeButton(R.string.deny, (dialog, which) -> {
                             Log.i(TAG, "Notifications denied!");
-                            sharedPreferences.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true).apply();
+                            sharedPreferences.edit().putBoolean(Constants.NOTIFICATION_PERMISSION_REQUESTED_SHARED_PREF_KEY, true).apply();
                         })
                         .create()
                         .show();

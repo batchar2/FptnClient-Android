@@ -36,7 +36,7 @@ public class SpeedTestService {
 
     private final OkHttpClient client;
 
-    public SpeedTestService() throws PVNClientException {
+    public SpeedTestService(String sniHostName) throws PVNClientException {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         // Create a trust manager that does not validate certificate chains
@@ -71,7 +71,7 @@ public class SpeedTestService {
         final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
         final String[] availableCiphers = chromeCipers.getAvailableCiphers();
 
-        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers);
+        final SSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers, sniHostName);
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 

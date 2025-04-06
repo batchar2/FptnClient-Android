@@ -38,20 +38,24 @@ public class CustomBottomNavigationListener implements NavigationBarView.OnItemS
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == currentViewId){
+        if (itemId == currentViewId) {
             return true;
         }
         if (itemId == R.id.menuHome) {
             Intent intent = new Intent(context, HomeActivity.class);
             context.startActivity(intent);
+
             return true;
         } else if (itemId == R.id.menuSettings) {
             Intent intent = new Intent(context, SettingsActivity.class);
             context.startActivity(intent);
+
             return true;
         } else if (itemId == R.id.menuShare) {
-            bottomNavigationView.setSelectedItemId(R.id.menuHome); // for don't change bottomNavigationView selected item
+            bottomNavigationView.setSelectedItemId(currentViewId); // for don't change bottomNavigationView selected item
             createShareDialog();
+
+            return true;
         }
         return false;
     }

@@ -114,10 +114,14 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="try_number">"Reconnection attempt number: "</string>
     <string name="download_upload_speed_pattern">Download: %s Upload: %s</string>
     <string name="refresh_token">Refresh token...</string>
-    <string name="qr_code_image_description" translatable="false">QR-code on PlayMarket</string>
     <string name="play_market_link" translatable="false">https://play.google.com/store/apps/details?id=org.fptn.vpn</string>
     <string name="close_button_text">Close</string>
     <string name="share_via_message">Share via message</string>
+    <string name="sni_text_description">Server Name Indication (SNI) — the website address declared when connecting to a VPN server. Please specify some popular website accessible without a VPN from your country.</string>
+    <string name="your_current_sni">Your current SNI:</string>
+    <string name="default_sni" translatable="false">www.google.com</string>
+    <string name="sni_text_view_hint">New SNI</string>
+    <string name="reset_default_button">Reset to default</string>
 
 
 </resources>

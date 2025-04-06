@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
@@ -20,10 +22,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.fptn.vpn.R;
+import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
 import org.fptn.vpn.views.adapter.FptnServerAdapter;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.Optional;
 
 import lombok.Getter;
 
@@ -80,8 +86,6 @@ public class SettingsActivity extends AppCompatActivity {
         about.setMovementMethod(LinkMovementMethod.getInstance());
 
         // token's info
-
-
         TextView tokenInfo = findViewById(R.id.settings_token_info_html);
         tokenInfo.setText(Html.fromHtml(getString(R.string.settings_token_info_html), Html.FROM_HTML_MODE_LEGACY));
         tokenInfo.setMovementMethod(LinkMovementMethod.getInstance());
@@ -125,5 +129,36 @@ public class SettingsActivity extends AppCompatActivity {
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
+    }
+
+    public void onEditSNIServer(View view) {
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        String currentSNI = sharedPreferences.getString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getString(R.string.default_sni));
+
+        View inflated = View.inflate(this, R.layout.sni_dialog_layout, null);
+        TextInputEditText sniEditText = inflated.findViewById(R.id.text_edit_sni);
+        sniEditText.setText(currentSNI);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(inflated);
+        alertDialogBuilder.setPositiveButton(R.string.save_button, (dialog, which) -> {
+            Log.d(TAG, "onEditSNIServer: save_button");
+            Optional.ofNullable(sniEditText.getText())
+                    .map(Object::toString)
+                    .filter(s -> !s.isBlank())
+                    .ifPresent(newSni -> {
+                        //todo: add validation?
+                        Log.d(TAG, "new SNI: " + newSni);
+                        sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
+                    });
+        });
+        alertDialogBuilder.setNeutralButton(getString(R.string.reset_default_button), (dialog, which) -> {
+            Log.d(TAG, "onEditSNIServer: reset_default_button");
+            sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getString(R.string.default_sni)).apply();
+        });
+        alertDialogBuilder.setNegativeButton(getString(R.string.cancel_button), (dialog, which) -> {
+            Log.d(TAG, "onEditSNIServer: cancel_button");
+        });
+        alertDialogBuilder.show();
     }
 }

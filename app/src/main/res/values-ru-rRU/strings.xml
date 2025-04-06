@@ -108,5 +108,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="download_upload_speed_pattern">Загрузка: %s Выгрузка: %s</string>
     <string name="refresh_token">Обновить токен...</string>
     <string name="close_button_text">Закрыть</string>
-    <string name="share_via_message">Share via message</string>
+    <string name="share_via_message">Поделиться в сообщении</string>
+    <string name="sni_text_description">Server Name Indication (SNI) — адрес сайта, декларируемый при подключении к VPN-серверу. Укажите какой-нибудь популярный сайт доступный без VPN из вашей страны.</string>
+    <string name="your_current_sni">Текущий SNI:</string>
+    <string name="sni_text_view_hint">Новый SNI</string>
+    <string name="reset_default_button">Сбросить по умолчанию</string>
 </resources>
