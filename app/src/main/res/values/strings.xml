@@ -18,23 +18,31 @@
 
     <string name="your_servers">Your VPN servers</string>
 
-    <string name="settings_token_info">Available servers are encrypted in the token. To update the server list, update the token.</string>
+    <string name="settings_token_info_html">
+        <![CDATA[
+        The list of available servers is encrypted in the token.
+        <br/>
+        To update the server list, enter a new token.
+        <br/>
+        The token works like a password: once updated, it will no longer be valid on any devices where it was previously used.
+        ]]>
+    </string>
 
     <string name="share_title">Share via</string>
     <string name="share_message">FPTN is a non-commercial VPN, a volunteer project for bypassing censorship.
-        https://batchar2.github.io/fptn/
-        https://play.google.com/store/apps/details?id=org.fptn.vpn
+https://fptn.org
+https://play.google.com/store/apps/details?id=org.fptn.vpn
     </string>
     <string name="info_message_html">
         <![CDATA[
-        FPTN is a non-commercial VPN, a volunteer project for bypassing censorship.
+        FPTN is a non-commercial, volunteer-driven VPN project aimed at bypassing censorship.
         <br/>
         <br/>
-        Our Telegram group <a href="https://t.me/fptn_project">@fptn_project</a>
+        Our website: <a href="https://batchar2.github.io/fptn/">fptn.org</a>
         <br/>
-        Our website <a href="https://batchar2.github.io/fptn/">https://batchar2.github.io/fptn/</a>
+        Our Telegram group: <a href="https://t.me/fptn_project">@fptn_project</a>
         <br/>
-        On <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">PlayMarket</a>
+        App on <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
         <br/>
         You can support us on <a href="https://boosty.to/fptn/donate">Boosty</a>
         ]]>

@@ -155,11 +155,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="50dp">
                     <TextView
+                        android:id="@+id/settings_token_info_html"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/gray"
                         android:textSize="12sp"
-                        android:text="@string/settings_token_info"
+                        android:text="@string/settings_token_info_html"
                         />
                 </RelativeLayout>
             </LinearLayout>
