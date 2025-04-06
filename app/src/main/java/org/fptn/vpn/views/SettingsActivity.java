@@ -78,6 +78,13 @@ public class SettingsActivity extends AppCompatActivity {
         TextView about = findViewById(R.id.settings_about);
         about.setText(Html.fromHtml(getString(R.string.info_message_html), Html.FROM_HTML_MODE_LEGACY));
         about.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // token's info
+
+
+        TextView tokenInfo = findViewById(R.id.settings_token_info_html);
+        tokenInfo.setText(Html.fromHtml(getString(R.string.settings_token_info_html), Html.FROM_HTML_MODE_LEGACY));
+        tokenInfo.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     public void onLogout(View v) {

@@ -18,24 +18,34 @@
 
     <string name="your_servers">Ваши VPN сервера</string>
 
-    <string name="settings_token_info">Доступные сервера зашифрованы в токене. Для обновления списка серверов обновите токен</string>
-
+    <string name="settings_token_info_html">
+        <![CDATA[
+        Список доступных серверов зашифрован в токене.
+        <br/>
+        Чтобы обновить список серверов, введите новый токен.
+        <br/>
+        Токен работает как пароль: при его обновлении он перестанет действовать на всех устройствах, где использовался ранее.
+        ]]>
+    </string>
     <string name="share_title">Поделиться через</string>
     <string name="share_message">FPTN — это некоммерческий VPN, волонтерский проект для обхода цензуры.
-https://batchar2.github.io/fptn/
+https://fptn.org
+https://play.google.com/store/apps/details?id=org.fptn.vpn
     </string>
     <string name="info_message_html">
         <![CDATA[
         FPTN — это некоммерческий VPN, волонтерский проект для обхода цензуры.
         <br/>
         <br/>
-        Наш сайт: <a href="https://batchar2.github.io/fptn/">https://batchar2.github.io/fptn/</a>
+        Наш сайт: <a href="https://batchar2.github.io/fptn/">fptn.org</a>
         <br/>
         Наша группа в Telegram <a href="https://t.me/fptn_project">@fptn_project</a>
         <br/>
-        На <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Play Market</a>
+        Приложение в <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
+        <br/>
+        Вы можете поддержать нас на Boosty <a href="https://boosty.to/fptn/donate">Boosty</a>
         ]]>
-</string>
+    </string>
     <string name="vpn_permission_warning">Для работы FPTN необходимы разрешения!</string>
 
     <string name="connecting">Подключаемся...</string>
