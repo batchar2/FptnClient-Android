@@ -10,5 +10,6 @@ object Constants {
     const val SELECTED_SERVER_ID_AUTO: Int = -1
     const val MAIN_CONNECTED_NOTIFICATION_ID = 8975
     const val INFO_NOTIFICATION_NOTIFICATION_ID = 8979
-    const val DEFAULT_SNI: String = "samsung.com"
+    const val CURRENT_SNI_SHARED_PREF_KEY: String = "CURRENT_SNI"
+    const val NOTIFICATION_PERMISSION_REQUESTED_SHARED_PREF_KEY: String = "notification_permission_requested"
 }

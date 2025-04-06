@@ -1,11 +1,10 @@
 package org.fptn.vpn.utils;
 
-import org.fptn.vpn.core.common.Constants;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.Optional;
 
 import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SSLParameters;
@@ -16,19 +15,23 @@ import javax.net.ssl.SSLSocketFactory;
 public class MySSLSocketFactory extends SSLSocketFactory {
     private final SSLSocketFactory socketFactory;
     private final String[] enabledCiphers;
+    private final String sniHostName;
 
-    public MySSLSocketFactory(SSLSocketFactory socketFactory, String[] enabledCiphers) {
+    public MySSLSocketFactory(SSLSocketFactory socketFactory, String[] enabledCiphers, String sniHostName) {
         this.socketFactory = socketFactory;
         this.enabledCiphers = enabledCiphers;
+        this.sniHostName = sniHostName;
     }
 
     private Socket getSocketWithEnabledCiphers(Socket socket) {
         if (this.enabledCiphers != null && socket instanceof SSLSocket) {
             ((SSLSocket) socket).setEnabledCipherSuites(this.enabledCiphers);
 
-            SSLParameters sslParameters = new SSLParameters();
-            sslParameters.setServerNames(Collections.singletonList(new SNIHostName(Constants.DEFAULT_SNI)));
-            ((SSLSocket) socket).setSSLParameters(sslParameters);
+            Optional.ofNullable(sniHostName).ifPresent(sni -> {
+                SSLParameters sslParameters = new SSLParameters();
+                sslParameters.setServerNames(Collections.singletonList(new SNIHostName(sni)));
+                ((SSLSocket) socket).setSSLParameters(sslParameters);
+            });
         }
 
         return socket;

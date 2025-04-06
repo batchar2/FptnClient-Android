@@ -73,11 +73,11 @@ public class CustomVpnConnection extends Thread {
     private Instant connectionTime;
 
 
-    public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto) throws PVNClientException {
+    public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-        this.okHttpClientWrapper = new OkHttpClientWrapper(fptnServerDto);
+        this.okHttpClientWrapper = new OkHttpClientWrapper(fptnServerDto, sniHostName);
     }
 
     @Override

@@ -5,7 +5,6 @@ autonomousappsSorting = "0.14"
 autonomousappsUnused = "2.7.0"
 conscryptAndroid = "2.5.3"
 constraintlayout = "2.2.0"
-zxing = "3.5.3"
 detektPlugin = "1.23.7"
 gradlePlugin = "8.2.2"
 guava = "33.4.0-jre"
@@ -22,6 +21,7 @@ okhttp = "4.12.0"
 protobuf = "4.26.1"
 protobufPlugin = "0.9.4"
 roomRuntime = "2.6.1"
+zxing = "3.5.3"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
@@ -34,7 +34,6 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 conscrypt-android = { module = "org.conscrypt:conscrypt-android", version.ref = "conscryptAndroid" }
-zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
@@ -46,6 +45,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 [plugins]
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
