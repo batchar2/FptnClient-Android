@@ -4,8 +4,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.conscrypt.Conscrypt;
+import org.conscrypt.OpenSSLCipherRSA;
+import org.conscrypt.SSLClientSessionCache;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.utils.ChromeCiphers;
+import org.fptn.vpn.utils.CustomSessionGenerator;
 import org.fptn.vpn.utils.MySSLSocketFactory;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
@@ -22,10 +26,12 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -78,6 +84,18 @@ public class OkHttpClientWrapper {
         try {
             sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAllCerts, new SecureRandom());
+            Conscrypt.setClientSessionCache(sslContext, new SSLClientSessionCache() {
+                @Override
+                public byte[] getSessionData(String host, int port) {
+                    return CustomSessionGenerator.getSessionId();
+                }
+
+                @Override
+                public void putSessionData(SSLSession session, byte[] sessionData) {
+
+                }
+            });
+
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             Log.e(getTag(), "SSLContext init failed", e);
             throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED.getValue());
