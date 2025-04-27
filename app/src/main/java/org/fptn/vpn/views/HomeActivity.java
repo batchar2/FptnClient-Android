@@ -37,6 +37,7 @@ import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.utils.CustomSpinner;
+import org.fptn.vpn.utils.NativeLib;
 import org.fptn.vpn.views.adapter.FptnServerAdapter;
 import org.fptn.vpn.services.CustomVpnService;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
@@ -111,6 +112,9 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
+
+        Log.d(TAG, "onCreate: NATIVE_HELLO_WORLD: " + new NativeLib().stringFromJNI());
+        Log.d(TAG, "onCreate: NATIVE_MULTIPLY_STRING: " + new NativeLib().multipleStr("HELLO", 5, true));
 
         initializeVariable();
     }
