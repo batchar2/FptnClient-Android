@@ -1,6 +1,8 @@
 package org.fptn.vpn.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.util.Pair;
 
@@ -11,6 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import org.fptn.vpn.R;
+import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.repository.FptnServerRepository;
@@ -52,6 +55,8 @@ public class FptnServerViewModel extends AndroidViewModel {
     @Getter
     private final MutableLiveData<String> timerTextLiveData = new MutableLiveData<>(getApplication().getString(R.string.zero_time));
     @Getter
+    private final MutableLiveData<String> currentSNI = new MutableLiveData<>(getApplication().getString(R.string.default_sni));
+    @Getter
     private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
 
     private final Observer<Pair<ConnectionState, Instant>> connectionStateObserver;
@@ -72,6 +77,14 @@ public class FptnServerViewModel extends AndroidViewModel {
             }
         };
         connectionStateMutableLiveData.observeForever(connectionStateObserver);
+
+        currentSNI.postValue(getSavedSNI());
+    }
+
+    @NonNull
+    private String getSavedSNI() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getApplication().getString(R.string.default_sni));
     }
 
     public ListenableFuture<List<FptnServerDto>> getAllServers() {
@@ -163,5 +176,11 @@ public class FptnServerViewModel extends AndroidViewModel {
             scheduledFuture = null;
         }
         timerTextLiveData.postValue(getApplication().getString(R.string.zero_time));
+    }
+
+    public void updateSNI(String newSni) {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
+        currentSNI.postValue(newSni);
     }
 }

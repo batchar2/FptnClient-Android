@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -22,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.fptn.vpn.R;
-import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
 import org.fptn.vpn.views.adapter.FptnServerAdapter;
 
@@ -89,6 +87,10 @@ public class SettingsActivity extends AppCompatActivity {
         TextView tokenInfo = findViewById(R.id.settings_token_info_html);
         tokenInfo.setText(Html.fromHtml(getString(R.string.settings_token_info_html), Html.FROM_HTML_MODE_LEGACY));
         tokenInfo.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // SNI field
+        TextView sniTextField = findViewById(R.id.SNI_text_field);
+        fptnViewModel.getCurrentSNI().observe(this, sniTextField::setText);
     }
 
     public void onLogout(View v) {
@@ -132,12 +134,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void onEditSNIServer(View view) {
-        SharedPreferences sharedPreferences = getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        String currentSNI = sharedPreferences.getString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getString(R.string.default_sni));
-
         View inflated = View.inflate(this, R.layout.sni_dialog_layout, null);
         TextInputEditText sniEditText = inflated.findViewById(R.id.text_edit_sni);
-        sniEditText.setText(currentSNI);
+        fptnViewModel.getCurrentSNI().observe(this, sniEditText::setText);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(inflated);
@@ -149,12 +148,12 @@ public class SettingsActivity extends AppCompatActivity {
                     .ifPresent(newSni -> {
                         //todo: add validation?
                         Log.d(TAG, "new SNI: " + newSni);
-                        sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
+                        fptnViewModel.updateSNI(newSni);
                     });
         });
         alertDialogBuilder.setNeutralButton(getString(R.string.reset_default_button), (dialog, which) -> {
             Log.d(TAG, "onEditSNIServer: reset_default_button");
-            sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getString(R.string.default_sni)).apply();
+            fptnViewModel.updateSNI(getString(R.string.default_sni));
         });
         alertDialogBuilder.setNegativeButton(getString(R.string.cancel_button), (dialog, which) -> {
             Log.d(TAG, "onEditSNIServer: cancel_button");
