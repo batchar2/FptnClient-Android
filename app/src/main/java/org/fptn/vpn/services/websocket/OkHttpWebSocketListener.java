@@ -18,15 +18,15 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-public class CustomWebSocketListener extends WebSocketListener {
+public class OkHttpWebSocketListener extends WebSocketListener {
 
     private final OnMessageReceivedCallback onMessageReceivedCallback;
     private final OnFailureCallback onFailureCallback;
     private final OnOpenCallback onOpenCallback;
 
-    public CustomWebSocketListener(OnMessageReceivedCallback onMessageReceivedCallback,
-                                   OnFailureCallback onFailureCallback,
-                                   OnOpenCallback onOpenCallback) {
+    public OkHttpWebSocketListener(OnOpenCallback onOpenCallback,
+                                   OnMessageReceivedCallback onMessageReceivedCallback,
+                                   OnFailureCallback onFailureCallback) {
         this.onMessageReceivedCallback = onMessageReceivedCallback;
         this.onFailureCallback = onFailureCallback;
         this.onOpenCallback = onOpenCallback;

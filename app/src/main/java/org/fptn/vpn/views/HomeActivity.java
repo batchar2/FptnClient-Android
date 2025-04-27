@@ -36,6 +36,7 @@ import org.fptn.vpn.R;
 import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
+import org.fptn.vpn.services.nativewrapper.NativeWebsocketWrapper;
 import org.fptn.vpn.utils.CustomSpinner;
 import org.fptn.vpn.views.adapter.FptnServerAdapter;
 import org.fptn.vpn.services.CustomVpnService;
@@ -45,10 +46,13 @@ import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import lombok.Getter;
 
@@ -85,6 +89,8 @@ public class HomeActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
 
+//    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
     private final ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), activityResult -> {
                 if (activityResult != null && activityResult.getResultCode() == RESULT_OK) {
@@ -111,6 +117,15 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
+
+/*        executorService.submit(() -> {
+            NativeWebsocketWrapper nativeWebsocketWrapper = new NativeWebsocketWrapper("youtube.com", 8080, "rutube.ru");
+            nativeWebsocketWrapper.run();
+            nativeWebsocketWrapper.send("Hello world".getBytes(StandardCharsets.UTF_8));
+            boolean started = nativeWebsocketWrapper.isStarted();
+            Log.d(TAG, "onCreate: nativeWebsocketWrapper isStarted: " + started);
+            nativeWebsocketWrapper.stop();
+        });*/
 
         initializeVariable();
     }

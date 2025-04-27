@@ -11,8 +11,8 @@ import android.util.Log;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.HandlerMessageTypes;
-import org.fptn.vpn.services.websocket.CustomWebSocketListener;
-import org.fptn.vpn.services.websocket.OkHttpClientWrapper;
+import org.fptn.vpn.services.websocket.WebSocketClient;
+import org.fptn.vpn.services.websocket.OkHttpWebSocketClientImpl;
 import org.fptn.vpn.services.websocket.WebSocketAlreadyShutdownException;
 import org.fptn.vpn.utils.DataRateCalculator;
 import org.fptn.vpn.utils.IPUtils;
@@ -23,9 +23,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -52,12 +52,10 @@ public class CustomVpnConnection extends Thread {
     @Getter
     private final int connectionId;
     private final FptnServerDto fptnServerDto;
-    private final OkHttpClientWrapper okHttpClientWrapper;
+    private final WebSocketClient webSocketClient;
 
     @Setter
     private PendingIntent configureVpnIntent;
-
-    private CustomWebSocketListener customWebSocketListener;
 
     private ParcelFileDescriptor vpnInterface;
 
@@ -71,13 +69,14 @@ public class CustomVpnConnection extends Thread {
     private volatile ConnectionState currentConnectionState = ConnectionState.DISCONNECTED;
     @Getter
     private Instant connectionTime;
+    private FileOutputStream outputStream;
 
 
     public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-        this.okHttpClientWrapper = new OkHttpClientWrapper(fptnServerDto, sniHostName);
+        this.webSocketClient = new OkHttpWebSocketClientImpl(fptnServerDto, sniHostName);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class CustomVpnConnection extends Thread {
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
 
-            final String dnsServer = okHttpClientWrapper.getDnsServerIPv4();
+            final String dnsServer = webSocketClient.getDnsServerIPv4();
             builder.addDnsServer(dnsServer);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -141,24 +140,23 @@ public class CustomVpnConnection extends Thread {
 
 
             // Packets received need to be written to this output stream.
-            FileOutputStream outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            customWebSocketListener = new CustomWebSocketListener(data -> onMessageReceived(data, outputStream), this::onConnectionFailure, this::onConnectionOpen);
-            okHttpClientWrapper.startWebSocket(customWebSocketListener);
+            outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
+            webSocketClient.startWebSocket(this::onConnectionOpen, this::onMessageReceived, this::onConnectionFailure);
             connectionTime = Instant.now();
 
             // Packets to be sent are queued in this input stream.
-            FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor());
-            ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
-
-            while (!currentThread.isInterrupted()) {
-                try {
-                    int length = inputStream.read(buffer.array());
-                    if (length > 0) {
-                        uploadRate.update(length);
-                        okHttpClientWrapper.send(buffer, length);
+            try (FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor())) {
+                byte[] byteBuffer = new byte[MAX_PACKET_SIZE];
+                while (!currentThread.isInterrupted()) {
+                    try {
+                        int length = inputStream.read(byteBuffer);
+                        if (length > 0) {
+                            uploadRate.update(length);
+                            webSocketClient.send(Arrays.copyOf(byteBuffer, length));
+                        }
+                    } catch (Exception e) {
+                        Log.d(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                     }
-                } catch (Exception e) {
-                    Log.d(getTag(), "Error reading data from VPN interface: " + e.getMessage());
                 }
             }
         } catch (PVNClientException | IOException e) {
@@ -181,7 +179,7 @@ public class CustomVpnConnection extends Thread {
                 Log.e(getTag(), "Unable to close interface", e);
             }
         }
-        okHttpClientWrapper.shutdown();
+        webSocketClient.shutdown();
         scheduler.shutdown();
 
         sendConnectionStateToService(ConnectionState.DISCONNECTED);
@@ -194,10 +192,12 @@ public class CustomVpnConnection extends Thread {
         }
     }
 
-    private void onMessageReceived(byte[] data, FileOutputStream outputStream) {
+    private void onMessageReceived(byte[] data) {
         try {
-            downloadRate.update(data.length);
-            outputStream.write(data);
+            if (outputStream != null) {
+                downloadRate.update(data.length);
+                outputStream.write(data);
+            }
         } catch (Exception e) {
             Log.w(getTag(), "Ошибка записи в TUN: " + new String(data));
         }
@@ -210,9 +210,9 @@ public class CustomVpnConnection extends Thread {
             if (isTunInterfaceValid(vpnInterface) && currentCount < MAX_RECONNECT_COUNT) {
                 try {
                     sendConnectionStateToService(ConnectionState.RECONNECTING);
-                    okHttpClientWrapper.stopWebSocket();
+                    webSocketClient.stopWebSocket();
                     Thread.sleep(2000);
-                    okHttpClientWrapper.startWebSocket(customWebSocketListener);
+                    webSocketClient.startWebSocket(this::onConnectionOpen, this::onMessageReceived, this::onConnectionFailure);
                 } catch (PVNClientException e) {
                     sendErrorMessageToService(e.getMessage());
                 } catch (InterruptedException e) {

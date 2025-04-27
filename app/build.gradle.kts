@@ -45,6 +45,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         vectorDrawables.useSupportLibrary = true
+
+        externalNativeBuild {
+            cmake {
+                cppFlags("-v")
+                arguments("-DCMAKE_TOOLCHAIN_FILE=conan_android_toolchain.cmake")
+            }
+        }
     }
 
     buildTypes {
@@ -62,6 +69,13 @@ android {
     }
     buildFeatures {
         viewBinding = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            version = "3.22.1"
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 }
 
@@ -108,6 +122,49 @@ protobuf {
                 create("java") {
                     option("lite")
                 }
+            }
+        }
+    }
+}
+
+task("conanInstall") {
+    val conanExecutable = "conan" // define the path to your conan installation
+    val buildDir = file("build").apply { mkdirs() }
+
+    // Получаем абсолютный путь и выводим его
+    val absoluteBuildDirPath = buildDir.absolutePath
+    println("Build directory: $absoluteBuildDirPath")
+
+    // , "Release"
+    listOf("Debug").forEach { buildType ->
+        listOf("armv7", "armv8", "x86", "x86_64").forEach { arch ->
+            val cmd =
+                "$conanExecutable install " +
+                    "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
+                    "--build missing -c tools.cmake.cmake_layout:build_folder_vars=\"['settings.arch']\""
+            println(">> $cmd")
+
+            val sout = StringBuilder()
+            val serr = StringBuilder()
+            val proc = Runtime.getRuntime().exec(cmd, null, buildDir)
+
+            proc.inputStream.bufferedReader().use { reader ->
+                reader.lineSequence().forEach { line ->
+                    sout.appendLine(line)
+                }
+            }
+
+            proc.errorStream.bufferedReader().use { reader ->
+                reader.lineSequence().forEach { line ->
+                    serr.appendLine(line)
+                }
+            }
+
+            val exitCode = proc.waitFor()
+            println("$sout $serr")
+
+            if (exitCode != 0) {
+                throw Exception("out> $sout err> $serr\nCommand: $cmd")
             }
         }
     }

@@ -5,6 +5,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import org.fptn.vpn.database.model.FptnServerDto;
+import org.fptn.vpn.services.websocket.callback.OnFailureCallback;
+import org.fptn.vpn.services.websocket.callback.OnMessageReceivedCallback;
+import org.fptn.vpn.services.websocket.callback.OnOpenCallback;
 import org.fptn.vpn.utils.ChromeCiphers;
 import org.fptn.vpn.utils.MySSLSocketFactory;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
@@ -17,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -37,7 +39,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 
-public class OkHttpClientWrapper {
+public class OkHttpWebSocketClientImpl implements WebSocketClient {
     public static final MediaType JSON = MediaType.get("application/json");
     public static final String DNS_URL_PATTERN = "https://%s:%d/api/v1/dns";
     public static final String LOGIN_URL_PATTERN = "https://%s:%d/api/v1/login";
@@ -52,7 +54,7 @@ public class OkHttpClientWrapper {
     @Getter
     private boolean shutdown = false;
 
-    public OkHttpClientWrapper(FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
+    public OkHttpWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -94,6 +96,7 @@ public class OkHttpClientWrapper {
         this.client = builder.build();
     }
 
+    @Override
     public String getDnsServerIPv4() throws PVNClientException {
         Request request = new Request.Builder()
                 .url(getUrlFromPattern(DNS_URL_PATTERN))
@@ -115,7 +118,8 @@ public class OkHttpClientWrapper {
         }
     }
 
-    public void startWebSocket(CustomWebSocketListener webSocketListener) throws PVNClientException, WebSocketAlreadyShutdownException {
+    @Override
+    public void startWebSocket(OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException, WebSocketAlreadyShutdownException {
         if (isShutdown()) {
             throw new WebSocketAlreadyShutdownException();
         }
@@ -125,9 +129,11 @@ public class OkHttpClientWrapper {
         Request request = new Request.Builder().url(getUrlFromPattern(WEBSOCKET_URL)).addHeader("Authorization", "Bearer " + token)
                 // The server needs to know the client's virtual interface for simplicity.
                 .addHeader("ClientIP", "10.10.0.1").build();
+        OkHttpWebSocketListener webSocketListener = new OkHttpWebSocketListener(onOpenCallback, onMessageReceivedCallback, onFailureCallback);
         webSocket = client.newWebSocket(request, webSocketListener);
     }
 
+    @Override
     public void stopWebSocket() {
         if (webSocket != null) {
             webSocket.close(1000, "stopWebSocket");
@@ -135,6 +141,7 @@ public class OkHttpClientWrapper {
         }
     }
 
+    @Override
     public void shutdown() {
         shutdown = true;
         stopWebSocket();
@@ -165,12 +172,11 @@ public class OkHttpClientWrapper {
         }
     }
 
-    public void send(ByteBuffer buffer, int length) {
+    @Override
+    public void send(byte[] data) {
         final int maxPayloadSize = 1450;
-        if (webSocket != null && !isIPv6(buffer, length)) { // block IPv6
-            byte[] copyBuffer = new byte[length];
-            System.arraycopy(buffer.array(), 0, copyBuffer, 0, length);
-            ByteString payload = ByteString.copyFrom(copyBuffer);
+        if (webSocket != null && !isIPv6(data)) { // block IPv6
+            ByteString payload = ByteString.copyFrom(data);
 
             // padding to random data
             ByteString padding = ByteString.EMPTY;
@@ -216,8 +222,8 @@ public class OkHttpClientWrapper {
         return hexString.toString();
     }
 
-    private boolean isIPv6(ByteBuffer buffer, int length) {
-        return length != 0 && buffer.get(0) == 0x60;
+    private boolean isIPv6(byte[] data) {
+        return data.length > 0 && data[0] == 0x60;
     }
 
     private ByteString generateRandomBytes(int size) {
