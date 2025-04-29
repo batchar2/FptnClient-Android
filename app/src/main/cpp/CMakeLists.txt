@@ -5,7 +5,7 @@ project("native-lib")
 find_package(ZLIB CONFIG)
 find_package(fptn CONFIG)
 
-add_subdirectory(.conan/recipes/fptn)
+# add_subdirectory(.conan/recipes/fptn)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED native-lib.cpp)
 
