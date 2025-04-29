@@ -1,2 +1,12 @@
 build/
+CMakePresets.json
 CMakeUserPresets.json
+conan_toolchain.cmake
+conanbuild.sh
+conanbuildenv-*
+conandeps_legacy.cmake
+conanrun.sh
+conanrunenv-*
+deactivate_conanbuild*
+deactivate_conanrun*
+*.cmake

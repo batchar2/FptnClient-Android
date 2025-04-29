@@ -17,12 +17,16 @@ tasks.register("conanInstall") {
     doLast {
         buildTypes.forEach { buildType ->
             architectures.forEach { arch ->
+                //  add fptn lib
+                var fptnCmd = "$conanExecutable export ../../src/main/cpp/.conan/recipes/fptn --name=fptn --version=0.0.0 --user=local --channel=local "
+                val fptnProc = ProcessBuilder(fptnCmd.split(" "))
+                    .directory(buildDir)
+                    .start()
+
+                // install conan
                 val cmd = "$conanExecutable install ../../src/main/cpp --profile android-studio " +
                         "-s build_type=$buildType -s arch=$arch --build missing " +
                         "-c tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
-
-                println(">> $cmd")
-
                 val proc = ProcessBuilder(cmd.split(" "))
                     .directory(buildDir)
                     .start()
@@ -87,9 +91,6 @@ android {
 
         vectorDrawables.useSupportLibrary = true
 
-//        ndk {
-//            abiFilters += setOf("arm64-v8a")
-//        }
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"

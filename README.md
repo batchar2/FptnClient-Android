@@ -8,6 +8,13 @@
 For disabling wildcards go to `Settings -> Editor -> Code style -> Kotlin -> Imports`
 Choose `Use single name import` for all cases and uncheck all checkboxes below.
 
+
+### Submodules
+
+```bash
+git submodule update --init --recursive
+```
+
 ### Install conan
 
 (For Windows, refer to these [instructions](https://github.com/batchar2/fptn/tree/master/deploy/windows) to install all required dependencies.)
@@ -37,11 +44,13 @@ os.api_level=21
 compiler=clang
 compiler.version=12
 compiler.libcxx=c++_static
-compiler.cppstd=14
+compiler.cppstd=17
 
 [tool_requires]
 *: android-ndk/r26d
 ```
+
+
 
 ## Ktlint formatting
 Check: `./gradlew ktlintCheck`
