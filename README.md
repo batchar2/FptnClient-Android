@@ -10,6 +10,8 @@ Choose `Use single name import` for all cases and uncheck all checkboxes below.
 
 ### Install conan
 
+(For Windows, refer to these [instructions](https://github.com/batchar2/fptn/tree/master/deploy/windows) to install all required dependencies.)
+
 ```bash
 pip install conan==2.9.2 numpy
 ```
