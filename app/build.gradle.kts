@@ -1,9 +1,50 @@
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     id("pvnclient.android.application")
     alias(libs.plugins.protobuf)
+}
+
+tasks.register("conanInstall") {
+    val conanExecutable = "conan" // define the path to your conan installation
+    val buildDir = file("app/build")
+    buildDir.mkdirs()
+
+    val buildTypes = listOf("Debug", "Release")
+    val architectures = listOf("armv7", "armv8", "x86", "x86_64")
+    doLast {
+        buildTypes.forEach { buildType ->
+            architectures.forEach { arch ->
+                val cmd = "$conanExecutable install ../../src/main/cpp --profile android-studio " +
+                        "-s build_type=$buildType -s arch=$arch --build missing " +
+                        "-c tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
+
+                println(">> $cmd")
+
+                val proc = ProcessBuilder(cmd.split(" "))
+                    .directory(buildDir)
+                    .start()
+
+                val result = proc.inputStream.bufferedReader().readText()
+                val errors = proc.errorStream.bufferedReader().readText()
+
+                proc.waitFor()
+
+                if (proc.exitValue() != 0) {
+                    throw Exception("Execution failed! Output: $result Error: $errors")
+                }
+                println(result)
+                if (errors.isNotBlank()) {
+                    println("Errors: $errors")
+                }
+            }
+        }
+    }
+}
+tasks.named("preBuild").configure {
+    dependsOn("conanInstall")
 }
 
 android {
@@ -45,6 +86,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         vectorDrawables.useSupportLibrary = true
+
+//        ndk {
+//            abiFilters += setOf("arm64-v8a")
+//        }
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17"
+                arguments("-DCMAKE_TOOLCHAIN_FILE=conan_android_toolchain.cmake")
+            }
+        }
     }
 
     buildTypes {
@@ -63,13 +114,13 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
     externalNativeBuild {
         cmake {
-            version = "3.22.1"
             path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
         }
     }
+    project.tasks.preBuild.dependsOn("conanInstall")
 }
 
 dependencies {
