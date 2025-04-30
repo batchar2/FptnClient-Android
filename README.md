@@ -19,6 +19,7 @@ git submodule update --init --recursive
 
 (For Windows, refer to these [instructions](https://github.com/batchar2/fptn/tree/master/deploy/windows) to install all required dependencies.)
 
+
 ```bash
 pip install conan==2.9.2 numpy
 ```

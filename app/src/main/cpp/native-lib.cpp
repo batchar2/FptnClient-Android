@@ -5,6 +5,8 @@
 #include <string>
 #include "zlib.h"
 
+#include <fptn-protocol-lib/https/https_client.h>
+
 //extern "C"
 //JNIEXPORT jstring JNICALL
 //Java_org_fptn_vpn_utils_NativeLib_stringFromJNI(JNIEnv *env, jobject thiz) {
@@ -15,6 +17,10 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_org_fptn_vpn_utils_NativeLib_multipleStr(JNIEnv *env, jobject thiz, jstring input_string,
                                               jint times, jboolean with_comma) {
+
+    fptn::protocol::https::HttpsClient client("127.0.0.1", 443);
+    client.Get("/tmp");
+
     const char *chars = env->GetStringUTFChars(input_string, nullptr);
     std::string cppString(chars);
     std::string result;

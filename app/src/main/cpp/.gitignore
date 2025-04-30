@@ -1,4 +1,5 @@
 build/
+build.*/
 CMakePresets.json
 CMakeUserPresets.json
 conan_toolchain.cmake
