@@ -13,6 +13,9 @@
 //    std::string hello = "Hello from C++";
 //    return env->NewStringUTF(hello.c_str());
 //}
+
+
+
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_org_fptn_vpn_utils_NativeLib_multipleStr(JNIEnv *env, jobject thiz, jstring input_string,

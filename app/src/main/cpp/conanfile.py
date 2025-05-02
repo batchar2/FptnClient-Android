@@ -98,7 +98,7 @@ class FptnLib(ConanFile):
 
     def requirements(self):
         # WE USE BORINGSSL
-        self._register_local_recipe("pcapplusplus", "pcapplusplus", "23.09")
+        self._register_local_recipe("pcapplusplus", "pcapplusplus", "24.09")
         self._register_local_recipe("boringssl", "openssl", "boringssl", override=False, force=False)
 
     def layout(self):
