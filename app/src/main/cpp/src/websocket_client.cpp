@@ -49,27 +49,28 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeCreate(JNIE
                                                                             jobject thiz,
                                                                             jstring host, jint port,
                                                                             jstring sni) {
-    jobject globalObjectRef = env->NewWeakGlobalRef(thiz);
-
-    auto *pWebsocketClient = new WebsocketClient(env, globalObjectRef, convertToCString(env, host),
-                                                 port,
-                                                 convertToCString(env, sni));
-    return reinterpret_cast<jlong>(pWebsocketClient);
+//    jobject globalObjectRef = env->NewWeakGlobalRef(thiz);
+//
+//    auto *pWebsocketClient = new WebsocketClient(env, globalObjectRef, convertToCString(env, host),
+//                                                 port,
+//                                                 convertToCString(env, sni));
+//    return reinterpret_cast<jlong>(pWebsocketClient);
+    return reinterpret_cast<jlong>(nullptr);
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeDestroy(JNIEnv *env,
                                                                              jobject thiz,
                                                                              jlong native_handle) {
-    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-    delete pWebsocketClient;
+//    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
+//    delete pWebsocketClient;
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeRun(JNIEnv *env, jobject thiz,
                                                                          jlong native_handle) {
-    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-    pWebsocketClient->Run();
+//    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
+//    pWebsocketClient->Run();
 }
 extern "C"
 JNIEXPORT jboolean JNICALL
@@ -84,8 +85,9 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(JNIEnv
                                                                           jlong native_handle,
                                                                           jbyteArray data) {
     // TODO: implement nativeSend()
-    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-    pWebsocketClient->Send();
+//    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
+//    pWebsocketClient->Send();
+    return static_cast<jboolean>(true);
 }
 extern "C"
 JNIEXPORT jboolean JNICALL

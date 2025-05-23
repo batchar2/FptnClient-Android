@@ -127,44 +127,90 @@ protobuf {
     }
 }
 
-task("conanInstall") {
-    val conanExecutable = "conan" // define the path to your conan installation
-    val buildDir = file("build").apply { mkdirs() }
+// ORIGINAL
+//task("conanInstall") {
+//    val conanExecutable = "conan" // define the path to your conan installation
+//    val buildDir = file("build").apply { mkdirs() }
+//
+//    val absoluteBuildDirPath = buildDir.absolutePath
+//    println("Build directory: $absoluteBuildDirPath")
+//
+//    // , "Release"
+//    listOf("Debug").forEach { buildType ->
+//        listOf("armv8").forEach { arch ->  // "x86_64"
+//            val cmd =
+//                "$conanExecutable install " +
+//                    "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
+//                    "--build missing -c tools.cmake.cmake_layout:build_folder_vars=\"['settings.arch']\""
+//            val sout = StringBuilder()
+//            val serr = StringBuilder()
+//            val proc = Runtime.getRuntime().exec(cmd, null, buildDir)
+//
+//            proc.inputStream.bufferedReader().use { reader ->
+//                reader.lineSequence().forEach { line ->
+//                    sout.appendLine(line)
+//                }
+//            }
+//
+//            proc.errorStream.bufferedReader().use { reader ->
+//                reader.lineSequence().forEach { line ->
+//                    serr.appendLine(line)
+//                }
+//            }
+//
+//            val exitCode = proc.waitFor()
+//            println("$sout $serr")
+//
+//            if (exitCode != 0) {
+//                throw Exception("out> $sout err> $serr\nCommand: $cmd")
+//            }
+//        }
+//    }
+//}
 
-    // Получаем абсолютный путь и выводим его
-    val absoluteBuildDirPath = buildDir.absolutePath
-    println("Build directory: $absoluteBuildDirPath")
+tasks.register("conanInstall") {
+    val conanExecutable = "conan"
+    val buildDir = file("app/build")
+    buildDir.mkdirs()
 
-    // , "Release"
-    listOf("Debug").forEach { buildType ->
-        listOf("armv7", "armv8", "x86", "x86_64").forEach { arch ->
-            val cmd =
-                "$conanExecutable install " +
-                    "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
-                    "--build missing -c tools.cmake.cmake_layout:build_folder_vars=\"['settings.arch']\""
-            println(">> $cmd")
+    val buildTypes = listOf("Debug", "Release")
+    val architectures = listOf("armv8", "x86_64")
 
-            val sout = StringBuilder()
-            val serr = StringBuilder()
-            val proc = Runtime.getRuntime().exec(cmd, null, buildDir)
+    doLast {
+        buildTypes.forEach { buildType ->
+            architectures.forEach { arch ->
+                // Install dependencies
+                val installCmd = listOf(
+                    conanExecutable,
+                    "install",
+                    "../../src/main/cpp",
+                    "--profile", "android-studio",
+                    "-s", "build_type=$buildType",
+                    "-s", "arch=$arch",
+                    "--build", "missing",
+                    "-c", "tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
+                )
 
-            proc.inputStream.bufferedReader().use { reader ->
-                reader.lineSequence().forEach { line ->
-                    sout.appendLine(line)
+                println("\n=== Installing dependencies for $buildType/$arch ===")
+                println("Command: ${installCmd.joinToString(" ")}")
+
+                val installProc = ProcessBuilder(installCmd)
+                    .directory(buildDir)
+                    .redirectErrorStream(true)
+                    .start()
+
+                installProc.inputStream.bufferedReader().use { reader ->
+                    reader.lines().forEach { line ->
+                        println("[conan install] $line")
+                    }
                 }
-            }
 
-            proc.errorStream.bufferedReader().use { reader ->
-                reader.lineSequence().forEach { line ->
-                    serr.appendLine(line)
+                val installExitCode = installProc.waitFor()
+                if (installExitCode != 0) {
+                    throw GradleException("Conan install failed for $buildType/$arch (exit code $installExitCode)")
                 }
-            }
 
-            val exitCode = proc.waitFor()
-            println("$sout $serr")
-
-            if (exitCode != 0) {
-                throw Exception("out> $sout err> $serr\nCommand: $cmd")
+                println("\n✔ Successfully installed dependencies for $buildType/$arch\n")
             }
         }
     }

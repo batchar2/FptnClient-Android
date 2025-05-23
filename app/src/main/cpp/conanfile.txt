@@ -1,9 +1,0 @@
-[requires]
-zlib/1.2.12
-
-[generators]
-CMakeToolchain
-CMakeDeps
-
-[layout]
-cmake_layout
