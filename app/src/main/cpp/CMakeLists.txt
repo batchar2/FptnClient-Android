@@ -33,14 +33,16 @@ add_subdirectory(libs/fptn)   #### COMMENT HERE TO STOP USING FPTN!!!!
 if(Protobuf_INCLUDE_DIRS)
     include_directories(${Protobuf_INCLUDE_DIRS})
 endif()
-add_library(${CMAKE_PROJECT_NAME} SHARED src/websocket_client.cpp)
+add_library(${CMAKE_PROJECT_NAME}
+        SHARED
+        #src/wrappers/wrapper_websocket_client/wrapper_websocket_client.h
+        #src/wrappers/wrapper_websocket_client/wrapper_websocket_client.cpp
+        src/websocket_client.cpp)
 
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     android
     log
     ZLIB::ZLIB
-
-
     fptn-protocol-lib_static   #### COMMENT HERE TO STOP USING FPTN!!!!
 )
