@@ -57,5 +57,4 @@ namespace fptn::wrapper {
 
         fptn::protocol::websocket::WebsocketClientSPtr client_;
     };
-
 }

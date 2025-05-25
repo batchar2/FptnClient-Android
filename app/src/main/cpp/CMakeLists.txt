@@ -37,8 +37,12 @@ add_library(${CMAKE_PROJECT_NAME}
         SHARED
         src/wrappers/wrapper_websocket_client/wrapper_websocket_client.h
         src/wrappers/wrapper_websocket_client/wrapper_websocket_client.cpp
-        src/websocket_client.cpp)
+        src/wrappers/wrapper_https_client/wrapper_https_client.h
+        src/wrappers/wrapper_https_client/wrapper_https_client.cpp
 
+        src/websocket_client.cpp
+        src/https_client.cpp
+)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     android
