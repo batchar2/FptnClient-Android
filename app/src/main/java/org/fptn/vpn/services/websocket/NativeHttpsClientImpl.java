@@ -17,8 +17,7 @@ public class NativeHttpsClientImpl {
                                  String server_ip,
                                  int server_port,
                                  String sni,
-                                 String md5_fingerprint)
-    {
+                                 String md5_fingerprint) {
         this.nativeHandle = nativeCreate(
                 server_ip,
                 server_port,
@@ -26,9 +25,6 @@ public class NativeHttpsClientImpl {
                 md5_fingerprint
         );
     }
-
-
-
 
 
     // public Get(){}
@@ -48,11 +44,10 @@ public class NativeHttpsClientImpl {
     }
 
 
-
     private native void nativeDestroy(long nativeHandle);
 
-//    private native Aray nativeGet(long nativeHandle);
-//
-//    private native List nativePost(long nativeHandle);
+    private native NativeResponse nativeGet(long nativeHandle, String url, int timeout);
+
+    private native NativeResponse nativePost(long nativeHandle, String url, String requestBody, int timeout);
 
 }
