@@ -22,7 +22,15 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
     public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName) {
         this.fptnServerDto = fptnServerDto;
         this.sniHostName = sniHostName;
-        this.nativeHandle = nativeCreate(fptnServerDto.host, fptnServerDto.port, sniHostName);
+        // FIX
+        this.nativeHandle = nativeCreate(
+                fptnServerDto.host,
+                fptnServerDto.port,
+                "10.10.0.1",
+                sniHostName,
+                "TOKEN",
+                "expected_md5_fingerprint"
+        );
     }
 
     @Override
@@ -63,11 +71,16 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
         nativeDestroy(nativeHandle);
     }
 
-    private native long nativeCreate(String host, int port, String sni);
+    private native long nativeCreate(String server_ip,
+                                     int server_port,
+                                     String tun_ipv4,
+                                     String sni,
+                                     String access_token,
+                                     String expected_md5_fingerprint);
 
     private native void nativeDestroy(long nativeHandle);
 
-    private native void nativeRun(long nativeHandle);
+    private native boolean nativeRun(long nativeHandle);
 
     private native boolean nativeStop(long nativeHandle);
 

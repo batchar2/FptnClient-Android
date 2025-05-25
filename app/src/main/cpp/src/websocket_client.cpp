@@ -1,99 +1,124 @@
-#include "websocket_client.h"
 #include <jni.h>
-#include <string>
 
-/*void WebsocketClient::logToAndroid(const char *message) const {
-*//*    jclass cls = env->FindClass("org/fptn/vpn/services/nativewrapper/NativeWebsocketWrapper");
-    jmethodID methodid = env->GetStaticMethodID(cls, "logMessageFromNativeStatic",
-                                                "(Ljava/lang/String;)V");
+#include "wrappers/utils/utils.h"
+#include "wrappers/wrapper_websocket_client/wrapper_websocket_client.h"
 
-    jstring jstr = env->NewStringUTF(message);
-    env->CallStaticVoidMethod(cls, methodid, jstr);*//*
 
-}*/
+using fptn::wrapper::WrapperWebsocketClient;
 
-bool WebsocketClient::IsStarted() {
-    return running_;
-}
-
-void WebsocketClient::Run() {
-    running_ = true;
-    //logToAndroid("Running");
-}
-
-bool WebsocketClient::Send() {
-    //logToAndroid("Sending");
-    return true;
-}
-
-bool WebsocketClient::Stop() {
-    running_ = false;
-    //logToAndroid("Stop");
-    return running_;
-}
-
-WebsocketClient::WebsocketClient(JNIEnv *env, jobject wrapper, const std::string host,
-                                 const int serverPort, const std::string sni)
-        : server_port_(serverPort), host_(host), sni_(sni), env(env), wrapper_(wrapper) {}
-
-std::string convertToCString(JNIEnv *pEnv, jstring pJstring);
-
-std::string convertToCString(JNIEnv *pEnv, jstring pJstring) {
-    const char *chars = pEnv->GetStringUTFChars(pJstring, nullptr);
-    return {chars};
-}
-
+// create an object
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeCreate(JNIEnv *env,
-                                                                            jobject thiz,
-                                                                            jstring host, jint port,
-                                                                            jstring sni) {
-//    jobject globalObjectRef = env->NewWeakGlobalRef(thiz);
-//
-//    auto *pWebsocketClient = new WebsocketClient(env, globalObjectRef, convertToCString(env, host),
-//                                                 port,
-//                                                 convertToCString(env, sni));
-//    return reinterpret_cast<jlong>(pWebsocketClient);
-    return reinterpret_cast<jlong>(nullptr);
+Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeCreate(
+    JNIEnv *env,
+    jobject thiz,
+    jstring server_ip_param,
+    jint server_port_param,
+    jstring tun_ipv4_param,
+    jstring sni_param,
+    jstring access_token_param,
+    jstring expected_md5_fingerprint_param)
+{
+    jobject global_object_ref = env->NewWeakGlobalRef(thiz);
+    auto server_ip = fptn::wrapper::ConvertToCString(env, server_ip_param);
+    int server_port = server_port_param;
+    auto tun_ipv4 = fptn::wrapper::ConvertToCString(env, tun_ipv4_param);
+    auto sni = fptn::wrapper::ConvertToCString(env, sni_param);
+    auto access_token = fptn::wrapper::ConvertToCString(env, access_token_param);
+    auto expected_md5_fingerprint = fptn::wrapper::ConvertToCString(env, expected_md5_fingerprint_param);
+
+    auto* websocket_client = new WrapperWebsocketClient(
+        env,
+        global_object_ref,
+        std::move(server_ip),
+        server_port,
+        std::move(tun_ipv4),
+        std::move(sni),
+        std::move(access_token),
+        std::move(expected_md5_fingerprint),
+        nullptr, // OpenCallback
+        nullptr, // ReceiveIpPacketCallback
+        nullptr // CloseCallback
+    );
+
+    return reinterpret_cast<jlong>(websocket_client);
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeDestroy(JNIEnv *env,
-                                                                             jobject thiz,
-                                                                             jlong native_handle) {
-//    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-//    delete pWebsocketClient;
-}
-extern "C"
-JNIEXPORT void JNICALL
-Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeRun(JNIEnv *env, jobject thiz,
-                                                                         jlong native_handle) {
-//    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-//    pWebsocketClient->Run();
-}
+
+// Run
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeStop(JNIEnv *env, jobject thiz,
-                                                                          jlong native_handle) {
-    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-    return static_cast<jboolean>(pWebsocketClient->Stop());
+Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeRun(
+    JNIEnv *env,
+    jobject thiz,
+    jlong native_handle)
+{
+    (void)env;
+    (void)thiz;
+
+    bool status = false;
+    auto* websocket_client = reinterpret_cast<WrapperWebsocketClient*>(native_handle);
+    if (websocket_client) {
+        status = websocket_client->Start();
+    }
+    return static_cast<jboolean>(status);
 }
+
+// Stop
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(JNIEnv *env, jobject thiz,
-                                                                          jlong native_handle,
-                                                                          jbyteArray data) {
-    // TODO: implement nativeSend()
-//    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-//    pWebsocketClient->Send();
-    return static_cast<jboolean>(true);
+Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeStop(
+    JNIEnv *env,
+    jobject thiz,
+    jlong native_handle)
+{
+    (void)env;
+    (void)thiz;
+
+    bool status = false;
+    auto* websocket_client = reinterpret_cast<WrapperWebsocketClient*>(native_handle);
+    if (websocket_client) {
+        status = websocket_client->Stop();
+    }
+    return static_cast<jboolean>(status);
 }
+
+// Send
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(
+    JNIEnv *env,
+    jobject thiz,
+    jlong native_handle,
+    jbyteArray data)
+{
+    (void)env;
+    (void)thiz;
+
+    bool status = false;
+    auto* websocket_client = reinterpret_cast<WrapperWebsocketClient*>(native_handle);
+    if (websocket_client) {
+        status = true;
+        // TODO: implement nativeSend()
+        // std::string packet =
+        // websocket_client->Send(std::move(packet));
+    }
+    return static_cast<jboolean>(status);
+}
+
+// IsStarted
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeIsStarted(JNIEnv *env,
-                                                                               jobject thiz,
-                                                                               jlong native_handle) {
-    auto *pWebsocketClient = reinterpret_cast<WebsocketClient *>(native_handle);
-    return static_cast<jboolean>(pWebsocketClient->IsStarted());
+    jobject thiz,
+    jlong native_handle)
+{
+    (void)env;
+    (void)thiz;
+
+    bool status = false;
+    auto* websocket_client = reinterpret_cast<WrapperWebsocketClient*>(native_handle);
+    if (websocket_client) {
+        status = websocket_client->IsStarted();
+    }
+    return static_cast<jboolean>(status);
 }
