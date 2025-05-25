@@ -35,8 +35,7 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeCreate(
     jstring host_param,
     jint port_param,
     jstring sni_param,
-    jstring md5_fingerprint_param)
-{
+    jstring md5_fingerprint_param) {
   jobject global_object_ref = env->NewWeakGlobalRef(thiz);
 
   auto host = fptn::wrapper::ConvertToCString(env, host_param);
@@ -53,8 +52,7 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeCreate(
 // Destroy
 extern "C" JNIEXPORT void JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeDestroy(
-    JNIEnv* env, jobject thiz, jlong native_handle)
-{
+    JNIEnv* env, jobject thiz, jlong native_handle) {
   (void)env;
   (void)thiz;
 
@@ -90,8 +88,7 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeGet(
     jobject thiz,
     jlong native_handle,
     jstring http_handle_param,
-    jint timeout_param)
-{
+    jint timeout_param) {
   (void)thiz;
 
   const auto http_handle =
@@ -155,8 +152,7 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativePost(
     jlong native_handle,
     jstring http_handle_param,
     jstring http_request_param,
-    jint timeout_param)
-{
+    jint timeout_param) {
   (void)thiz;
 
   const auto http_handle =

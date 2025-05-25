@@ -22,9 +22,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeCreate(
     jstring tun_ipv4_param,
     jstring sni_param,
     jstring access_token_param,
-    jstring expected_md5_fingerprint_param)
-{
-
+    jstring expected_md5_fingerprint_param) {
   jobject global_object_ref = env->NewWeakGlobalRef(thiz);
   auto server_ip = fptn::wrapper::ConvertToCString(env, server_ip_param);
   int server_port = server_port_param;
@@ -62,8 +60,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeDestroy(
 // Run
 extern "C" JNIEXPORT jboolean JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeRun(
-    JNIEnv* env, jobject thiz, jlong native_handle)
-{
+    JNIEnv* env, jobject thiz, jlong native_handle) {
   (void)env;
   (void)thiz;
 
@@ -79,8 +76,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeRun(
 // Stop
 extern "C" JNIEXPORT jboolean JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeStop(
-    JNIEnv* env, jobject thiz, jlong native_handle)
-{
+    JNIEnv* env, jobject thiz, jlong native_handle) {
   (void)env;
   (void)thiz;
 
@@ -96,8 +92,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeStop(
 // Send
 extern "C" JNIEXPORT jboolean JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(
-    JNIEnv* env, jobject thiz, jlong native_handle, jbyteArray data)
-{
+    JNIEnv* env, jobject thiz, jlong native_handle, jbyteArray data) {
   (void)thiz;
 
   bool status = false;
@@ -122,8 +117,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(
 // IsStarted
 extern "C" JNIEXPORT jboolean JNICALL
 Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeIsStarted(
-    JNIEnv* env, jobject thiz, jlong native_handle)
-{
+    JNIEnv* env, jobject thiz, jlong native_handle) {
   (void)env;
   (void)thiz;
 
