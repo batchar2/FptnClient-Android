@@ -114,10 +114,16 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(
     bool status = false;
     auto* websocket_client = reinterpret_cast<WrapperWebsocketClient*>(native_handle);
     if (websocket_client) {
-        status = true;
-        // TODO: implement nativeSend()
-        // std::string packet =
-        // websocket_client->Send(std::move(packet));
+        // Java bytes to std::string
+        jbyte* buffer = env->GetByteArrayElements(data, nullptr);
+        const jsize length = env->GetArrayLength(data);
+        if (buffer != nullptr && length != 0) {
+            std::string packet(reinterpret_cast<const char*>(buffer), length);
+            status = websocket_client->Send(std::move(packet));
+        }
+        if (buffer) {
+            env->ReleaseByteArrayElements(data, buffer, JNI_ABORT); // Release the buffer
+        }
     }
     return static_cast<jboolean>(status);
 }

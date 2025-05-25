@@ -28,7 +28,7 @@ include_directories(libs/fptn/src/)
 include_directories(libs/fptn/src/fptn-protocol-lib)
 set(FPTN_BUILD_ONLY_FPTN_LIB ON CACHE INTERNAL "Build only FPTN lib")
 
-add_subdirectory(libs/fptn)   #### COMMENT HERE TO STOP USING FPTN!!!!
+add_subdirectory(libs/fptn)
 
 if(Protobuf_INCLUDE_DIRS)
     include_directories(${Protobuf_INCLUDE_DIRS})
@@ -40,13 +40,14 @@ add_library(${CMAKE_PROJECT_NAME}
         src/wrappers/wrapper_https_client/wrapper_https_client.h
         src/wrappers/wrapper_https_client/wrapper_https_client.cpp
 
-        src/websocket_client.cpp
         src/https_client.cpp
+        src/speed_estimator.cpp
+        src/websocket_client.cpp
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     android
     log
     ZLIB::ZLIB
-    fptn-protocol-lib_static   #### COMMENT HERE TO STOP USING FPTN!!!!
+    fptn-protocol-lib_static
 )
