@@ -52,9 +52,9 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeCreate(
 extern "C"
 JNIEXPORT void JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeDestroy(
-        JNIEnv *env,
-        jobject thiz,
-        jlong native_handle)
+    JNIEnv *env,
+    jobject thiz,
+    jlong native_handle)
 {
     (void)env;
     (void)thiz;
@@ -88,12 +88,11 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeDestroy(
 extern "C"
 JNIEXPORT jobjectArray JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeGet(
-        JNIEnv *env,
-        jobject thiz,
-        jlong native_handle,
-        jstring http_handle_param,
-        jint timeout_param
-)
+    JNIEnv *env,
+    jobject thiz,
+    jlong native_handle,
+    jstring http_handle_param,
+    jint timeout_param)
 {
     (void)thiz;
 
@@ -144,13 +143,12 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeGet(
 extern "C"
 JNIEXPORT jobjectArray JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativePost(
-        JNIEnv *env,
-        jobject thiz,
-        jlong native_handle,
-        jstring http_handle_param,
-        jstring http_request_param,
-        jint timeout_param
-)
+    JNIEnv *env,
+    jobject thiz,
+    jlong native_handle,
+    jstring http_handle_param,
+    jstring http_request_param,
+    jint timeout_param)
 {
     (void)thiz;
 
