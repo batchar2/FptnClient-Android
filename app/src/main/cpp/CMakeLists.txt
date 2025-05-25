@@ -21,7 +21,7 @@ message(STATUS "OpenSSL_VERSION: ${OPENSSL_VERSION}")
 
 #exit
 #find_package(fptn CONFIG)
-
+include_directories(src/)
 include_directories(${OpenSSL_INCLUDE_DIR})
 
 include_directories(libs/fptn/src/)
@@ -35,13 +35,16 @@ if(Protobuf_INCLUDE_DIRS)
 endif()
 add_library(${CMAKE_PROJECT_NAME}
         SHARED
+
+        src/jnienv/jnienv.h
+        src/jnienv/jnienv.cpp
+
         src/wrappers/wrapper_websocket_client/wrapper_websocket_client.h
         src/wrappers/wrapper_websocket_client/wrapper_websocket_client.cpp
         src/wrappers/wrapper_https_client/wrapper_https_client.h
         src/wrappers/wrapper_https_client/wrapper_https_client.cpp
 
         src/https_client.cpp
-        src/speed_estimator.cpp
         src/websocket_client.cpp
 )
 

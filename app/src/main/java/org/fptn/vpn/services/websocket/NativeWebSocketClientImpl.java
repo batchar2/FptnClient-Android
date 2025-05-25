@@ -13,6 +13,10 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
     private final FptnServerDto fptnServerDto;
     private final String sniHostName;
 
+    private OnOpenCallback onOpenCallback;
+    private OnMessageReceivedCallback onMessageReceivedCallback;
+    private OnFailureCallback onFailureCallback;
+
     private long nativeHandle = 0L;
 
     static {
@@ -40,6 +44,9 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
 
     @Override
     public void startWebSocket(OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException, WebSocketAlreadyShutdownException {
+        this.onOpenCallback = onOpenCallback;
+        this.onMessageReceivedCallback = onMessageReceivedCallback;
+        this.onFailureCallback = onFailureCallback;
         if (!nativeIsStarted(nativeHandle)){
             nativeRun(nativeHandle);
         }
@@ -69,6 +76,27 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
         super.finalize();
         Log.d(TAG, "NativeWebsocketWrapper.finalize()");
         nativeDestroy(nativeHandle);
+    }
+
+    public void onOpenImpl()
+    {
+        if (this.onOpenCallback != null) {
+            this.onOpenCallback.onOpen();
+        }
+    }
+
+    public void onCloseImpl()
+    {
+        if (this.onFailureCallback != null) {
+            this.onFailureCallback.onFailure();
+        }
+    }
+
+    public void onMessageImpl(byte[] msg)
+    {
+        if (this.onMessageReceivedCallback != null) {
+            this.onMessageReceivedCallback.onMessageReceived(msg);
+        }
     }
 
     private native long nativeCreate(String server_ip,

@@ -13,14 +13,14 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 namespace fptn::wrapper {
 
-using CallbackConnectionOpened = std::function<void()>;
-using CallbacRecvIpPacket = std::function<void(std::string pkt)>;
-using CallbackConnectionClosed = std::function<void()>;
+using JavaCallback = jmethodID;
+using CallbackConnectionOpened = JavaCallback;
+using CallbacRecvIpPacket = JavaCallback;
+using CallbackConnectionClosed = JavaCallback;
 
 class WrapperWebsocketClient final {
  public:
-  explicit WrapperWebsocketClient(JNIEnv* env,
-      jobject wrapper,
+  explicit WrapperWebsocketClient(jobject wrapper,
       std::string server_ip,
       int server_port,
       std::string tun_ipv4,
@@ -47,7 +47,6 @@ class WrapperWebsocketClient final {
   mutable std::mutex mutex_;
   mutable std::atomic<bool> running_;
 
-  const JNIEnv* env_;
   const jobject wrapper_;
 
   const std::string server_ip_;

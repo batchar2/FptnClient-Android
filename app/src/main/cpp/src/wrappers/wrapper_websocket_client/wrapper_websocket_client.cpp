@@ -9,6 +9,8 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 #include <jni.h>
 
+#include "jnienv/jnienv.h"
+
 #ifndef FPTN_CLIENT_DEFAULT_ADDRESS_IP6
 #define FPTN_CLIENT_DEFAULT_ADDRESS_IP6 "fd00::1"
 #endif
@@ -16,8 +18,7 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 using fptn::protocol::websocket::WebsocketClient;
 using fptn::wrapper::WrapperWebsocketClient;
 
-WrapperWebsocketClient::WrapperWebsocketClient(JNIEnv* env,
-    jobject wrapper,
+WrapperWebsocketClient::WrapperWebsocketClient(jobject wrapper,
     std::string server_ip,
     int server_port,
     std::string tun_ipv4,
@@ -28,7 +29,6 @@ WrapperWebsocketClient::WrapperWebsocketClient(JNIEnv* env,
     CallbacRecvIpPacket on_recv_ip_packet,
     CallbackConnectionClosed on_connection_closed)
     : running_(false),
-      env_(env),
       wrapper_(std::move(wrapper)),
       server_ip_(std::move(server_ip)),
       server_port_(server_port),
@@ -80,25 +80,35 @@ void WrapperWebsocketClient::Run() {
       pcpp::IPv6Address(FPTN_CLIENT_DEFAULT_ADDRESS_IP6),
       std::bind(
           &WrapperWebsocketClient::onIPPacket, this, std::placeholders::_1),
-      sni_, access_token_, expected_md5_fingerprint_);
+      sni_, access_token_, expected_md5_fingerprint_,
+      [this]() { onConnectedCallback(); });
 
   running_ = false;
   if (on_connection_closed_) {
-    on_connection_closed_();
+    JNIEnv* env = getJniEnv();
+    env->CallVoidMethod(wrapper_, on_connection_closed_);
   }
 }
 
 void WrapperWebsocketClient::onIPPacket(
     fptn::common::network::IPPacketPtr packet) {
   if (packet && running_ && on_recv_ip_packet_) {
-    std::string serialized_packet = packet->ToString();
-    on_recv_ip_packet_(std::move(serialized_packet));
+    JNIEnv* env = getJniEnv();
+
+    const std::string serialized_packet = packet->ToString();
+    jbyteArray jpacket = env->NewByteArray(serialized_packet.size());
+    env->SetByteArrayRegion(jpacket, 0, serialized_packet.size(),
+        reinterpret_cast<const jbyte*>(serialized_packet.data()));
+
+    env->CallVoidMethod(wrapper_, on_recv_ip_packet_, jpacket);
+    env->DeleteLocalRef(jpacket);
   }
 }
 
 void WrapperWebsocketClient::onConnectedCallback() {
   if (running_ && on_connection_opened_) {
-    on_connection_opened_();
+    JNIEnv* env = getJniEnv();
+    env->CallVoidMethod(wrapper_, on_connection_opened_);
   }
 }
 

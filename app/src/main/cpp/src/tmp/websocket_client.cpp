@@ -12,6 +12,22 @@
 
 }*/
 
+//extern "C"
+//JNIEXPORT jlong JNICALL
+//Java_org_fptn_vpn_services_nativewrapper_NativeWebsocketWrapper_nativeCreate(JNIEnv *env,
+//                                                                             jobject thiz,
+//                                                                             jstring host,
+//                                                                             jint port,
+//                                                                             jstring sni) {
+//    jobject globalObjectRef = env->NewWeakGlobalRef(thiz);
+//
+//    auto *pWebsocketClient = new WebsocketClient(env, globalObjectRef, convertToCString(env, host),
+//                                                 port,
+//                                                 convertToCString(env, sni));
+//    return reinterpret_cast<jlong>(pWebsocketClient);
+//}
+
+
 bool WebsocketClient::IsStarted() {
     return running_;
 }
