@@ -135,6 +135,12 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeGet(
  * @param[in] http_request_param HTTP request body (as Java String)
  * @param[in] timeout_param Request timeout in milliseconds
  *
+ * @return jobjectArray Java Object array containing:
+ *         - [0]: String response body (JSON format)
+ *         - [1]: Integer HTTP status code
+ *         - [2]: String error message (empty if successful)
+ *
+ *
  * @note Default return values when client is invalid:
  *       - Body: "{}" (empty JSON)
  *       - Code: 400 (Bad Request)
