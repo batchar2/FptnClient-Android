@@ -41,8 +41,8 @@ import okhttp3.WebSocket;
 
 public class OkHttpWebSocketClientImpl implements WebSocketClient {
     public static final MediaType JSON = MediaType.get("application/json");
-    public static final String DNS_URL_PATTERN = "https://%s:%d/api/v1/dns";
-    public static final String LOGIN_URL_PATTERN = "https://%s:%d/api/v1/login";
+    public static final String DNS_URL= "/api/v1/dns";
+    public static final String LOGIN_URL = "/api/v1/login";
     public static final String WEBSOCKET_URL = "wss://%s:%d/fptn";
     private final OkHttpClient client;
     private final FptnServerDto fptnServerDto;
@@ -98,7 +98,7 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
     @Override
     public String getDnsServerIPv4() throws PVNClientException {
         NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "SNI", "TLS_FINGERPRINT");
-        NativeResponse response = client.Get("/api/v1/dns", 5);
+        NativeResponse response = client.Get(DNS_URL, 5);
         if (response != null) {
             if (response.code == 200) {
                 try {
@@ -149,7 +149,7 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
                 fptnServerDto.username,
                 fptnServerDto.password);
         NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "SNI", "TLS_FINGERPRINT");
-        NativeResponse response = client.Post("/api/v1/login", request, 5);
+        NativeResponse response = client.Post(LOGIN_URL, request, 5);
         if (response != null) {
             if (response.code == 200) {
                 try {
