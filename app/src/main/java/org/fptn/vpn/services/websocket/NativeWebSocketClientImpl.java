@@ -20,7 +20,7 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
     private long nativeHandle = 0L;
 
     static {
-        System.loadLibrary("websocket_client");
+        System.loadLibrary("fptn_native_lib");
     }
 
     public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName) {

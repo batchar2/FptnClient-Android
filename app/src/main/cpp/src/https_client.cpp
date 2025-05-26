@@ -10,28 +10,25 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 #include "wrappers/utils/utils.h"
 #include "wrappers/wrapper_https_client/wrapper_https_client.h"
 
-jobject
-create_response(JNIEnv *pEnv, const std::string response_body, const int code,
-                const std::string error_message);
+namespace {
+jobject create_response(JNIEnv* env,
+    const std::string& response_body,
+    int code,
+    const std::string& error_message) {
+  jclass clazz =
+      env->FindClass("org/fptn/vpn/services/websocket/NativeResponse");
+  jmethodID constructor = env->GetMethodID(
+      clazz, "<init>", "(ILjava/lang/String;Ljava/lang/String;)V");
+  jstring body_str = env->NewStringUTF(response_body.c_str());
+  jstring error_str = env->NewStringUTF(error_message.c_str());
+
+  jobject response_obj =
+      env->NewObject(clazz, constructor, code, body_str, error_str);
+  return response_obj;
+}
+}  // namespace
 
 using fptn::wrapper::WrapperHttpsClient;
-
-jobject
-create_response(JNIEnv *env, const std::string response_body, const int code,
-                const std::string error_message) {
-    jclass clazz = env->FindClass("org/fptn/vpn/services/websocket/NativeResponse");
-    jmethodID constructor = env->GetMethodID(clazz, "<init>",
-                                             "(ILjava/lang/String;Ljava/lang/String;)V");
-    jstring body_str = env->NewStringUTF(response_body.c_str());
-    jstring error_str = env->NewStringUTF(error_message.c_str());
-
-    jobject response_obj = env->NewObject(clazz, constructor, code, body_str,
-                                          error_str);
-//    env->DeleteLocalRef(body_str);
-//    env->DeleteLocalRef(error_str);
-
-    return response_obj;
-}
 
 /**
  * @brief Creates a new native HTTPS client instance
@@ -51,37 +48,36 @@ create_response(JNIEnv *env, const std::string response_body, const int code,
  */
 extern "C" JNIEXPORT jlong JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeCreate(
-        JNIEnv *env,
-        jobject thiz,
-        jstring host_param,
-        jint port_param,
-        jstring sni_param,
-        jstring md5_fingerprint_param) {
-    jobject global_object_ref = env->NewWeakGlobalRef(thiz);
+    JNIEnv* env,
+    jobject thiz,
+    jstring host_param,
+    jint port_param,
+    jstring sni_param,
+    jstring md5_fingerprint_param) {
+  jobject global_object_ref = env->NewWeakGlobalRef(thiz);
 
-    auto host = fptn::wrapper::ConvertToCString(env, host_param);
-    int port = port_param;
-    auto sni = fptn::wrapper::ConvertToCString(env, sni_param);
-    auto md5_fingerprint =
-            fptn::wrapper::ConvertToCString(env, md5_fingerprint_param);
+  auto host = fptn::wrapper::ConvertToCString(env, host_param);
+  int port = port_param;
+  auto sni = fptn::wrapper::ConvertToCString(env, sni_param);
+  auto md5_fingerprint =
+      fptn::wrapper::ConvertToCString(env, md5_fingerprint_param);
 
-    auto *https_client = new WrapperHttpsClient(env, global_object_ref,
-                                                std::move(host), port, std::move(sni),
-                                                std::move(md5_fingerprint));
-    return reinterpret_cast<jlong>(https_client);
+  auto* https_client = new WrapperHttpsClient(env, global_object_ref,
+      std::move(host), port, std::move(sni), std::move(md5_fingerprint));
+  return reinterpret_cast<jlong>(https_client);
 }
 
 // Destroy
 extern "C" JNIEXPORT void JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeDestroy(
-        JNIEnv *env, jobject thiz, jlong native_handle) {
-    (void) env;
-    (void) thiz;
+    JNIEnv* env, jobject thiz, jlong native_handle) {
+  (void)env;
+  (void)thiz;
 
-    auto *https_client = reinterpret_cast<WrapperHttpsClient *>(native_handle);
-    if (https_client) {
-        delete https_client;
-    }
+  auto* https_client = reinterpret_cast<WrapperHttpsClient*>(native_handle);
+  if (https_client) {
+    delete https_client;
+  }
 }
 
 /**
@@ -106,23 +102,23 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeDestroy(
  */
 extern "C" JNIEXPORT jobject JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeGet(
-        JNIEnv *env,
-        jobject thiz,
-        jlong native_handle,
-        jstring http_handle_param,
-        jint timeout_param) {
-    (void) thiz;
+    JNIEnv* env,
+    jobject thiz,
+    jlong native_handle,
+    jstring http_handle_param,
+    jint timeout_param) {
+  (void)thiz;
 
-    const auto http_handle =
-            fptn::wrapper::ConvertToCString(env, http_handle_param);
-    int timeout = timeout_param;
+  const auto http_handle =
+      fptn::wrapper::ConvertToCString(env, http_handle_param);
+  int timeout = timeout_param;
 
-    auto *https_client = reinterpret_cast<WrapperHttpsClient *>(native_handle);
-    if (https_client) {
-        const auto resp = https_client->Get(http_handle, timeout);
-        return create_response(env, resp.body, resp.code, resp.errmsg);
-    }
-    return create_response(env, std::string("{}"), 400, std::string("Object is empty"));
+  auto* https_client = reinterpret_cast<WrapperHttpsClient*>(native_handle);
+  if (https_client) {
+    const auto resp = https_client->Get(http_handle, timeout);
+    return create_response(env, resp.body, resp.code, resp.errmsg);
+  }
+  return create_response(env, "{}", 400, "Object is empty");
 }
 
 /**
@@ -150,24 +146,24 @@ Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativeGet(
  */
 extern "C" JNIEXPORT jobject JNICALL
 Java_org_fptn_vpn_services_websocket_NativeHttpsClientImpl_nativePost(
-        JNIEnv *env,
-        jobject thiz,
-        jlong native_handle,
-        jstring http_handle_param,
-        jstring http_request_param,
-        jint timeout_param) {
-    (void) thiz;
+    JNIEnv* env,
+    jobject thiz,
+    jlong native_handle,
+    jstring http_handle_param,
+    jstring http_request_param,
+    jint timeout_param) {
+  (void)thiz;
 
-    const auto http_handle =
-            fptn::wrapper::ConvertToCString(env, http_handle_param);
-    const auto http_request =
-            fptn::wrapper::ConvertToCString(env, http_request_param);
-    int timeout = timeout_param;
+  const auto http_handle =
+      fptn::wrapper::ConvertToCString(env, http_handle_param);
+  const auto http_request =
+      fptn::wrapper::ConvertToCString(env, http_request_param);
+  int timeout = timeout_param;
 
-    auto *https_client = reinterpret_cast<WrapperHttpsClient *>(native_handle);
-    if (https_client) {
-        const auto resp = https_client->Post(http_handle, http_request, timeout);
-        return create_response(env, resp.body, resp.code, resp.errmsg);
-    }
-    return create_response(env, std::string("{}"), 400, std::string("Object is empty"));
+  auto* https_client = reinterpret_cast<WrapperHttpsClient*>(native_handle);
+  if (https_client) {
+    const auto resp = https_client->Post(http_handle, http_request, timeout);
+    return create_response(env, resp.body, resp.code, resp.errmsg);
+  }
+  return create_response(env, "{}", 400, "Object is empty");
 }

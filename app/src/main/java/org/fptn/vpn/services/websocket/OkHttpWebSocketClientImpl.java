@@ -44,7 +44,6 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
     public static final String DNS_URL_PATTERN = "https://%s:%d/api/v1/dns";
     public static final String LOGIN_URL_PATTERN = "https://%s:%d/api/v1/login";
     public static final String WEBSOCKET_URL = "wss://%s:%d/fptn";
-
     private final OkHttpClient client;
     private final FptnServerDto fptnServerDto;
     private String token;
@@ -98,24 +97,22 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
 
     @Override
     public String getDnsServerIPv4() throws PVNClientException {
-        Request request = new Request.Builder()
-                .url(getUrlFromPattern(DNS_URL_PATTERN))
-                .get()
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == 200 && response.body() != null) {
-                JSONObject jsonResponse = new JSONObject(response.body().string());
-                String dnsServer = jsonResponse.getString("dns");
-                Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
-                return dnsServer;
-            } else {
-                Log.e(getTag(), "Error response: " + response);
-                throw new PVNClientException(ErrorCode.DNS_SERVER_ERROR.getValue());
+        NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "SNI", "TLS_FINGERPRINT");
+        NativeResponse response = client.Get("/api/v1/dns", 5);
+        if (response != null) {
+            if (response.code == 200) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response.body);
+                    String dnsServer = jsonResponse.getString("dns");
+                    Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
+                    return dnsServer;
+                } catch (JSONException e) {
+                    Log.e(getTag(), "Some error occurs on receiving DNS response: " + e);
+                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+                }
             }
-        } catch (JSONException | IOException e) {
-            Log.e(getTag(), "Some error occurs on receiving DNS response: " + e);
-            throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
         }
+        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
     }
 
     @Override
@@ -148,28 +145,25 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
     }
 
     private String getAccessToken() throws PVNClientException {
-        Map<String, String> map = new HashMap<>();
-        map.put("username", fptnServerDto.username);
-        map.put("password", fptnServerDto.password);
-        RequestBody requestBody = RequestBody.create(new JSONObject(map).toString(), JSON);
-        Request request = new Request.Builder()
-                .url(getUrlFromPattern(LOGIN_URL_PATTERN))
-                .post(requestBody)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == 200 && response.body() != null) {
-                JSONObject jsonResponse = new JSONObject(response.body().string());
-                String accessToken = jsonResponse.getString("access_token");
-                Log.i(getTag(), "Getting accessToken successful.");
-                return accessToken;
-            } else {
-                Log.e(getTag(), "Error response: " + response);
-                throw new PVNClientException(ErrorCode.ACCESS_TOKEN_ERROR.getValue());
+        String request = String.format("{\"username\": \"%s\", \"password\": \"%s\"}",
+                fptnServerDto.username,
+                fptnServerDto.password);
+        NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "SNI", "TLS_FINGERPRINT");
+        NativeResponse response = client.Post("/api/v1/login", request, 5);
+        if (response != null) {
+            if (response.code == 200) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response.body);
+                    String accessToken = jsonResponse.getString("access_token");
+                    Log.i(getTag(), "Getting accessToken successful.");
+                    return accessToken;
+                } catch (JSONException e) {
+                    Log.e(getTag(), "Some error occurs on parsing accessToken response: " + e);
+                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+                }
             }
-        } catch (JSONException | IOException e) {
-            Log.e(getTag(), "Some error occurs on parsing accessToken response: " + e);
-            throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
         }
+        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
     }
 
     @Override
@@ -184,18 +178,15 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
                 final int paddingSize = maxPayloadSize - payload.size();
                 padding = generateRandomBytes(paddingSize);
             }
-
             Protocol.IPPacket packet = Protocol.IPPacket.newBuilder()
                     .setPayload(payload)
                     .setPaddingData(padding)
                     .build();
-
             Protocol.Message msg = Protocol.Message.newBuilder()
                     .setProtocolVersion(1)
                     .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
                     .setPacket(packet)
                     .build();
-
             webSocket.send(okio.ByteString.of(msg.toByteArray()));
         }
     }

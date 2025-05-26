@@ -204,7 +204,6 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             return START_NOT_STICKY;
         }
     }
-
     private int connectToServer(int serverId) throws ExecutionException, InterruptedException {
         fptnServerRepository.resetSelected().get();
         fptnServerRepository.setIsSelected(serverId).get();

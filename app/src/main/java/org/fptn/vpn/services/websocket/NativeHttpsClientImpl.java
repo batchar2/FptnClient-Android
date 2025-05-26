@@ -10,11 +10,10 @@ public class NativeHttpsClientImpl {
     private long nativeHandle = 0L;
 
     static {
-        System.loadLibrary("https_client");
+        System.loadLibrary("fptn_native_lib");
     }
 
-    public NativeHttpsClientImpl(FptnServerDto fptnServerDto,
-                                 String server_ip,
+    public NativeHttpsClientImpl(String server_ip,
                                  int server_port,
                                  String sni,
                                  String md5_fingerprint) {
@@ -26,10 +25,15 @@ public class NativeHttpsClientImpl {
         );
     }
 
+    public NativeResponse Get(String url, int timeout)
+    {
+        return nativeGet(nativeHandle, url, timeout);
+    }
 
-    // public Get(){}
-
-    // public Post(){}
+    public NativeResponse Post(String url, String body, int timeout)
+    {
+        return nativePost(nativeHandle, url, body, timeout);
+    }
 
     private native long nativeCreate(String server_ip,
                                      int server_port,
@@ -42,7 +46,6 @@ public class NativeHttpsClientImpl {
         Log.d(TAG, "NativeWebsocketWrapper.finalize()");
         nativeDestroy(nativeHandle);
     }
-
 
     private native void nativeDestroy(long nativeHandle);
 
