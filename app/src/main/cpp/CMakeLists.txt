@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project("native-lib")
+project("fptn_native_lib")
 
 find_package(ZLIB CONFIG)
 find_package(absl REQUIRED)

@@ -12,7 +12,6 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 namespace fptn::wrapper {
     inline std::string ConvertToCString(JNIEnv *p_env, jstring jstr) {
-        const char *chars = p_env->GetStringUTFChars(jstr, nullptr);
-        return {chars};
+        return p_env->GetStringUTFChars(jstr, nullptr);
     }
 }

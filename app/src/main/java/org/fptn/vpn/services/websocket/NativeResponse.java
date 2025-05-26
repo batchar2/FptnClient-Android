@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NativeResponse {
-    private int code;
-    private String body;
-    private String errorMessage;
+    public int code;
+    public String body;
+    public String errorMessage;
 }
