@@ -23,7 +23,7 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
         System.loadLibrary("fptn_native_lib");
     }
 
-    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName) {
+    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName, String token) {
         this.fptnServerDto = fptnServerDto;
         this.sniHostName = sniHostName;
         // FIX
@@ -32,7 +32,7 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
                 fptnServerDto.port,
                 "10.10.0.1",
                 sniHostName,
-                "TOKEN",
+                token,
                 "expected_md5_fingerprint"
         );
     }
