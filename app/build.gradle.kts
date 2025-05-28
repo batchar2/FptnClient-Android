@@ -11,6 +11,7 @@ plugins {
 android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
+    ndkVersion = "27.2.12479018"
 
     signingConfigs {
         create("release") {
@@ -25,7 +26,7 @@ android {
             } else {
                 println(
                     "Warning: keystore.properties file not found. " +
-                        "Release signing configuration will not be applied.",
+                            "Release signing configuration will not be applied.",
                 )
             }
         }
@@ -79,7 +80,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            version = "3.22.1"
+            version = "3.31.6"
             path = file("src/main/cpp/CMakeLists.txt")
         }
     }
