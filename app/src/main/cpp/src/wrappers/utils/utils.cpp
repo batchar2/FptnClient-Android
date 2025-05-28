@@ -5,14 +5,18 @@ Copyright (c) 2024-2025 brightsunshine54
 Distributed under the MIT License (https://opensource.org/licenses/MIT)
 =============================================================================*/
 
-#pragma once
+#include "utils.h"
 
-#include <jni.h>
-#include <string>
+#include <mutex>
 
-namespace fptn::wrapper {
-inline std::string ConvertToCString(JNIEnv* p_env, jstring jstr) {
-  return p_env->GetStringUTFChars(jstr, nullptr);
+#include "common/logger/logger.h"
+
+bool fptn::wrapper::init_logger() {
+  static std::once_flag flag;
+  static bool initialized = false;
+
+  std::call_once(
+      flag, []() { initialized = fptn::logger::init("fptn-android-client"); });
+
+  return initialized;
 }
-bool init_logger();
-}  // namespace fptn::wrapper

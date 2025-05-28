@@ -133,14 +133,7 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
         }
 
         this.webSocket = new NativeWebSocketClientImpl(this.fptnServerDto, this.sniHostName,  this.token);
-
         this.webSocket.startWebSocket(onOpenCallback, onMessageReceivedCallback, onFailureCallback);
-
-//        Request request = new Request.Builder().url(getUrlFromPattern(WEBSOCKET_URL)).addHeader("Authorization", "Bearer " + token)
-//                // The server needs to know the client's virtual interface for simplicity.
-//                .addHeader("ClientIP", "10.10.0.1").build();
-//        OkHttpWebSocketListener webSocketListener = new OkHttpWebSocketListener(onOpenCallback, onMessageReceivedCallback, onFailureCallback);
-//        webSocket = client.newWebSocket(request, webSocketListener);
     }
 
     @Override
@@ -186,32 +179,9 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
         final int maxPayloadSize = 1450;
         if (webSocket != null && !isIPv6(data)) { // block IPv6
             ByteString payload = ByteString.copyFrom(data);
-
-            //this.webSocket.send(payload.toByteArray());
-
-            // padding to random data
-//            ByteString padding = ByteString.EMPTY;
-//            if (payload.size() < maxPayloadSize) {
-//                final int paddingSize = maxPayloadSize - payload.size();
-//                padding = generateRandomBytes(paddingSize);
-//            }
-//            Protocol.IPPacket packet = Protocol.IPPacket.newBuilder()
-//                    .setPayload(payload)
-//                    .setPaddingData(padding)
-//                    .build();
-//            Protocol.Message msg = Protocol.Message.newBuilder()
-//                    .setProtocolVersion(1)
-//                    .setMsgType(Protocol.MessageType.MSG_IP_PACKET)
-//                    .setPacket(packet)
-//                    .build();
-//            webSocket.send(okio.ByteString.of(msg.toByteArray()));
+            this.webSocket.send(payload.toByteArray());
         }
     }
-
-//    @NonNull
-//    private String getUrlFromPattern(String urlPattern) {
-//        return String.format(urlPattern, fptnServerDto.host, fptnServerDto.port);
-//    }
 
     private boolean isValid(String token) {
         //todo: Add token validation
@@ -222,23 +192,7 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
         return this.getClass().getCanonicalName();
     }
 
-//    private String bytesToHex(byte[] bytes) {
-//        StringBuilder hexString = new StringBuilder();
-//        for (byte b : bytes) {
-//            hexString.append(String.format("%02X ", b));
-//        }
-//        return hexString.toString();
-//    }
-
     private boolean isIPv6(byte[] data) {
         return data.length > 0 && data[0] == 0x60;
     }
-
-//    private ByteString generateRandomBytes(int size) {
-//        byte[] randomBytes = new byte[size];
-//        SecureRandom secureRandom = new SecureRandom(); // Use SecureRandom for cryptographic safety
-//        secureRandom.nextBytes(randomBytes);
-//        return ByteString.copyFrom(randomBytes);
-//    }
-
 }

@@ -11,7 +11,7 @@ plugins {
 android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
-    ndkVersion = "27.2.12479018"
+    // ndkVersion = "27.2.12479018"
 
     signingConfigs {
         create("release") {
@@ -80,7 +80,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            version = "3.31.6"
+            // version = "3.31.6"
             path = file("src/main/cpp/CMakeLists.txt")
         }
     }

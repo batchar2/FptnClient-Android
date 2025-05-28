@@ -46,6 +46,9 @@ add_library(${CMAKE_PROJECT_NAME}
 
         src/https_client.cpp
         src/websocket_client.cpp
+
+        src/wrappers/utils/utils.h
+        src/wrappers/utils/utils.cpp
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}

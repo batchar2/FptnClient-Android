@@ -15,6 +15,9 @@ jobject create_response(JNIEnv* env,
     const std::string& response_body,
     int code,
     const std::string& error_message) {
+
+  fptn::wrapper::init_logger(); // will call only once
+
   jclass clazz =
       env->FindClass("org/fptn/vpn/services/websocket/NativeResponse");
   jmethodID constructor = env->GetMethodID(

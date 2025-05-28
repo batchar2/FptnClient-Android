@@ -76,8 +76,9 @@ void WrapperWebsocketClient::Run() {
                                                         &WrapperWebsocketClient::onIPPacket, this,
                                                         std::placeholders::_1),
                                                 sni_, access_token_, expected_md5_fingerprint_,
-                                                [this]() { onConnectedCallback(); });
+                                                [this]() { SPDLOG_INFO("CALLBACK!"); onConnectedCallback(); });
 
+    client_->Run();
     running_ = false;
 
     JNIEnv *env = getJniEnv();

@@ -97,6 +97,7 @@ class FptnLib(ConanFile):
         tc.cache_variables["Protobuf_PROTOC_EXECUTABLE"] = protoc_path
         print("Protoc Path: ", protobuf_build, protoc_path)
 
+        tc.variables["BUILD_ANDROID"] = True
         tc.cache_variables["Protobuf_PROTOC_EXECUTABLE"] = protoc_path
         tc.cache_variables["Protobuf_ROOT"] = protobuf_build.package_folder
         tc.cache_variables["Protobuf_USE_STATIC_LIBS"] = True
