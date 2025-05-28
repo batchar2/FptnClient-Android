@@ -13,53 +13,47 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 namespace fptn::wrapper {
 
-using JavaCallback = jmethodID;
-using CallbackConnectionOpened = JavaCallback;
-using CallbacRecvIpPacket = JavaCallback;
-using CallbackConnectionClosed = JavaCallback;
+    class WrapperWebsocketClient final {
+    public:
+        explicit WrapperWebsocketClient(jobject wrapper,
+                                        std::string server_ip,
+                                        int server_port,
+                                        std::string tun_ipv4,
+                                        std::string sni,
+                                        std::string access_token,
+                                        std::string expected_md5_fingerprint);
 
-class WrapperWebsocketClient final {
- public:
-  explicit WrapperWebsocketClient(jobject wrapper,
-      std::string server_ip,
-      int server_port,
-      std::string tun_ipv4,
-      std::string sni,
-      std::string access_token,
-      std::string expected_md5_fingerprint,
-      CallbackConnectionOpened on_connection_opened,
-      CallbacRecvIpPacket on_recv_ip_packet,
-      CallbackConnectionClosed on_connection_closed);
-  ~WrapperWebsocketClient();
+        ~WrapperWebsocketClient();
 
-  bool Start();
-  bool Stop();
-  bool IsStarted();
-  bool Send(std::string pkt);
+        bool Start();
 
- protected:
-  void Run();
-  void onIPPacket(fptn::common::network::IPPacketPtr);
-  void onConnectedCallback();
+        bool Stop();
 
- private:
-  std::thread th_;
-  mutable std::mutex mutex_;
-  mutable std::atomic<bool> running_;
+        bool IsStarted();
 
-  const jobject wrapper_;
+        bool Send(std::string pkt);
 
-  const std::string server_ip_;
-  const int server_port_;
-  const std::string tun_ipv4_;
-  const std::string sni_;
-  const std::string access_token_;
-  const std::string expected_md5_fingerprint_;
+    protected:
+        void Run();
 
-  const CallbackConnectionOpened on_connection_opened_;
-  const CallbacRecvIpPacket on_recv_ip_packet_;
-  const CallbackConnectionClosed on_connection_closed_;
+        void onIPPacket(fptn::common::network::IPPacketPtr);
 
-  fptn::protocol::websocket::WebsocketClientSPtr client_;
-};
+        void onConnectedCallback();
+
+    private:
+        std::thread th_;
+        mutable std::mutex mutex_;
+        mutable std::atomic<bool> running_;
+
+        const jobject wrapper_;
+
+        const std::string server_ip_;
+        const int server_port_;
+        const std::string tun_ipv4_;
+        const std::string sni_;
+        const std::string access_token_;
+        const std::string expected_md5_fingerprint_;
+
+        fptn::protocol::websocket::WebsocketClientSPtr client_;
+    };
 }  // namespace fptn::wrapper

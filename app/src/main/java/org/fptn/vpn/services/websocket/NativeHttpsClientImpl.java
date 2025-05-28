@@ -2,8 +2,6 @@ package org.fptn.vpn.services.websocket;
 
 import android.util.Log;
 
-import org.fptn.vpn.database.model.FptnServerDto;
-
 public class NativeHttpsClientImpl {
     private static final String TAG = NativeHttpsClientImpl.class.getName();
 
@@ -43,7 +41,7 @@ public class NativeHttpsClientImpl {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        Log.d(TAG, "NativeWebsocketWrapper.finalize()");
+        Log.d(TAG, "NativeHttpsClientImpl.finalize()");
         nativeDestroy(nativeHandle);
     }
 
