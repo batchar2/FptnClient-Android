@@ -65,7 +65,7 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
 
     @Override
     public String getDnsServerIPv4() throws PVNClientException {
-        NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "rutube.ru", "TLS_FINGERPRINT");
+        NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, this.sniHostName, "TLS_FINGERPRINT");
         NativeResponse response = client.Get(DNS_URL, 5);
         if (response != null) {
             if (response.code == 200) {
