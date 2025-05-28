@@ -61,51 +61,11 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
     public OkHttpWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
         this.sniHostName = sniHostName;
-
-
-
-//        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-//
-//        // Create a trust manager that does not validate certificate chains
-//        final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-//            @Override
-//            public void checkClientTrusted(X509Certificate[] chain, String authType) {
-//            }
-//
-//            @Override
-//            public void checkServerTrusted(X509Certificate[] chain, String authType) {
-//            }
-//
-//            @Override
-//            public X509Certificate[] getAcceptedIssuers() {
-//                return new X509Certificate[]{};
-//            }
-//        }};
-//
-//        // Install the all-trusting trust manager
-//        final SSLContext sslContext;
-//        try {
-//            sslContext = SSLContext.getInstance("TLS");
-//            sslContext.init(null, trustAllCerts, new SecureRandom());
-//        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-//            Log.e(getTag(), "SSLContext init failed", e);
-//            throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED.getValue());
-//        }
-//
-//        // Create an SSL socket factory with our all-trusting manager
-//        final ChromeCiphers chromeCipers = new ChromeCiphers(sslContext);
-//        final String[] availableCiphers = chromeCipers.getAvailableCiphers();
-//
-//        final MySSLSocketFactory sslSocketFactory = new MySSLSocketFactory(sslContext.getSocketFactory(), availableCiphers, sniHostName);
-//        builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
-//        builder.hostnameVerifier((hostname, session) -> true);
-//
-//        this.client = builder.build();
     }
 
     @Override
     public String getDnsServerIPv4() throws PVNClientException {
-        NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "SNI", "TLS_FINGERPRINT");
+        NativeHttpsClientImpl client = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, "rutube.ru", "TLS_FINGERPRINT");
         NativeResponse response = client.Get(DNS_URL, 5);
         if (response != null) {
             if (response.code == 200) {
