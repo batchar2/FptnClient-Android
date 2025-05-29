@@ -13,47 +13,50 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 namespace fptn::wrapper {
 
-    class WrapperWebsocketClient final {
-    public:
-        explicit WrapperWebsocketClient(jobject wrapper,
-                                        std::string server_ip,
-                                        int server_port,
-                                        std::string tun_ipv4,
-                                        std::string sni,
-                                        std::string access_token,
-                                        std::string expected_md5_fingerprint);
+class WrapperWebsocketClient final {
+ public:
+  explicit WrapperWebsocketClient(jobject wrapper,
+      std::string server_ip,
+      int server_port,
+      std::string tun_ipv4,
+      std::string sni,
+      std::string access_token,
+      std::string expected_md5_fingerprint);
 
-        ~WrapperWebsocketClient();
+  ~WrapperWebsocketClient();
 
-        bool Start();
+  bool Start();
 
-        bool Stop();
+  bool Stop();
 
-        bool IsStarted();
+  bool IsStarted();
 
-        bool Send(std::string pkt);
+  bool Send(std::string pkt);
 
-    protected:
-        void Run();
+ protected:
+  void Run();
 
-        void onIPPacket(fptn::common::network::IPPacketPtr);
+  void onIPPacket(fptn::common::network::IPPacketPtr);
 
-        void onConnectedCallback();
+  void onConnectedCallback();
 
-    private:
-        std::thread th_;
-        mutable std::mutex mutex_;
-        mutable std::atomic<bool> running_;
+ private:
+  const int kMaxReconnectionAttempts_ = 5;
 
-        const jobject wrapper_;
+  std::thread th_;
+  mutable std::mutex mutex_;
+  mutable std::atomic<bool> running_;
+  mutable std::atomic<int> reconnection_attempts_;
 
-        const std::string server_ip_;
-        const int server_port_;
-        const std::string tun_ipv4_;
-        const std::string sni_;
-        const std::string access_token_;
-        const std::string expected_md5_fingerprint_;
+  const jobject wrapper_;
 
-        fptn::protocol::websocket::WebsocketClientSPtr client_;
-    };
+  const std::string server_ip_;
+  const int server_port_;
+  const std::string tun_ipv4_;
+  const std::string sni_;
+  const std::string access_token_;
+  const std::string expected_md5_fingerprint_;
+
+  fptn::protocol::websocket::WebsocketClientSPtr client_;
+};
 }  // namespace fptn::wrapper

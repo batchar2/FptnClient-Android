@@ -45,7 +45,7 @@ public class CustomVpnConnection extends Thread {
     /**
      * Maximum packet size is constrained by the MTU
      */
-    private static final int MAX_PACKET_SIZE = 65536;
+    private static final int MAX_PACKET_SIZE = 1500;
     private static final int MAX_RECONNECT_COUNT = 10;
 
     private final CustomVpnService service;
@@ -88,6 +88,7 @@ public class CustomVpnConnection extends Thread {
             VpnService.Builder builder = service.new Builder();
             builder.addAddress("10.10.0.1", 32);
             builder.addRoute("172.20.0.1", 32);
+            builder.setMtu(MAX_PACKET_SIZE);
 
             final String dnsServer = webSocketClient.getDnsServerIPv4();
             builder.addDnsServer(dnsServer);

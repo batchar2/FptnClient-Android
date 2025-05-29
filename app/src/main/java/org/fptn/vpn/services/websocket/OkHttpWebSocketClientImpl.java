@@ -100,7 +100,6 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
     public void stopWebSocket() {
         if (this.webSocket != null) {
             this.webSocket.stopWebSocket();
-            //webSocket.close(1000, "stopWebSocket");
             this.webSocket = null;
             this.token = null;
         }
