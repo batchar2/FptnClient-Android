@@ -135,7 +135,7 @@ public class OkHttpWebSocketClientImpl implements WebSocketClient {
 
     @Override
     public void send(byte[] data) {
-        final int maxPayloadSize = 1450;
+        final int maxPayloadSize = 1500;
         if (webSocket != null && !isIPv6(data)) { // block IPv6
             ByteString payload = ByteString.copyFrom(data);
             this.webSocket.send(payload.toByteArray());
