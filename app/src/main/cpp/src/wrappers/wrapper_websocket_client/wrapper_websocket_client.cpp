@@ -132,6 +132,7 @@ void WrapperWebsocketClient::Run() {
     }
     running_ = false;
 
+    //todo: NEEED TO FIX! It doesnt call!!!
     JNIEnv *env = getJniEnv();
     jclass cls_foo = env->GetObjectClass(wrapper_);
     jmethodID on_close_impl = env->GetMethodID(cls_foo, "onCloseImpl", "()V");
