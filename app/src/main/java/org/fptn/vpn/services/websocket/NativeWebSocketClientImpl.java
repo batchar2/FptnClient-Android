@@ -6,67 +6,112 @@ import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.services.websocket.callback.OnFailureCallback;
 import org.fptn.vpn.services.websocket.callback.OnMessageReceivedCallback;
 import org.fptn.vpn.services.websocket.callback.OnOpenCallback;
+import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class NativeWebSocketClientImpl implements WebSocketClient {
-    private static final String TAG = NativeWebSocketClientImpl.class.getName();
-    private final FptnServerDto fptnServerDto;
-    private final String sniHostName;
+import lombok.Getter;
 
-    private OnOpenCallback onOpenCallback;
-    private OnMessageReceivedCallback onMessageReceivedCallback;
-    private OnFailureCallback onFailureCallback;
-
-    private long nativeHandle = 0L;
-
+public class NativeWebSocketClientImpl {
     static {
         System.loadLibrary("fptn_native_lib");
     }
 
-    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName, String token) {
+    private static final String DNS_URL = "/api/v1/dns";
+    private static final String LOGIN_URL = "/api/v1/login";
+
+    private final FptnServerDto fptnServerDto;
+    private final OnOpenCallback onOpenCallback;
+    private final OnMessageReceivedCallback onMessageReceivedCallback;
+    private final OnFailureCallback onFailureCallback;
+    private final NativeHttpsClientImpl nativeHttpsClient;
+
+    private long nativeHandle = 0L;
+
+    @Getter
+    private boolean shutdown = false;
+
+    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName, OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
-        this.sniHostName = sniHostName;
-        // FIX
-        this.nativeHandle = nativeCreate(
-                fptnServerDto.host,
-                fptnServerDto.port,
-                "10.10.0.1",
-                sniHostName,
-                token,
-                "expected_md5_fingerprint"
-        );
-    }
-
-    @Override
-    public String getDnsServerIPv4() throws PVNClientException {
-        return "";
-    }
-
-    @Override
-    public void startWebSocket(OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException, WebSocketAlreadyShutdownException {
         this.onOpenCallback = onOpenCallback;
         this.onMessageReceivedCallback = onMessageReceivedCallback;
         this.onFailureCallback = onFailureCallback;
-        if (!nativeIsStarted(nativeHandle)){
+
+        this.nativeHttpsClient = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, sniHostName, fptnServerDto.md5ServerFingerprint);
+        this.nativeHandle = nativeCreate(
+                fptnServerDto.host,
+                fptnServerDto.port,
+                //todo: move all magic ip to constants class with description
+                "10.10.0.1",
+                sniHostName,
+                getAccessToken(),
+                fptnServerDto.md5ServerFingerprint
+        );
+    }
+
+    private String getAccessToken() throws PVNClientException {
+        String request = String.format("{\"username\": \"%s\", \"password\": \"%s\"}",
+                fptnServerDto.username,
+                fptnServerDto.password);
+
+        NativeResponse response = nativeHttpsClient.Post(LOGIN_URL, request, 5);
+        if (response != null) {
+            if (response.code == 200) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response.body);
+                    String accessToken = jsonResponse.getString("access_token");
+                    Log.i(getTag(), "Getting accessToken successful.");
+                    return accessToken;
+                } catch (JSONException e) {
+                    Log.e(getTag(), "Some error occurs on parsing accessToken response: " + e);
+                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+                }
+            }
+        }
+        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+    }
+
+    public String getDnsServerIPv4() throws PVNClientException {
+        NativeResponse response = nativeHttpsClient.Get(DNS_URL, 5);
+        if (response != null) {
+            if (response.code == 200) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response.body);
+                    String dnsServer = jsonResponse.getString("dns");
+                    Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
+                    return dnsServer;
+                } catch (JSONException e) {
+                    Log.e(getTag(), "Some error occurs on receiving DNS response: " + e);
+                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+                }
+            }
+        }
+        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+    }
+
+    public void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
+        if (isShutdown()) {
+            throw new WebSocketAlreadyShutdownException();
+        }
+
+        if (!nativeIsStarted(nativeHandle)) {
             nativeRun(nativeHandle);
         }
     }
 
-    @Override
     public void stopWebSocket() {
-        if (nativeIsStarted(nativeHandle)){
+        if (nativeIsStarted(nativeHandle)) {
             nativeStop(nativeHandle);
         }
     }
 
-    @Override
     public void shutdown() {
-
+        shutdown = true;
     }
 
-    @Override
     public void send(byte[] data) {
-        if (nativeHandle!=0 && nativeIsStarted(nativeHandle)){
+        if (nativeHandle != 0L && nativeIsStarted(nativeHandle)) {
             nativeSend(nativeHandle, data);
         }
     }
@@ -74,26 +119,34 @@ public class NativeWebSocketClientImpl implements WebSocketClient {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        Log.d(TAG, "NativeWebsocketWrapper.finalize()");
-        nativeDestroy(nativeHandle);
+        Log.d(getTag(), "NativeWebsocketWrapper.finalize()");
+        if (nativeHandle != 0L) {
+            nativeDestroy(nativeHandle);
+            nativeHandle = 0L;
+        }
     }
 
-    public void onOpenImpl()
-    {
+    private String getTag() {
+        return this.getClass().getCanonicalName();
+    }
+
+    public void onOpenImpl() {
+        Log.d(getTag(), "NativeWebsocketWrapper.onOpenImpl():start()");
         if (this.onOpenCallback != null) {
             this.onOpenCallback.onOpen();
         }
+        Log.d(getTag(), "NativeWebsocketWrapper.onOpenImpl():end()");
     }
 
-    public void onCloseImpl()
-    {
+    public void onCloseImpl() {
+        Log.d(getTag(), "NativeWebsocketWrapper.onCloseImpl():start()");
         if (this.onFailureCallback != null) {
             this.onFailureCallback.onFailure();
         }
+        Log.d(getTag(), "NativeWebsocketWrapper.onCloseImpl():end()");
     }
 
-    public void onMessageImpl(byte[] msg)
-    {
+    public void onMessageImpl(byte[] msg) {
         if (this.onMessageReceivedCallback != null) {
             this.onMessageReceivedCallback.onMessageReceived(msg);
         }

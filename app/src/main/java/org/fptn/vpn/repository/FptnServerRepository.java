@@ -25,6 +25,10 @@ public class FptnServerRepository {
         return database.fptnServerDAO().getAllServersListFuture();
     }
 
+    public ListenableFuture<List<FptnServerDto>> getServersListFuture(boolean censured) {
+        return database.fptnServerDAO().getServersListFuture(censured);
+    }
+
     public LiveData<List<FptnServerDto>> getAllServersLiveData() {
         return database.fptnServerDAO().getAllServersLiveData();
     }

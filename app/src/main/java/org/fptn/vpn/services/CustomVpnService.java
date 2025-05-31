@@ -181,7 +181,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             int serverId = intent.getIntExtra(SELECTED_SERVER, SELECTED_SERVER_ID_AUTO);
             if (serverId == SELECTED_SERVER_ID_AUTO) {
                 try {
-                    List<FptnServerDto> fptnServerDtos = fptnServerRepository.getAllServersListFuture().get();
+                    List<FptnServerDto> fptnServerDtos = fptnServerRepository.getServersListFuture(false).get();
                     Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING.getWithTime()));
                     FptnServerDto server = speedTestService.findFastestServer(fptnServerDtos);
                     return connectToServer(server.id);
@@ -204,6 +204,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             return START_NOT_STICKY;
         }
     }
+
     private int connectToServer(int serverId) throws ExecutionException, InterruptedException {
         fptnServerRepository.resetSelected().get();
         fptnServerRepository.setIsSelected(serverId).get();

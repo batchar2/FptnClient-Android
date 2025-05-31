@@ -95,9 +95,9 @@ public class FptnServerViewModel extends AndroidViewModel {
         fptnServerRepository.deleteAll();
     }
 
-    public boolean parseAndSaveFptnLink(String url) {
+    public boolean parseAndSaveFptnLink(String fptnToken) {
         // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
-        final String preparedUrl = url.replaceAll("\\s+", "")
+        final String preparedUrl = fptnToken.replaceAll("\\s+", "")
                 .replace("fptn://", "")
                 .replace("fptn:", "");
         try {
@@ -114,10 +114,24 @@ public class FptnServerViewModel extends AndroidViewModel {
                 String hostname = serverObject.getString("name");
                 String host = serverObject.getString("host");
                 int port = serverObject.getInt("port");
-
+                String md5ServerFingerprint = serverObject.getString("md5_fingerprint");
                 String countryCode = getCountryCodeFromJson(serverObject, hostname);
-                serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode));
+
+                serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode, md5ServerFingerprint, false));
             }
+
+            JSONArray censoredZoneServerArray = jsonObject.getJSONArray("censored_zone_servers");
+            for (int i = 0; i < censoredZoneServerArray.length(); i++) {
+                JSONObject serverObject = censoredZoneServerArray.getJSONObject(i);
+                String hostname = serverObject.getString("name");
+                String host = serverObject.getString("host");
+                int port = serverObject.getInt("port");
+                String md5ServerFingerprint = serverObject.getString("md5_fingerprint");
+                String countryCode = getCountryCodeFromJson(serverObject, hostname);
+
+                serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode, md5ServerFingerprint, true));
+            }
+
             if (!serverDtoList.isEmpty()) {
                 deleteAll(); // delete old
                 fptnServerRepository.insertAll(serverDtoList);

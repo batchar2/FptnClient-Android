@@ -57,6 +57,11 @@ object CountryFlags {
 
     @JvmStatic
     fun getCountryCode(countryName: String?): String? {
+        //todo: "Russia (Saint Petersburg)" special case!!! Stas, why it's so special?
+        if (countryName?.contains("russia", true) == true){
+            return "RU"
+        }
+
         val availableLocales = Locale.getAvailableLocales()
         for (availableLocale in availableLocales) {
             val displayCountry = availableLocale.getDisplayCountry(Locale.US)

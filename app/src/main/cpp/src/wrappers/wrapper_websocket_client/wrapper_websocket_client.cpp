@@ -46,6 +46,7 @@ bool WrapperWebsocketClient::Start() {
     th_ = std::thread(&WrapperWebsocketClient::Run, this);
     return th_.joinable();
 
+    //todo: for what second return need?
     return true;
 }
 

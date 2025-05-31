@@ -11,8 +11,7 @@ import android.util.Log;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.HandlerMessageTypes;
-import org.fptn.vpn.services.websocket.WebSocketClient;
-import org.fptn.vpn.services.websocket.OkHttpWebSocketClientImpl;
+import org.fptn.vpn.services.websocket.NativeWebSocketClientImpl;
 import org.fptn.vpn.services.websocket.WebSocketAlreadyShutdownException;
 import org.fptn.vpn.utils.DataRateCalculator;
 import org.fptn.vpn.utils.IPUtils;
@@ -52,7 +51,7 @@ public class CustomVpnConnection extends Thread {
     @Getter
     private final int connectionId;
     private final FptnServerDto fptnServerDto;
-    private final WebSocketClient webSocketClient;
+    private final NativeWebSocketClientImpl webSocketClient;
 
     @Setter
     private PendingIntent configureVpnIntent;
@@ -76,7 +75,7 @@ public class CustomVpnConnection extends Thread {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-        this.webSocketClient = new OkHttpWebSocketClientImpl(fptnServerDto, sniHostName);
+        this.webSocketClient = new NativeWebSocketClientImpl(fptnServerDto, sniHostName, this::onConnectionOpen, this::onMessageReceived, this::onConnectionFailure);
     }
 
     @Override
@@ -142,7 +141,7 @@ public class CustomVpnConnection extends Thread {
 
             // Packets received need to be written to this output stream.
             outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            webSocketClient.startWebSocket(this::onConnectionOpen, this::onMessageReceived, this::onConnectionFailure);
+            webSocketClient.startWebSocket();
             connectionTime = Instant.now();
 
             // Packets to be sent are queued in this input stream.
@@ -200,7 +199,7 @@ public class CustomVpnConnection extends Thread {
                 outputStream.write(data);
             }
         } catch (Exception e) {
-            Log.w(getTag(), "Ошибка записи в TUN: " + new String(data));
+            Log.w(getTag(), "Exception on writing to TUN interface: " + new String(data));
         }
     }
 
@@ -213,7 +212,7 @@ public class CustomVpnConnection extends Thread {
                     sendConnectionStateToService(ConnectionState.RECONNECTING);
                     webSocketClient.stopWebSocket();
                     Thread.sleep(2000);
-                    webSocketClient.startWebSocket(this::onConnectionOpen, this::onMessageReceived, this::onConnectionFailure);
+                    webSocketClient.startWebSocket();
                 } catch (PVNClientException e) {
                     sendErrorMessageToService(e.getMessage());
                 } catch (InterruptedException e) {

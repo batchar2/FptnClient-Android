@@ -18,6 +18,8 @@ data class FptnServerDto(
     @JvmField val host: String,
     @JvmField val port: Int,
     @JvmField val countryCode: String?,
+    @JvmField val md5ServerFingerprint: String?,
+    @JvmField val censured: Boolean,
 ) {
     val serverInfo: String
         get() = "$name (${CountryFlags.getCountryFlagByCountryCode(countryCode) ?: host})"
@@ -25,6 +27,6 @@ data class FptnServerDto(
     companion object {
         @JvmField
         val AUTO: FptnServerDto =
-            FptnServerDto(SELECTED_SERVER_ID_AUTO, false, "Auto", "Auto", "Auto", "", 0, null)
+            FptnServerDto(SELECTED_SERVER_ID_AUTO, false, "Auto", "Auto", "Auto", "", 0, null, null, false)
     }
 }
