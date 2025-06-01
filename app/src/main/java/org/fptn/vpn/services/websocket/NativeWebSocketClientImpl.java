@@ -29,6 +29,8 @@ public class NativeWebSocketClientImpl {
     private final OnFailureCallback onFailureCallback;
     private final NativeHttpsClientImpl nativeHttpsClient;
 
+    private final String accessToken;
+
     private long nativeHandle = 0L;
 
     @Getter
@@ -43,6 +45,7 @@ public class NativeWebSocketClientImpl {
         this.onFailureCallback = onFailureCallback;
 
         this.nativeHttpsClient = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, this.sniHostName, fptnServerDto.md5ServerFingerprint);
+        this.accessToken = getAccessToken();
     }
 
     private String getAccessToken() throws PVNClientException {
@@ -86,28 +89,29 @@ public class NativeWebSocketClientImpl {
     }
 
     public void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
-        // recreate connection object
+        stopWebSocket();
+        if (isShutdown()) {
+            throw new WebSocketAlreadyShutdownException();
+        }
         this.nativeHandle = nativeCreate(
                 fptnServerDto.host,
                 fptnServerDto.port,
                 tunAddress,
                 sniHostName,
-                getAccessToken(),
+                accessToken,
                 fptnServerDto.md5ServerFingerprint
         );
-        if (isShutdown()) {
-            throw new WebSocketAlreadyShutdownException();
-        }
-
-        if (this.nativeHandle != 0 && !nativeIsStarted(nativeHandle)) {
+        if (this.nativeHandle != 0) {
             nativeRun(nativeHandle);
         }
     }
 
     public void stopWebSocket() {
-        if (this.nativeHandle != 0 && nativeIsStarted(nativeHandle)) {
-            nativeStop(nativeHandle);
-            nativeDestroy(nativeHandle);
+        if (this.nativeHandle != 0) {
+            if (nativeIsStarted(nativeHandle)) {
+                nativeStop(nativeHandle);
+            }
+            //nativeDestroy(nativeHandle);
         }
         this.nativeHandle = 0L;
     }
