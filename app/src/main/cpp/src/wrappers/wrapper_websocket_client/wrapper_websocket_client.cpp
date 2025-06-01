@@ -129,15 +129,12 @@ void WrapperWebsocketClient::Run() {
 
     if (running_ && !reconnection_attempts_) {
         SPDLOG_ERROR("Connection failure: Could not establish connection");
+        JNIEnv *env = getJniEnv();
+        jclass cls_foo = env->GetObjectClass(wrapper_);
+        jmethodID on_close_impl = env->GetMethodID(cls_foo, "onFailureImpl", "()V");
+        env->CallVoidMethod(wrapper_, on_close_impl);
     }
     running_ = false;
-
-    //todo: NEEED TO FIX! It doesnt call!!!
-    JNIEnv *env = getJniEnv();
-    jclass cls_foo = env->GetObjectClass(wrapper_);
-    jmethodID on_close_impl = env->GetMethodID(cls_foo, "onCloseImpl", "()V");
-
-    env->CallVoidMethod(wrapper_, on_close_impl);
 }
 
 void WrapperWebsocketClient::onIPPacket(
