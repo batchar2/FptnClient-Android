@@ -62,7 +62,7 @@ public class ChromeCiphers {
         }
 
         if (ciphersResult.isEmpty()) {
-            throw new PVNClientException(ErrorCode.CIPHERS_ERROR.getValue());
+            throw new PVNClientException(ErrorCode.CIPHERS_ERROR);
         }
         // Create an SSL socket factory with our all-trusting manager
         return ciphersResult.toArray(new String[0]);

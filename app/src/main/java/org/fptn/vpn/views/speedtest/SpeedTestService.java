@@ -64,7 +64,7 @@ public class SpeedTestService {
             sslContext.init(null, trustAllCerts, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             Log.e(TAG, "SSLContext init failed", e);
-            throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED.getValue());
+            throw new PVNClientException(ErrorCode.SSL_CONTEXT_INIT_FAILED);
         }
 
         // Create an SSL socket factory with our all-trusting manager
@@ -99,13 +99,13 @@ public class SpeedTestService {
                     Log.d(TAG, "findFastestServer end: " + Instant.now());
                     return bestServer;
                 } else {
-                    throw new PVNClientException(ErrorCode.ALL_SERVERS_UNREACHABLE.getValue());
+                    throw new PVNClientException(ErrorCode.ALL_SERVERS_UNREACHABLE);
                 }
             } else {
-                throw new PVNClientException(ErrorCode.FIND_FASTEST_SERVER_TIMEOUT.getValue());
+                throw new PVNClientException(ErrorCode.FIND_FASTEST_SERVER_TIMEOUT);
             }
         } else {
-            throw new PVNClientException(ErrorCode.SERVER_LIST_NULL_OR_EMPTY.getValue());
+            throw new PVNClientException(ErrorCode.SERVER_LIST_NULL_OR_EMPTY);
         }
     }
 

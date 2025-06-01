@@ -45,44 +45,43 @@ public class CustomVpnConnection extends Thread {
      * Maximum packet size is constrained by the MTU
      */
     private static final int MAX_PACKET_SIZE = 1500;
-    private static final int MAX_RECONNECT_COUNT = 10;
+    private static final int MAX_RECONNECT_COUNT = 5;
     private static final String tunAddress = "10.10.0.1";
 
-    private final CustomVpnService service;
     @Getter
     private final int connectionId;
+    private final CustomVpnService service;
+
+    @Getter
     private final FptnServerDto fptnServerDto;
-    private final String sniHostName;
-
     private final NativeWebSocketClientImpl webSocketClient;
-
-    @Setter
-    private PendingIntent configureVpnIntent;
-
-    private ParcelFileDescriptor vpnInterface;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
     private final DataRateCalculator uploadRate = new DataRateCalculator(1000);
-
     private final Thread currentThread = this;
+
+    @Getter
     private final AtomicInteger reconnectCount = new AtomicInteger(0);
+
+    @Setter
+    private PendingIntent configureVpnIntent;
+    private ParcelFileDescriptor vpnInterface;
+    private FileOutputStream outputStream;
+
     @Getter
     private volatile ConnectionState currentConnectionState = ConnectionState.DISCONNECTED;
     @Getter
     private Instant connectionTime;
-    private FileOutputStream outputStream;
-
 
     public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-        this.sniHostName = sniHostName;
 
         this.webSocketClient = new NativeWebSocketClientImpl(this.fptnServerDto,
                 tunAddress,
-                this.sniHostName,
+                sniHostName,
                 this::onConnectionOpen,
                 this::onMessageReceived,
                 this::onConnectionFailure
@@ -134,7 +133,7 @@ public class CustomVpnConnection extends Thread {
                 vpnInterface = builder.establish();
             }
             if (vpnInterface == null) {
-                throw new PVNClientException(ErrorCode.VPN_INTERFACE_ERROR.getValue());
+                throw new PVNClientException(ErrorCode.VPN_INTERFACE_ERROR);
             }
             Log.i(getTag(), "New interface: " + vpnInterface);
 
@@ -170,8 +169,10 @@ public class CustomVpnConnection extends Thread {
                     }
                 }
             }
-        } catch (PVNClientException | IOException e) {
-            sendErrorMessageToService(e.getMessage());
+        } catch (PVNClientException e) {
+            sendExceptionToService(e);
+        } catch (IOException ex) {
+            sendExceptionToService(new PVNClientException(ex.getMessage()));
         } catch (WebSocketAlreadyShutdownException e) {
             Log.w(getTag(), "The websocket already shutdown", e);
         } finally {
@@ -216,30 +217,35 @@ public class CustomVpnConnection extends Thread {
 
     private void onConnectionFailure() {
         if (!currentThread.isInterrupted()) {
-            int currentCount = reconnectCount.incrementAndGet();
-            Log.i(getTag(), "Reconnect WebSocket... currentCount: " + currentCount);
-            if (isTunInterfaceValid(vpnInterface) && currentCount < MAX_RECONNECT_COUNT) {
-                try {
-                    sendConnectionStateToService(ConnectionState.RECONNECTING);
-                    webSocketClient.stopWebSocket();
-                    Thread.sleep(2000);
-                    webSocketClient.startWebSocket();
-                } catch (PVNClientException e) {
-                    sendErrorMessageToService(e.getMessage());
-                } catch (InterruptedException e) {
-                    Log.w(getTag(), "The thread was interrupted", e);
-                } catch (WebSocketAlreadyShutdownException e) {
-                    Log.w(getTag(), "The websocket already shutdown", e);
+            scheduler.execute(() -> {
+                int currentCount = reconnectCount.incrementAndGet();
+                Log.i(getTag(), "Reconnect WebSocket... currentCount: " + currentCount);
+                if (isTunInterfaceValid(vpnInterface) && currentCount < MAX_RECONNECT_COUNT) {
+                    try {
+                        sendConnectionStateToService(ConnectionState.RECONNECTING);
+                        webSocketClient.stopWebSocket();
+                        Thread.sleep(2000);
+                        webSocketClient.startWebSocket();
+                    } catch (PVNClientException e) {
+                        // todo: what next?
+                        sendExceptionToService(e);
+                    } catch (InterruptedException e) {
+                        // todo: thread is interrupted
+                        Log.w(getTag(), "The thread was interrupted", e);
+                    } catch (WebSocketAlreadyShutdownException e) {
+                        // todo: what to do????
+                        Log.w(getTag(), "The websocket already shutdown", e);
+                    }
+                } else {
+                    currentThread.interrupt();
+                    sendExceptionToService(new PVNClientException(ErrorCode.RECONNECTING_FAILED));
                 }
-            } else {
-                currentThread.interrupt();
-                sendErrorMessageToService(ErrorCode.RECONNECTING_FAILED.getValue());
-            }
+            });
         }
     }
 
-    private void sendErrorMessageToService(String msg) {
-        service.getHandler().sendMessage(Message.obtain(service.getHandler(), HandlerMessageTypes.ERROR.getValue(), connectionId, 0, msg));
+    private void sendExceptionToService(PVNClientException exception) {
+        service.getHandler().sendMessage(Message.obtain(service.getHandler(), HandlerMessageTypes.ERROR.getValue(), connectionId, 0, exception));
     }
 
     private void sendSpeedInfoToService(String downloadSpeed, String uploadSpeed) {

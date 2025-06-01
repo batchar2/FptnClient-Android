@@ -63,11 +63,11 @@ public class NativeWebSocketClientImpl {
                     return accessToken;
                 } catch (JSONException e) {
                     Log.e(getTag(), "Some error occurs on parsing accessToken response: " + e);
-                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
                 }
             }
         }
-        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
     }
 
     public String getDnsServerIPv4() throws PVNClientException {
@@ -81,11 +81,11 @@ public class NativeWebSocketClientImpl {
                     return dnsServer;
                 } catch (JSONException e) {
                     Log.e(getTag(), "Some error occurs on receiving DNS response: " + e);
-                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
                 }
             }
         }
-        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR.getValue());
+        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
     }
 
     public void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
@@ -111,7 +111,7 @@ public class NativeWebSocketClientImpl {
             if (nativeIsStarted(nativeHandle)) {
                 nativeStop(nativeHandle);
             }
-            //nativeDestroy(nativeHandle);
+            nativeDestroy(nativeHandle);
         }
         this.nativeHandle = 0L;
     }
