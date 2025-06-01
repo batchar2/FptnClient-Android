@@ -22,6 +22,8 @@ public class NativeWebSocketClientImpl {
     private static final String LOGIN_URL = "/api/v1/login";
 
     private final FptnServerDto fptnServerDto;
+    private final String tunAddress;
+    private final String sniHostName;
     private final OnOpenCallback onOpenCallback;
     private final OnMessageReceivedCallback onMessageReceivedCallback;
     private final OnFailureCallback onFailureCallback;
@@ -32,22 +34,15 @@ public class NativeWebSocketClientImpl {
     @Getter
     private boolean shutdown = false;
 
-    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String sniHostName, OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException {
+    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String tunAddress, String sniHostName, OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException {
         this.fptnServerDto = fptnServerDto;
+        this.tunAddress = tunAddress;
+        this.sniHostName = sniHostName;
         this.onOpenCallback = onOpenCallback;
         this.onMessageReceivedCallback = onMessageReceivedCallback;
         this.onFailureCallback = onFailureCallback;
 
-        this.nativeHttpsClient = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, sniHostName, fptnServerDto.md5ServerFingerprint);
-        this.nativeHandle = nativeCreate(
-                fptnServerDto.host,
-                fptnServerDto.port,
-                //todo: move all magic ip to constants class with description
-                "10.10.0.1",
-                sniHostName,
-                getAccessToken(),
-                fptnServerDto.md5ServerFingerprint
-        );
+        this.nativeHttpsClient = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, this.sniHostName, fptnServerDto.md5ServerFingerprint);
     }
 
     private String getAccessToken() throws PVNClientException {
@@ -91,19 +86,30 @@ public class NativeWebSocketClientImpl {
     }
 
     public void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
+        // recreate connection object
+        this.nativeHandle = nativeCreate(
+                fptnServerDto.host,
+                fptnServerDto.port,
+                tunAddress,
+                sniHostName,
+                getAccessToken(),
+                fptnServerDto.md5ServerFingerprint
+        );
         if (isShutdown()) {
             throw new WebSocketAlreadyShutdownException();
         }
 
-        if (!nativeIsStarted(nativeHandle)) {
+        if (this.nativeHandle != 0 && !nativeIsStarted(nativeHandle)) {
             nativeRun(nativeHandle);
         }
     }
 
     public void stopWebSocket() {
-        if (nativeIsStarted(nativeHandle)) {
+        if (this.nativeHandle != 0 && nativeIsStarted(nativeHandle)) {
             nativeStop(nativeHandle);
+            nativeDestroy(nativeHandle);
         }
+        this.nativeHandle = 0L;
     }
 
     public void shutdown() {
@@ -139,11 +145,11 @@ public class NativeWebSocketClientImpl {
     }
 
     public void onFailureImpl() {
-        Log.d(getTag(), "NativeWebsocketWrapper.onCloseImpl():start()");
+        Log.d(getTag(), "NativeWebsocketWrapper.onFailureImpl():start()");
         if (this.onFailureCallback != null) {
             this.onFailureCallback.onFailure();
         }
-        Log.d(getTag(), "NativeWebsocketWrapper.onCloseImpl():end()");
+        Log.d(getTag(), "NativeWebsocketWrapper.onFailureImpl():end()");
     }
 
     public void onMessageImpl(byte[] msg) {

@@ -46,11 +46,14 @@ public class CustomVpnConnection extends Thread {
      */
     private static final int MAX_PACKET_SIZE = 1500;
     private static final int MAX_RECONNECT_COUNT = 10;
+    private static final String tunAddress = "10.10.0.1";
 
     private final CustomVpnService service;
     @Getter
     private final int connectionId;
     private final FptnServerDto fptnServerDto;
+    private final String sniHostName;
+
     private final NativeWebSocketClientImpl webSocketClient;
 
     @Setter
@@ -75,7 +78,15 @@ public class CustomVpnConnection extends Thread {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-        this.webSocketClient = new NativeWebSocketClientImpl(fptnServerDto, sniHostName, this::onConnectionOpen, this::onMessageReceived, this::onConnectionFailure);
+        this.sniHostName = sniHostName;
+
+        this.webSocketClient = new NativeWebSocketClientImpl(this.fptnServerDto,
+                tunAddress,
+                this.sniHostName,
+                this::onConnectionOpen,
+                this::onMessageReceived,
+                this::onConnectionFailure
+        );
     }
 
     @Override
@@ -85,7 +96,7 @@ public class CustomVpnConnection extends Thread {
             sendConnectionStateToService(ConnectionState.CONNECTING);
 
             VpnService.Builder builder = service.new Builder();
-            builder.addAddress("10.10.0.1", 32);
+            builder.addAddress(tunAddress, 32);
             builder.addRoute("172.20.0.1", 32);
             builder.setMtu(MAX_PACKET_SIZE);
 
