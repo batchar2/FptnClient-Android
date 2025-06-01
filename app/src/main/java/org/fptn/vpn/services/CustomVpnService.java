@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -160,7 +161,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         /* check is internet connection available */
         if (!NetworkMonitor.isOnline(this)) {
             Log.e(TAG, "onStartCommand: no active internet connections!");
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS.getValue()));
+            setException(new PVNClientException(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS));
             disconnect();
             return START_NOT_STICKY;
         }
@@ -182,15 +183,15 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             if (serverId == SELECTED_SERVER_ID_AUTO) {
                 try {
                     List<FptnServerDto> fptnServerDtos = fptnServerRepository.getServersListFuture(false).get();
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.CONNECTING.getWithTime()));
+                    setConnectionState(ConnectionState.CONNECTING);
                     FptnServerDto server = speedTestService.findFastestServer(fptnServerDtos);
                     return connectToServer(server.id);
                 } catch (PVNClientException e) {
                     Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
                     /* We don't need to connect if all servers are unreachable */
                     fptnServerRepository.resetSelected().get();
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED.getWithTime()));
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue(ErrorCode.ALL_SERVERS_UNREACHABLE.getValue()));
+                    setConnectionState(ConnectionState.DISCONNECTED);
+                    setException(e);
                     return START_NOT_STICKY;
                 }
             } else {
@@ -200,8 +201,30 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         } else {
             // should not happen
             Log.e(TAG, "onStartCommand: action not recognize!");
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getErrorTextLiveData().postValue("onStartCommand: action not recognize!"));
+            setException(new PVNClientException("CustomVpnService.onStartCommand: action not recognize!"));
             return START_NOT_STICKY;
+        }
+    }
+
+    private void setConnectionState(ConnectionState connectionState) {
+        setConnectionState(connectionState.getWithTime());
+    }
+
+    private void setConnectionState(Pair<ConnectionState, Instant> connectionStateWithTime) {
+        if (fptnViewModel != null) {
+            fptnViewModel.getConnectionStateMutableLiveData().postValue(connectionStateWithTime);
+        }
+    }
+
+    private void setStatusText(String message) {
+        if (fptnViewModel != null) {
+            fptnViewModel.getStatusTextLiveData().postValue(message);
+        }
+    }
+
+    private void setException(PVNClientException exception) {
+        if (fptnViewModel != null) {
+            fptnViewModel.getLastExceptionLiveData().postValue(exception);
         }
     }
 
@@ -216,7 +239,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         } else {
             /* selected server with selected id not found in DB - very */
             Log.e(TAG, "connectToServer: selected server not found in DB");
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED.getWithTime()));
+            setConnectionState(ConnectionState.DISCONNECTED);
             return START_NOT_STICKY;
         }
     }
@@ -229,7 +252,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         } else {
             /* selected server not selected - that should mean that we were disconnected correct previously */
             Log.i(TAG, "connectToPreviouslySelectedServer: previously selected server is null. No need to reconnect");
-            Optional.ofNullable(fptnViewModel).ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED.getWithTime()));
+            setConnectionState(ConnectionState.DISCONNECTED);
             return START_NOT_STICKY;
         }
     }
@@ -240,15 +263,43 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         disconnect();
     }
 
-    public void updateConnectionStateInViewModel() {
-        Optional.ofNullable(fptnViewModel).ifPresent(model -> {
-            CustomVpnConnection vpnConnection = activeConnection.get();
-            if (vpnConnection == null) {
-                model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED.getWithTime());
-            } else {
-                model.getConnectionStateMutableLiveData().postValue(vpnConnection.getCurrentConnectionState().getWithTime(vpnConnection.getConnectionTime()));
+    public void updateStateInViewModel() {
+        CustomVpnConnection vpnConnection = activeConnection.get();
+        if (vpnConnection == null) {
+            setConnectionState(ConnectionState.DISCONNECTED);
+        } else {
+            ConnectionState currentConnectionState = vpnConnection.getCurrentConnectionState();
+            switch (currentConnectionState) {
+                case CONNECTING -> {
+                    String title = getString(R.string.connecting_to) + vpnConnection.getFptnServerDto().getServerInfo();
+
+                    setConnectionState(ConnectionState.CONNECTING);
+                    setStatusText(title);
+                }
+                case CONNECTED -> {
+                    String title = getString(R.string.connected_to) + vpnConnection.getFptnServerDto().getServerInfo();
+                    updateNotificationWithMessage(title, "");
+
+                    setConnectionState(ConnectionState.CONNECTED.getWithTime(vpnConnection.getConnectionTime()));
+                    setStatusText(title);
+                }
+                case RECONNECTING -> {
+                    String title = getString(R.string.reconnection_to) + vpnConnection.getFptnServerDto().getServerInfo();
+                    String msg = getString(R.string.try_number) + vpnConnection.getReconnectCount();
+                    updateNotificationWithMessage(title, msg);
+
+                    setConnectionState(ConnectionState.RECONNECTING);
+                    setStatusText(title);
+                    setErrorMessage(msg);
+                }
             }
-        });
+        }
+    }
+
+    private void updateSpeed(String downloadSpeed, String uploadSpeed, String serverInfo) {
+        if (fptnViewModel != null) {
+            fptnViewModel.updateSpeed(downloadSpeed, uploadSpeed);
+        }
     }
 
     @Override
@@ -262,16 +313,13 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             switch (type) {
                 case SPEED_INFO:
                     if (activeConnection.get().getCurrentConnectionState() == ConnectionState.CONNECTED) {
-                        Optional.ofNullable(fptnViewModel).ifPresent(model -> {
-                            Triple<String, String, String> downloadSpeedUploadSpeed = (Triple<String, String, String>) message.obj;
-                            String downloadSpeed = downloadSpeedUploadSpeed.getFirst();
-                            String uploadSpeed = downloadSpeedUploadSpeed.getSecond();
-                            String serverInfo = downloadSpeedUploadSpeed.getThird();
+                        Triple<String, String, String> downloadSpeedUploadSpeed = (Triple<String, String, String>) message.obj;
+                        String downloadSpeed = downloadSpeedUploadSpeed.getFirst();
+                        String uploadSpeed = downloadSpeedUploadSpeed.getSecond();
+                        String serverInfo = downloadSpeedUploadSpeed.getThird();
 
-                            model.getDownloadSpeedAsStringLiveData().postValue(downloadSpeed);
-                            model.getUploadSpeedAsStringLiveData().postValue(uploadSpeed);
-                            updateNotificationWithMessage(getString(R.string.connected_to) + serverInfo, String.format(getString(R.string.download_upload_speed_pattern), downloadSpeed, uploadSpeed));
-                        });
+                        updateNotificationWithMessage(getString(R.string.connected_to) + serverInfo, String.format(getString(R.string.download_upload_speed_pattern), downloadSpeed, uploadSpeed));
+                        updateSpeed(downloadSpeed, uploadSpeed, serverInfo);
                     }
                     break;
                 case CONNECTION_STATE:
@@ -279,22 +327,37 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                     ConnectionState connectionState = connectionStateInstantPair.getFirst();
                     Instant time = connectionStateInstantPair.getSecond();
                     String serverInfo = connectionStateInstantPair.getThird();
+                    //todo: fix later its repeated earlier
+                    switch (connectionState) {
+                        case DISCONNECTED -> disconnect();
+                        case CONNECTING -> {
+                            String title = getString(R.string.connecting_to) + serverInfo;
 
-                    Optional.ofNullable(fptnViewModel).ifPresent(model -> {
-                        model.getConnectionStateMutableLiveData().postValue(connectionState.getWithTime(time));
-                        if (ConnectionState.CONNECTED.equals(connectionState) && activeConnection.get() != null) {
-                            updateNotificationWithMessage(getString(R.string.connected_to) + serverInfo, "");
-                        } else if (ConnectionState.RECONNECTING.equals(connectionState) && activeConnection.get() != null) {
-                            updateNotificationWithMessage(getString(R.string.reconnection_to) + serverInfo, getString(R.string.try_number) + message.arg2);
-                        } else if (ConnectionState.DISCONNECTED.equals(connectionState)) {
-                            disconnect();
+                            setConnectionState(ConnectionState.CONNECTING);
+                            setStatusText(title);
                         }
-                    });
+                        case CONNECTED -> {
+                            String title = getString(R.string.connected_to) + serverInfo;
+                            updateNotificationWithMessage(title, "");
+
+                            setConnectionState(ConnectionState.CONNECTED.getWithTime(time));
+                            setStatusText(title);
+                        }
+                        case RECONNECTING -> {
+                            String title = getString(R.string.reconnection_to) + serverInfo;
+                            String msg = getString(R.string.try_number) + message.arg2;
+                            updateNotificationWithMessage(title, msg);
+
+                            setConnectionState(ConnectionState.RECONNECTING);
+                            setStatusText(title);
+                            setErrorMessage(msg);
+                        }
+                    }
                     break;
                 case ERROR:
-                    Optional.ofNullable(fptnViewModel)
-                            .ifPresent(model -> model.getErrorTextLiveData().postValue((String) message.obj));
-                    if (Objects.equals(message.obj, ErrorCode.RECONNECTING_FAILED.getValue())) {
+                    PVNClientException exception = (PVNClientException) message.obj;
+                    setException(exception);
+                    if (Objects.equals(exception.errorCode, ErrorCode.RECONNECTING_FAILED)) {
                         showReconnectionFailedNotification();
                     }
                     break;
@@ -303,6 +366,12 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             }
         }
         return true;
+    }
+
+    private void setErrorMessage(String message) {
+        if (fptnViewModel != null) {
+            fptnViewModel.setErrorMessage(message);
+        }
     }
 
     private void connect(FptnServerDto fptnServerDto) {
@@ -317,8 +386,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
             setActiveConnection(connection);
         } catch (PVNClientException ex) {
-            Optional.ofNullable(fptnViewModel)
-                    .ifPresent(model -> model.getErrorTextLiveData().postValue(ex.getMessage()));
+            setException(ex);
             disconnect();
         }
     }
@@ -338,8 +406,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         // sometimes need to remove notification explicitly
         removeForegroundNotification();
         //send to UI activity that state is disconnected.
-        Optional.ofNullable(fptnViewModel)
-                .ifPresent(model -> model.getConnectionStateMutableLiveData().postValue(ConnectionState.DISCONNECTED.getWithTime()));
+        setConnectionState(ConnectionState.DISCONNECTED);
     }
 
     private void removeForegroundNotification() {
