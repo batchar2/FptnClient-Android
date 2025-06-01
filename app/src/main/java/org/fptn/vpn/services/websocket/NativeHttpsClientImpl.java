@@ -50,5 +50,4 @@ public class NativeHttpsClientImpl {
     private native NativeResponse nativeGet(long nativeHandle, String url, int timeout);
 
     private native NativeResponse nativePost(long nativeHandle, String url, String requestBody, int timeout);
-
 }

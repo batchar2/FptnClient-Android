@@ -138,7 +138,7 @@ public class NativeWebSocketClientImpl {
         Log.d(getTag(), "NativeWebsocketWrapper.onOpenImpl():end()");
     }
 
-    public void onCloseImpl() {
+    public void onFailureImpl() {
         Log.d(getTag(), "NativeWebsocketWrapper.onCloseImpl():start()");
         if (this.onFailureCallback != null) {
             this.onFailureCallback.onFailure();
