@@ -53,8 +53,8 @@ bool WrapperWebsocketClient::Start() {
 bool WrapperWebsocketClient::Stop() {
   const std::unique_lock<std::mutex> lock(mutex_);  // mutex
 
+  running_ = false;
   if (client_) {
-    running_ = false;
     client_->Stop();
     if (th_.joinable()) {
       th_.join();
@@ -65,7 +65,7 @@ bool WrapperWebsocketClient::Stop() {
 }
 
 bool WrapperWebsocketClient::IsStarted() {
-  const std::unique_lock<std::mutex> lock(mutex_);  // mutex
+  // const std::unique_lock<std::mutex> lock(mutex_);  // mutex
 
   return client_ && client_->IsStarted() && running_;
 }
@@ -122,14 +122,18 @@ void WrapperWebsocketClient::Run() {
     std::this_thread::sleep_for(kReconnectionDelay);
   }
 
-  if (running_ && !reconnection_attempts_) {
-    SPDLOG_ERROR("Connection failure: Could not establish connection");
-    JNIEnv* env = getJniEnv();
-    jclass cls_foo = env->GetObjectClass(wrapper_);
-    jmethodID on_close_impl = env->GetMethodID(cls_foo, "onFailureImpl", "()V");
-    env->CallVoidMethod(wrapper_, on_close_impl);
+  {
+    // const std::unique_lock<std::mutex> lock(mutex_);  // mutex
+
+    if (running_ && !reconnection_attempts_) {
+      SPDLOG_ERROR("Connection failure: Could not establish connection");
+      JNIEnv* env = getJniEnv();
+      jclass cls_foo = env->GetObjectClass(wrapper_);
+      jmethodID on_failure_impl = env->GetMethodID(cls_foo, "onFailureImpl", "()V");
+      env->CallVoidMethod(wrapper_, on_failure_impl);
+    }
+    running_ = false;
   }
-  running_ = false;
 }
 
 void WrapperWebsocketClient::onIPPacket(
