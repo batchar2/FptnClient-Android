@@ -94,6 +94,7 @@ public class CustomVpnConnection extends Thread {
         try {
             sendConnectionStateToService(ConnectionState.CONNECTING);
 
+            //todo: extract all magic constants to class
             VpnService.Builder builder = service.new Builder();
             builder.addAddress(tunAddress, 32);
             builder.addRoute("172.20.0.1", 32);

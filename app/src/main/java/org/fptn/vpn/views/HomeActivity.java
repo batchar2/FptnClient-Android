@@ -2,6 +2,7 @@ package org.fptn.vpn.views;
 
 import static org.fptn.vpn.core.common.Constants.SELECTED_SERVER;
 import static org.fptn.vpn.core.common.Constants.SELECTED_SERVER_ID_AUTO;
+import static org.fptn.vpn.utils.ResourcesUtils.getStringResourceByName;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -12,6 +13,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,8 +40,10 @@ import org.fptn.vpn.utils.CustomSpinner;
 import org.fptn.vpn.views.adapter.FptnServerAdapter;
 import org.fptn.vpn.services.CustomVpnService;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
+import org.fptn.vpn.vpnclient.exception.ErrorCode;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -210,6 +214,25 @@ public class HomeActivity extends AppCompatActivity {
             startStopButton.setChecked(isActive);
             spinnerServers.setEnabled(!isActive);
             settingsMenuItem.setEnabled(!isActive);
+        });
+
+        fptnViewModel.getLastExceptionLiveData().observe(this, exception -> {
+            String errorMessage = Optional.ofNullable(
+                            getStringResourceByName(getApplication(), exception.errorCode.getValue())
+                    )
+                    .orElse(exception.errorMessage);
+            if (ErrorCode.Companion.isNeedToOfferRefreshToken(exception.errorCode)) {
+                Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), errorMessage, 8000);
+                if (ErrorCode.Companion.isNeedToOfferRefreshToken(exception.errorCode)) {
+                    snackbar.setAction(getString(R.string.refresh_token), v -> {
+                        Intent browserIntent = new
+                                Intent(Intent.ACTION_VIEW,
+                                Uri.parse(getString(R.string.telegram_bot_link)));
+                        startActivity(browserIntent);
+                    });
+                }
+                snackbar.show();
+            }
         });
 
         // hide
