@@ -21,20 +21,24 @@ import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.repository.FptnServerRepository;
 import org.fptn.vpn.utils.CountryFlags;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.fptn.vpn.utils.TimeUtils;
+import org.fptn.vpn.viewmodel.model.FptnToken;
+import org.fptn.vpn.viewmodel.model.FptnTokenServer;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -43,6 +47,13 @@ import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 
 public class FptnServerViewModel extends AndroidViewModel {
+    private static final ObjectMapper OBJECT_MAPPER;
+
+    static {
+        OBJECT_MAPPER = new ObjectMapper();
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
     private final FptnServerRepository fptnServerRepository;
 
     @Getter
@@ -74,6 +85,7 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final MutableLiveData<String> statusTextLiveData = new MutableLiveData<>(getApplication().getString(R.string.disconnected));
     @Getter
     private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
+
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
@@ -117,21 +129,6 @@ public class FptnServerViewModel extends AndroidViewModel {
                     Log.e(getTag(), "Error as text: " + stringResourceByName);
 
                     setErrorMessage(stringResourceByName);
-                    if (ErrorCode.Companion.isNeedToOfferRefreshToken(errorCode)) {
-                        // todo: need to add snackbar
-                        /*
-                        Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), stringResourceByName, 8000);
-                    if (ErrorCode.Companion.isNeedToOfferRefreshToken(errorCode)) {
-                        snackbar.setAction(getString(R.string.refresh_token), v -> {
-                            Intent browserIntent = new
-                                    Intent(Intent.ACTION_VIEW,
-                                    Uri.parse(getString(R.string.telegram_bot_link)));
-                            startActivity(browserIntent);
-                        });
-                    }
-                    snackbar.show();
-                    */
-                    }
                 } else {
                     setErrorMessage(exception.errorMessage);
                 }
@@ -145,7 +142,7 @@ public class FptnServerViewModel extends AndroidViewModel {
         errorTextLiveData.postValue(errorMessage);
     }
 
-    private void resetErrorMessage(){
+    private void resetErrorMessage() {
         setErrorMessage("");
     }
 
@@ -163,64 +160,64 @@ public class FptnServerViewModel extends AndroidViewModel {
         fptnServerRepository.deleteAll();
     }
 
-    public boolean parseAndSaveFptnLink(String fptnToken) {
+    public void parseAndSaveFptnLink(String fptnTokenString) throws JsonProcessingException, PVNClientException {
+        List<FptnServerDto> serverDtoList = new ArrayList<>();
+
         // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
-        final String preparedUrl = fptnToken.replaceAll("\\s+", "")
+        final String clearedtoken = fptnTokenString.replaceAll("\\s+", "")
                 .replace("fptn://", "")
                 .replace("fptn:", "");
+        String decodedToken = new String(Base64.getDecoder().decode(clearedtoken));
         try {
-            byte[] decodedBytes = Base64.getDecoder().decode(preparedUrl);
-            String jsonString = new String(decodedBytes);
-            JSONObject jsonObject = new JSONObject(jsonString);
-            String username = jsonObject.getString("username");
-            String password = jsonObject.getString("password");
-
-            List<FptnServerDto> serverDtoList = new ArrayList<>();
-            JSONArray serversArray = jsonObject.getJSONArray("servers");
-            for (int i = 0; i < serversArray.length(); i++) {
-                JSONObject serverObject = serversArray.getJSONObject(i);
-                String hostname = serverObject.getString("name");
-                String host = serverObject.getString("host");
-                int port = serverObject.getInt("port");
-                String md5ServerFingerprint = serverObject.getString("md5_fingerprint");
-                String countryCode = getCountryCodeFromJson(serverObject, hostname);
-
-                serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode, md5ServerFingerprint, false));
+            FptnToken fptnToken = OBJECT_MAPPER.readValue(decodedToken, FptnToken.class);
+            String username = fptnToken.getUsername();
+            String password = fptnToken.getPassword();
+            // add normal servers
+            List<FptnTokenServer> servers = fptnToken.getServers();
+            if (servers != null && !servers.isEmpty()) {
+                for (FptnTokenServer server : servers) {
+                    FptnServerDto fptnServerDto = createFptnServerDto(server, username, password, false);
+                    serverDtoList.add(fptnServerDto);
+                    Log.d(getTag(), "Server from token: " + fptnServerDto.getServerInfo());
+                }
             }
-
-            JSONArray censoredZoneServerArray = jsonObject.getJSONArray("censored_zone_servers");
-            for (int i = 0; i < censoredZoneServerArray.length(); i++) {
-                JSONObject serverObject = censoredZoneServerArray.getJSONObject(i);
-                String hostname = serverObject.getString("name");
-                String host = serverObject.getString("host");
-                int port = serverObject.getInt("port");
-                String md5ServerFingerprint = serverObject.getString("md5_fingerprint");
-                String countryCode = getCountryCodeFromJson(serverObject, hostname);
-
-                serverDtoList.add(new FptnServerDto(0, false, hostname, username, password, host, port, countryCode, md5ServerFingerprint, true));
+            // add censured servers
+            List<FptnTokenServer> censoredServers = fptnToken.getCensoredServers();
+            if (censoredServers != null && !censoredServers.isEmpty()) {
+                for (FptnTokenServer server : censoredServers) {
+                    FptnServerDto fptnServerDto = createFptnServerDto(server, username, password, true);
+                    serverDtoList.add(fptnServerDto);
+                    Log.d(getTag(), "Censured server from token: " + fptnServerDto.getServerInfo());
+                }
             }
-
-            if (!serverDtoList.isEmpty()) {
-                deleteAll(); // delete old
-                fptnServerRepository.insertAll(serverDtoList);
-                return true;
-            }
-            Log.e(getTag(), "Servers from fptnLink is empty!");
-        } catch (JSONException e) {
-            Log.e(getTag(), "Can't parse fptnLink!", e);
-        } catch (Exception e) {
-            Log.e(getTag(), "Undefined error:", e);
+        } catch (IOException e) {
+            Log.e(getTag(), "Can't parse FPTNLink!", e);
+            throw e;
         }
-        return false;
+
+        if (serverDtoList.isEmpty()) {
+            throw new PVNClientException(ErrorCode.SERVER_LIST_NULL_OR_EMPTY);
+        }
+
+        fptnServerRepository.deleteAll(); // delete all old servers
+        fptnServerRepository.insertAll(serverDtoList); // add new servers
     }
 
-    private String getCountryCodeFromJson(JSONObject serverObject, String hostname) {
-        try {
-            return serverObject.getString("country_code");
-        } catch (JSONException ignored) {
-            Log.w(getTag(), "CountryCode not found!");
-        }
-        return CountryFlags.getCountryCodeFromHostName(hostname);
+    @NonNull
+    private static FptnServerDto createFptnServerDto(FptnTokenServer server, String username, String password, boolean censured) {
+        String countryCode = Optional.ofNullable(server.getCountryCode())
+                .orElse(CountryFlags.getCountryCodeFromHostName(server.getName()));
+        return new FptnServerDto(
+                0,
+                false,
+                server.getName(),
+                username,
+                password,
+                server.getHost(),
+                server.getPort(),
+                countryCode,
+                server.getMd5Fingerprint(),
+                censured);
     }
 
     @Override
@@ -262,10 +259,6 @@ public class FptnServerViewModel extends AndroidViewModel {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
         currentSNI.postValue(newSni);
-    }
-
-    public void updateStatusText(String text) {
-        statusTextLiveData.postValue(text);
     }
 
     private String getTag() {

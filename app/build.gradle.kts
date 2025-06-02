@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.conscrypt.android)
     implementation(libs.guava)
     implementation(libs.ipaddress)
+    implementation(libs.jackson.databind)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.protobuf.javalite)

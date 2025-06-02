@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,8 +29,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
-    private final String TAG = this.getClass().getName();
-
     private FptnServerViewModel fptnViewModel;
 
     @Override
@@ -76,12 +75,20 @@ public class LoginActivity extends AppCompatActivity {
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
         final String fptnLink = linkInput.getText().toString();
-        if (fptnViewModel.parseAndSaveFptnLink(fptnLink)) {
+
+        try {
+            fptnViewModel.parseAndSaveFptnLink(fptnLink);
+
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
             finish();
-        } else {
+        } catch (Exception e) {
+            Log.e(getTag(), "Token invalid: ", e);
             Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String getTag() {
+        return this.getClass().getCanonicalName();
     }
 }
