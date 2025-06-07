@@ -37,4 +37,15 @@
         android:textSize="24sp"
         tools:text="192.168.0.0" />
 
+    <ImageView
+        android:id="@+id/censoredIcon"
+        android:layout_width="32dp"
+        android:layout_height="38dp"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp"
+        android:layout_toEndOf="@+id/fptn_server_name"
+        android:importantForAccessibility="no"
+        android:visibility="gone"
+        app:srcCompat="@drawable/vpn_icon" />
+
 </RelativeLayout>
