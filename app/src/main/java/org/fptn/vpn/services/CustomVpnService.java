@@ -31,7 +31,7 @@ import org.fptn.vpn.utils.NetworkMonitor;
 import org.fptn.vpn.utils.NotificationUtils;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
 import org.fptn.vpn.views.HomeActivity;
-import org.fptn.vpn.views.speedtest.SpeedTestService;
+import org.fptn.vpn.views.speedtest.SpeedTestUtils;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
@@ -73,9 +73,6 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     // Pending Intent to disconnect from notification
     private PendingIntent disconnectPendingIntent;
-
-    // Server for finding the best server (and check availability)
-    private SpeedTestService speedTestService;
 
     private FptnServerRepository fptnServerRepository;
 
@@ -133,13 +130,6 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                         .setAction(CustomVpnService.ACTION_DISCONNECT),
                 PendingIntent.FLAG_IMMUTABLE);
 
-        try {
-            speedTestService = new SpeedTestService(getSniHostname());
-        } catch (PVNClientException e) {
-            Log.e(TAG, "onCreate(): " + e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-
         fptnServerRepository = new FptnServerRepository(getApplicationContext());
     }
 
@@ -166,10 +156,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             return START_NOT_STICKY;
         }
 
+        final String sniHostname = getSniHostname();
         if (intent == null) {
             /* restart after service destruction because all fields of intent is null */
             Log.w(TAG, "onStartCommand: restart after error");
-            return connectToPreviouslySelectedServer();
+            return connectToPreviouslySelectedServer(sniHostname);
         } else if (ACTION_DISCONNECT.equals(intent.getAction())) {
             Log.i(TAG, "onStartCommand: disconnect!");
             /* if we need disconnect */
@@ -184,8 +175,8 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 try {
                     List<FptnServerDto> fptnServerDtos = fptnServerRepository.getServersListFuture(false).get();
                     setConnectionState(ConnectionState.CONNECTING);
-                    FptnServerDto server = speedTestService.findFastestServer(fptnServerDtos);
-                    return connectToServer(server.id);
+                    FptnServerDto server = SpeedTestUtils.findFastestServer(fptnServerDtos, sniHostname);
+                    return connectToServer(server.id, sniHostname);
                 } catch (PVNClientException e) {
                     Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
                     /* We don't need to connect if all servers are unreachable */
@@ -196,7 +187,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 }
             } else {
                 Log.i(TAG, "onStartCommand: connectToServer with id: " + serverId);
-                return connectToServer(serverId);
+                return connectToServer(serverId, sniHostname);
             }
         } else {
             // should not happen
@@ -228,13 +219,13 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         }
     }
 
-    private int connectToServer(int serverId) throws ExecutionException, InterruptedException {
+    private int connectToServer(int serverId, String sniHostname) throws ExecutionException, InterruptedException {
         fptnServerRepository.resetSelected().get();
         fptnServerRepository.setIsSelected(serverId).get();
 
         FptnServerDto server = fptnServerRepository.getSelected().get();
         if (server != null) {
-            connect(server);
+            connect(server, sniHostname);
             return START_STICKY;
         } else {
             /* selected server with selected id not found in DB - very */
@@ -244,10 +235,10 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         }
     }
 
-    private int connectToPreviouslySelectedServer() throws ExecutionException, InterruptedException {
+    private int connectToPreviouslySelectedServer(String sniHostname) throws ExecutionException, InterruptedException {
         FptnServerDto server = fptnServerRepository.getSelected().get();
         if (server != null) {
-            connect(server);
+            connect(server, sniHostname);
             return START_STICKY;
         } else {
             /* selected server not selected - that should mean that we were disconnected correct previously */
@@ -374,13 +365,13 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         }
     }
 
-    private void connect(FptnServerDto fptnServerDto) {
+    private void connect(FptnServerDto fptnServerDto, String sniHostname) {
         // Moving VPNService to foreground to give it higher priority in system
         startForegroundWithNotification(getString(R.string.connecting_to) + fptnServerDto.getServerInfo());
 
         try {
             CustomVpnConnection connection = new CustomVpnConnection(
-                    this, nextConnectionId.getAndIncrement(), fptnServerDto, getSniHostname());
+                    this, nextConnectionId.getAndIncrement(), fptnServerDto, sniHostname);
             connection.setConfigureVpnIntent(launchMainActivityPendingIntent);
             connection.start();
 
