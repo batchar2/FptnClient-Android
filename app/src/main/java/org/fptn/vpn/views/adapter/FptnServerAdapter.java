@@ -69,6 +69,12 @@ public class FptnServerAdapter extends BaseAdapter {
             }
         }
 
+        if (server.censured){
+            view.findViewById(R.id.censoredIcon).setVisibility(VISIBLE);
+        } else {
+            view.findViewById(R.id.censoredIcon).setVisibility(GONE);
+        }
+
         TextView name = view.findViewById(R.id.fptn_server_name);
         name.setText(server.name);
 
