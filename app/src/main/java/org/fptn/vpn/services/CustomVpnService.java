@@ -259,30 +259,39 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         if (vpnConnection == null) {
             setConnectionState(ConnectionState.DISCONNECTED);
         } else {
-            ConnectionState currentConnectionState = vpnConnection.getCurrentConnectionState();
-            switch (currentConnectionState) {
-                case CONNECTING -> {
-                    String title = getString(R.string.connecting_to) + vpnConnection.getFptnServerDto().getServerInfo();
+            switchState(
+                    vpnConnection.getCurrentConnectionState(),
+                    vpnConnection.getFptnServerDto().getServerInfo(),
+                    vpnConnection.getConnectionTime(),
+                    vpnConnection.getReconnectCount().get()
+            );
+        }
+    }
 
-                    setConnectionState(ConnectionState.CONNECTING);
-                    setStatusText(title);
-                }
-                case CONNECTED -> {
-                    String title = getString(R.string.connected_to) + vpnConnection.getFptnServerDto().getServerInfo();
-                    updateNotificationWithMessage(title, "");
+    private void switchState(ConnectionState connectionState, String serverInfo, Instant connectionTime, int reconnectCount) {
+        switch (connectionState) {
+            case DISCONNECTED -> disconnect();
+            case CONNECTING -> {
+                String title = getString(R.string.connecting_to) + serverInfo;
 
-                    setConnectionState(ConnectionState.CONNECTED.getWithTime(vpnConnection.getConnectionTime()));
-                    setStatusText(title);
-                }
-                case RECONNECTING -> {
-                    String title = getString(R.string.reconnection_to) + vpnConnection.getFptnServerDto().getServerInfo();
-                    String msg = getString(R.string.try_number) + vpnConnection.getReconnectCount();
-                    updateNotificationWithMessage(title, msg);
+                setConnectionState(ConnectionState.CONNECTING);
+                setStatusText(title);
+            }
+            case CONNECTED -> {
+                String title = getString(R.string.connected_to) + serverInfo;
+                updateNotificationWithMessage(title, "");
 
-                    setConnectionState(ConnectionState.RECONNECTING);
-                    setStatusText(title);
-                    setErrorMessage(msg);
-                }
+                setConnectionState(ConnectionState.CONNECTED.getWithTime(connectionTime));
+                setStatusText(title);
+            }
+            case RECONNECTING -> {
+                String title = getString(R.string.reconnection_to) + serverInfo;
+                String msg = getString(R.string.try_number) + reconnectCount;
+                updateNotificationWithMessage(title, msg);
+
+                setConnectionState(ConnectionState.RECONNECTING);
+                setStatusText(title);
+                setErrorMessage(msg);
             }
         }
     }
@@ -316,34 +325,11 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 case CONNECTION_STATE:
                     Triple<ConnectionState, Instant, String> connectionStateInstantPair = (Triple<ConnectionState, Instant, String>) message.obj;
                     ConnectionState connectionState = connectionStateInstantPair.getFirst();
-                    Instant time = connectionStateInstantPair.getSecond();
+                    Instant connectionTime = connectionStateInstantPair.getSecond();
                     String serverInfo = connectionStateInstantPair.getThird();
-                    //todo: fix later its repeated earlier
-                    switch (connectionState) {
-                        case DISCONNECTED -> disconnect();
-                        case CONNECTING -> {
-                            String title = getString(R.string.connecting_to) + serverInfo;
+                    int reconnectionCount = message.arg2;
 
-                            setConnectionState(ConnectionState.CONNECTING);
-                            setStatusText(title);
-                        }
-                        case CONNECTED -> {
-                            String title = getString(R.string.connected_to) + serverInfo;
-                            updateNotificationWithMessage(title, "");
-
-                            setConnectionState(ConnectionState.CONNECTED.getWithTime(time));
-                            setStatusText(title);
-                        }
-                        case RECONNECTING -> {
-                            String title = getString(R.string.reconnection_to) + serverInfo;
-                            String msg = getString(R.string.try_number) + message.arg2;
-                            updateNotificationWithMessage(title, msg);
-
-                            setConnectionState(ConnectionState.RECONNECTING);
-                            setStatusText(title);
-                            setErrorMessage(msg);
-                        }
-                    }
+                    switchState(connectionState, serverInfo, connectionTime, reconnectionCount);
                     break;
                 case ERROR:
                     PVNClientException exception = (PVNClientException) message.obj;
