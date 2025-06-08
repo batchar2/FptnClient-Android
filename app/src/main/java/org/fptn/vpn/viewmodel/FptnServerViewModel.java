@@ -29,6 +29,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.fptn.vpn.utils.TimeUtils;
 import org.fptn.vpn.viewmodel.model.FptnToken;
 import org.fptn.vpn.viewmodel.model.FptnTokenServer;
+import org.fptn.vpn.viewmodel.model.FptnTokenValidationUtils;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
@@ -85,7 +86,6 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final MutableLiveData<String> statusTextLiveData = new MutableLiveData<>(getApplication().getString(R.string.disconnected));
     @Getter
     private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
-
 
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
@@ -160,7 +160,7 @@ public class FptnServerViewModel extends AndroidViewModel {
         fptnServerRepository.deleteAll();
     }
 
-    public void parseAndSaveFptnLink(String fptnTokenString) throws JsonProcessingException, PVNClientException {
+    public void parseAndSaveFptnLink(String fptnTokenString) throws IOException, PVNClientException {
         List<FptnServerDto> serverDtoList = new ArrayList<>();
 
         // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
@@ -170,6 +170,8 @@ public class FptnServerViewModel extends AndroidViewModel {
         String decodedToken = new String(Base64.getDecoder().decode(clearedtoken));
         try {
             FptnToken fptnToken = OBJECT_MAPPER.readValue(decodedToken, FptnToken.class);
+            FptnTokenValidationUtils.validate(fptnToken);
+
             String username = fptnToken.getUsername();
             String password = fptnToken.getPassword();
             // add normal servers

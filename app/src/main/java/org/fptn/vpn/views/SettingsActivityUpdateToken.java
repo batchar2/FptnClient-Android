@@ -74,6 +74,7 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
     public void onSave(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
         final String fptnLink = linkInput.getText().toString();
+        final TextView errorText = findViewById(R.id.errorTextView);
 
         try {
             fptnViewModel.parseAndSaveFptnLink(fptnLink);
@@ -84,6 +85,8 @@ public class SettingsActivityUpdateToken extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(getTag(), "Token invalid: ", e);
             Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
+            errorText.setVisibility(View.VISIBLE);
+            errorText.setText(e.getMessage());
         }
     }
 
