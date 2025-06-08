@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +23,7 @@ import lombok.SneakyThrows;
 
 public class SpeedTestUtils {
     private static final String TAG = SpeedTestUtils.class.getName();
+    private static final long SEARCH_BEST_SERVER_MAX_TIMEOUT = 6L;
 
     @SneakyThrows
     public static FptnServerDto findFastestServer(List<FptnServerDto> fptnServerDtoList, String sniHostName) throws PVNClientException {
@@ -32,12 +34,12 @@ public class SpeedTestUtils {
                     .map(fptnServerDto -> new NativeSpeedTestTask(fptnServerDto, sniHostName))
                     .collect(Collectors.toList());
             try {
-                List<Future<NativeSpeedTestResult>> futures = executor.invokeAll(nativeSpeedTestTaskList, 10L, TimeUnit.SECONDS);
+                List<Future<NativeSpeedTestResult>> futures = executor.invokeAll(nativeSpeedTestTaskList, SEARCH_BEST_SERVER_MAX_TIMEOUT, TimeUnit.SECONDS);
                 List<NativeSpeedTestResult> nativeSpeedTestResults = futures.stream().filter(Future::isDone)
                         .map(nativeSpeedTestResultFuture -> {
                             try {
                                 return nativeSpeedTestResultFuture.get();
-                            } catch (ExecutionException | InterruptedException e) {
+                            } catch (ExecutionException | CancellationException | InterruptedException e) {
                                 Log.e(TAG, "nativeSpeedTestResultFuture exception: " + e.getMessage(), e);
                                 return null;
                             }

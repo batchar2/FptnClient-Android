@@ -49,7 +49,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeDestroy(
       reinterpret_cast<WrapperWebsocketClient*>(native_handle);
   if (websocket_client) {
     websocket_client->Stop();
-    //delete websocket_client;   // FIXME !!!!
+    delete websocket_client;
   }
 }
 

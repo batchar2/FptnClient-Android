@@ -2,123 +2,65 @@ package org.fptn.vpn.services.websocket;
 
 import android.util.Log;
 
-import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.services.websocket.callback.OnFailureCallback;
 import org.fptn.vpn.services.websocket.callback.OnMessageReceivedCallback;
 import org.fptn.vpn.services.websocket.callback.OnOpenCallback;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import lombok.Getter;
 
 public class NativeWebSocketClientImpl {
     static {
         System.loadLibrary("fptn_native_lib");
     }
 
-    private static final String DNS_URL = "/api/v1/dns";
-    private static final String LOGIN_URL = "/api/v1/login";
-
-    private final FptnServerDto fptnServerDto;
-    private final String tunAddress;
-    private final String sniHostName;
     private final OnOpenCallback onOpenCallback;
     private final OnMessageReceivedCallback onMessageReceivedCallback;
     private final OnFailureCallback onFailureCallback;
-    private final NativeHttpsClientImpl nativeHttpsClient;
 
-    private final String accessToken;
+    private final long nativeHandle;
 
-    private long nativeHandle = 0L;
-
-    @Getter
-    private boolean shutdown = false;
-
-    public NativeWebSocketClientImpl(FptnServerDto fptnServerDto, String tunAddress, String sniHostName, OnOpenCallback onOpenCallback, OnMessageReceivedCallback onMessageReceivedCallback, OnFailureCallback onFailureCallback) throws PVNClientException {
-        this.fptnServerDto = fptnServerDto;
-        this.tunAddress = tunAddress;
-        this.sniHostName = sniHostName;
+    public NativeWebSocketClientImpl(
+            String host,
+            int port,
+            String tunAddress,
+            String sniHostName,
+            String accessToken,
+            String md5ServerFingerprint,
+            OnOpenCallback onOpenCallback,
+            OnMessageReceivedCallback onMessageReceivedCallback,
+            OnFailureCallback onFailureCallback) throws PVNClientException {
         this.onOpenCallback = onOpenCallback;
         this.onMessageReceivedCallback = onMessageReceivedCallback;
         this.onFailureCallback = onFailureCallback;
 
-        this.nativeHttpsClient = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, this.sniHostName, fptnServerDto.md5ServerFingerprint);
-        this.accessToken = getAccessToken();
-    }
-
-    private String getAccessToken() throws PVNClientException {
-        String request = String.format("{\"username\": \"%s\", \"password\": \"%s\"}",
-                fptnServerDto.username,
-                fptnServerDto.password);
-
-        NativeResponse response = nativeHttpsClient.Post(LOGIN_URL, request, 5);
-        if (response != null) {
-            if (response.code == 200) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(response.body);
-                    String accessToken = jsonResponse.getString("access_token");
-                    Log.i(getTag(), "Getting accessToken successful.");
-                    return accessToken;
-                } catch (JSONException e) {
-                    Log.e(getTag(), "Some error occurs on parsing accessToken response: " + e);
-                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
-                }
-            }
-        }
-        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
-    }
-
-    public String getDnsServerIPv4() throws PVNClientException {
-        NativeResponse response = nativeHttpsClient.Get(DNS_URL, 5);
-        if (response != null) {
-            if (response.code == 200) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(response.body);
-                    String dnsServer = jsonResponse.getString("dns");
-                    Log.i(getTag(), "DNS " + dnsServer + " retrieval successful.");
-                    return dnsServer;
-                } catch (JSONException e) {
-                    Log.e(getTag(), "Some error occurs on receiving DNS response: " + e);
-                    throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
-                }
-            }
-        }
-        throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
-    }
-
-    public void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
-        stopWebSocket();
-        if (isShutdown()) {
-            throw new WebSocketAlreadyShutdownException();
-        }
         this.nativeHandle = nativeCreate(
-                fptnServerDto.host,
-                fptnServerDto.port,
+                host,
+                port,
                 tunAddress,
                 sniHostName,
                 accessToken,
-                fptnServerDto.md5ServerFingerprint
+                md5ServerFingerprint
         );
-        if (this.nativeHandle != 0) {
+
+        if (this.nativeHandle == 0L) {
+            throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
+        }
+    }
+
+    public void start() {
+        if (!nativeIsStarted(nativeHandle)) {
             nativeRun(nativeHandle);
         }
     }
 
-    public void stopWebSocket() {
-        if (this.nativeHandle != 0L) {
-            if (nativeIsStarted(nativeHandle)) {
-                nativeStop(nativeHandle);
-            }
-            nativeDestroy(nativeHandle);
+    public void stop() {
+        if (nativeIsStarted(nativeHandle)) {
+            nativeStop(nativeHandle);
         }
-        this.nativeHandle = 0L;
     }
 
-    public void shutdown() {
-        stopWebSocket();
-        shutdown = true;
+    public boolean isStarted() {
+        return nativeIsStarted(nativeHandle);
     }
 
     public void send(byte[] data) {
@@ -130,10 +72,10 @@ public class NativeWebSocketClientImpl {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        Log.d(getTag(), "NativeWebsocketWrapper.finalize()");
+
+        Log.d(getTag(), "NativeWebSocketClientImpl.finalize()");
         if (nativeHandle != 0L) {
             nativeDestroy(nativeHandle);
-            nativeHandle = 0L;
         }
     }
 
@@ -142,19 +84,19 @@ public class NativeWebSocketClientImpl {
     }
 
     public void onOpenImpl() {
-        Log.d(getTag(), "NativeWebsocketWrapper.onOpenImpl():start()");
+        Log.d(getTag(), "NativeWebSocketClientImpl.onOpenImpl():start()");
         if (this.onOpenCallback != null) {
             this.onOpenCallback.onOpen();
         }
-        Log.d(getTag(), "NativeWebsocketWrapper.onOpenImpl():end()");
+        Log.d(getTag(), "NativeWebSocketClientImpl.onOpenImpl():end()");
     }
 
     public void onFailureImpl() {
-        Log.d(getTag(), "NativeWebsocketWrapper.onFailureImpl():start()");
+        Log.d(getTag(), "NativeWebSocketClientImpl.onFailureImpl():start()");
         if (this.onFailureCallback != null) {
             this.onFailureCallback.onFailure();
         }
-        Log.d(getTag(), "NativeWebsocketWrapper.onFailureImpl():end()");
+        Log.d(getTag(), "NativeWebSocketClientImpl.onFailureImpl():end()");
     }
 
     public void onMessageImpl(byte[] msg) {

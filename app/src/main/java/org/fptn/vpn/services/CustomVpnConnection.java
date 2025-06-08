@@ -11,8 +11,8 @@ import android.util.Log;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.HandlerMessageTypes;
-import org.fptn.vpn.services.websocket.NativeWebSocketClientImpl;
 import org.fptn.vpn.services.websocket.WebSocketAlreadyShutdownException;
+import org.fptn.vpn.services.websocket.WebSocketClientWrapper;
 import org.fptn.vpn.utils.DataRateCalculator;
 import org.fptn.vpn.utils.IPUtils;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
@@ -54,7 +54,7 @@ public class CustomVpnConnection extends Thread {
 
     @Getter
     private final FptnServerDto fptnServerDto;
-    private final NativeWebSocketClientImpl webSocketClient;
+    private final WebSocketClientWrapper webSocketClient;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
@@ -78,8 +78,7 @@ public class CustomVpnConnection extends Thread {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
-
-        this.webSocketClient = new NativeWebSocketClientImpl(this.fptnServerDto,
+        this.webSocketClient = new WebSocketClientWrapper(this.fptnServerDto,
                 tunAddress,
                 sniHostName,
                 this::onConnectionOpen,
