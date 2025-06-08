@@ -1,60 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/application_background"
     android:layout_width="match_parent"
-    android:gravity="center"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:orientation="vertical">
+    android:background="@drawable/application_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-        <ImageView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:src="@drawable/icon_account_circle_100" />
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:src="@drawable/icon_account_circle_100" />
 
-        <TextView
-            android:id="@+id/fptn_login_html_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:autoLink="none"
-            android:clickable="true"
-            android:linksClickable="true"
-            android:padding="8dp"
-            android:text="html"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/fptn_login_html_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:autoLink="none"
+        android:clickable="true"
+        android:linksClickable="true"
+        android:padding="8dp"
+        android:text="html"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/fptn_login_link_input"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/round_back_white10_20"
-            android:hint="@string/paste_your_token"
-            android:inputType="none"
-            android:longClickable="true"
-            android:clickable="true"
-            android:maxHeight="150dp"
-            android:padding="10dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/hint"
-            android:textSize="16sp"
-            android:drawableEnd="@drawable/ic_baseline_close_24"
-            android:drawablePadding="8dp"
-            />
+    <EditText
+        android:id="@+id/fptn_login_link_input"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/round_back_white10_20"
+        android:clickable="true"
+        android:drawableEnd="@drawable/ic_baseline_close_24"
+        android:drawablePadding="8dp"
+        android:hint="@string/paste_your_token"
+        android:inputType="none"
+        android:longClickable="true"
+        android:maxHeight="150dp"
+        android:padding="10dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/hint"
+        android:textSize="16sp" />
 
-        <Button
-            android:id="@+id/fptn_login_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:background="@drawable/round_back_secondary_100"
-            android:onClick="onLogin"
-            android:padding="8dp"
-            android:textAllCaps="false"
-            android:text="@string/login_button"
-            android:textColor="@color/primary"
-            android:textSize="18sp" />
+    <Button
+        android:id="@+id/fptn_login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/round_back_secondary_100"
+        android:onClick="onLogin"
+        android:padding="8dp"
+        android:text="@string/login_button"
+        android:textAllCaps="false"
+        android:textColor="@color/primary"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/errorTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:padding="8dp"
+        android:visibility="gone"
+        android:text=""
+        android:textColor="@color/yellow"
+        android:textSize="16sp" />
 </LinearLayout>
 
