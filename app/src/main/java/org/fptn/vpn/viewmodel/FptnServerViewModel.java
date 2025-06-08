@@ -198,7 +198,10 @@ public class FptnServerViewModel extends AndroidViewModel {
         }
 
         if (serverDtoList.isEmpty()) {
-            throw new PVNClientException(ErrorCode.SERVER_LIST_NULL_OR_EMPTY);
+            ErrorCode errorCode = ErrorCode.SERVER_LIST_NULL_OR_EMPTY;
+            String errorMessage = Optional.ofNullable(getStringResourceByName(getApplication(), errorCode.getValue()))
+                    .orElse(errorCode.getValue());
+            throw new PVNClientException(errorCode, errorMessage);
         }
 
         fptnServerRepository.deleteAll(); // delete all old servers
