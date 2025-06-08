@@ -49,7 +49,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeDestroy(
       reinterpret_cast<WrapperWebsocketClient*>(native_handle);
   if (websocket_client) {
     websocket_client->Stop();
-    delete websocket_client;
+    //delete websocket_client;   // FIXME !!!!
   }
 }
 
@@ -82,6 +82,7 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeStop(
   auto* websocket_client =
       reinterpret_cast<WrapperWebsocketClient*>(native_handle);
   if (websocket_client) {
+    SPDLOG_INFO("Stop websocket");
     status = websocket_client->Stop();
   }
   return static_cast<jboolean>(status);

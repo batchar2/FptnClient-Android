@@ -67,7 +67,7 @@ bool WrapperWebsocketClient::Stop() {
 bool WrapperWebsocketClient::IsStarted() {
   // const std::unique_lock<std::mutex> lock(mutex_);  // mutex
 
-  return client_ && client_->IsStarted() && running_;
+  return client_ && running_ && client_->IsStarted();
 }
 
 void WrapperWebsocketClient::Run() {

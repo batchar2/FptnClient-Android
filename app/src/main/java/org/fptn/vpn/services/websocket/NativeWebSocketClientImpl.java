@@ -107,7 +107,7 @@ public class NativeWebSocketClientImpl {
     }
 
     public void stopWebSocket() {
-        if (this.nativeHandle != 0) {
+        if (this.nativeHandle != 0L) {
             if (nativeIsStarted(nativeHandle)) {
                 nativeStop(nativeHandle);
             }
@@ -117,6 +117,7 @@ public class NativeWebSocketClientImpl {
     }
 
     public void shutdown() {
+        stopWebSocket();
         shutdown = true;
     }
 
