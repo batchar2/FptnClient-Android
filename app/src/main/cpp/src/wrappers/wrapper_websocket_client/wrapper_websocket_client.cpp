@@ -51,7 +51,16 @@ bool WrapperWebsocketClient::Start() {
 }
 
 bool WrapperWebsocketClient::Stop() {
+  if (!running_) {
+    return false;
+  }
+
   const std::unique_lock<std::mutex> lock(mutex_);  // mutex
+
+  // cppcheck-suppress identicalConditionAfterEarlyExit
+  if (!running_) {  // Double-check after acquiring lock
+    return false;
+  }
 
   running_ = false;
   if (client_) {
@@ -65,14 +74,10 @@ bool WrapperWebsocketClient::Stop() {
 }
 
 bool WrapperWebsocketClient::IsStarted() {
-  // const std::unique_lock<std::mutex> lock(mutex_);  // mutex
-
   return client_ && running_ && client_->IsStarted();
 }
 
 void WrapperWebsocketClient::Run() {
-  // Maximum allowed reconnection attempts
-  // constexpr int kMaxAttempts = 3;
   // Time window for counting attempts (1 minute)
   constexpr auto kReconnectionWindow = std::chrono::seconds(60);
   // Delay between reconnection attempts
