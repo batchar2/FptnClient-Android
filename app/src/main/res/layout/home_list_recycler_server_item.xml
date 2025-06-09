@@ -14,7 +14,7 @@
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         android:importantForAccessibility="no"
-        app:srcCompat="@drawable/vpn_icon" />
+        app:srcCompat="@drawable/vpn_icon_list_item" />
 
     <TextView
         android:id="@+id/fptn_server_name"
@@ -46,6 +46,6 @@
         android:layout_toEndOf="@+id/fptn_server_name"
         android:importantForAccessibility="no"
         android:visibility="gone"
-        app:srcCompat="@drawable/vpn_icon" />
+        app:srcCompat="@drawable/vpn_icon_list_item" />
 
 </RelativeLayout>
