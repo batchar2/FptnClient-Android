@@ -3,7 +3,6 @@ activity = "1.9.3"
 appcompat = "1.7.0"
 autonomousappsSorting = "0.14"
 autonomousappsUnused = "2.7.0"
-conscryptAndroid = "2.5.3"
 constraintlayout = "2.2.0"
 detektPlugin = "1.23.7"
 gradlePlugin = "8.2.2"
@@ -18,9 +17,7 @@ ksp = "2.0.20-1.0.24"
 lombock = "1.18.36"
 material = "1.12.0"
 monitor = "1.7.2"
-okhttp = "4.12.0"
 protobuf = "4.26.1"
-protobufPlugin = "0.9.4"
 roomRuntime = "2.6.1"
 zxing = "3.5.3"
 
@@ -34,7 +31,6 @@ androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "m
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
-conscrypt-android = { module = "org.conscrypt:conscrypt-android", version.ref = "conscryptAndroid" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
@@ -44,13 +40,9 @@ kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-p
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
-protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 [plugins]
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
 deps-unused = { id = "com.autonomousapps.dependency-analysis", version.ref = "autonomousappsUnused" }
-protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 

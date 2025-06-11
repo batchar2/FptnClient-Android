@@ -20,7 +20,6 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
-import org.conscrypt.Conscrypt;
 import org.fptn.vpn.R;
 import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
@@ -103,33 +102,15 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
         if (handler == null) {
             handler = new Handler(this);
         }
-
-        Provider[] providers = Security.getProviders();
-        Log.d(TAG, "Security providers before: ");
-        for (Provider provider : providers) {
-            Log.d(TAG, "Provider: " + provider.getName() + " - " + provider.getVersion());
-        }
-
-        Log.i(TAG, "Insert conscrypt-" + Conscrypt.version() + " as security provider");
-        Security.insertProviderAt(Conscrypt.newProvider(), 1);
-
-        providers = Security.getProviders();
-        Log.d(TAG, "Security providers after: ");
-        for (Provider provider : providers) {
-            Log.d(TAG, "Provider: " + provider.getName() + " - " + provider.getVersion());
-        }
-
         // pending intent for open MainActivity on tap
         launchMainActivityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, HomeActivity.class),
                 PendingIntent.FLAG_IMMUTABLE);
-
         // pending intent for disconnect button in notification
         disconnectPendingIntent = PendingIntent.getService(this, 0,
                 new Intent(this, CustomVpnService.class)
                         .setAction(CustomVpnService.ACTION_DISCONNECT),
                 PendingIntent.FLAG_IMMUTABLE);
-
         fptnServerRepository = new FptnServerRepository(getApplicationContext());
     }
 

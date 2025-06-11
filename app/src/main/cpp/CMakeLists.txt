@@ -19,7 +19,6 @@ message(STATUS "OpenSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
 message(STATUS "OpenSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
 message(STATUS "OpenSSL_VERSION: ${OPENSSL_VERSION}")
 
-#exit
 #find_package(fptn CONFIG)
 include_directories(src/)
 include_directories(${OpenSSL_INCLUDE_DIR})
