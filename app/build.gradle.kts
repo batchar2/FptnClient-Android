@@ -56,7 +56,7 @@ android {
         }
 
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
 //            abiFilters += listOf("x86_64", "arm64-v8a")
         }
     }
@@ -132,7 +132,7 @@ task("conanInstall") {
     println("Build directory: $absoluteBuildDirPath")
 
     listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
-        listOf("armv8", "x86_64").forEach { arch ->
+        listOf("armv8", "x86_64", "armv7").forEach { arch ->
             val cmd =
                 "$conanExecutable install " +
                         "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
