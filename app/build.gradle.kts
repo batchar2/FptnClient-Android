@@ -5,7 +5,6 @@ import kotlin.concurrent.thread
 
 plugins {
     id("pvnclient.android.application")
-    alias(libs.plugins.protobuf)
 }
 
 android {
@@ -97,13 +96,10 @@ dependencies {
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
-    implementation(libs.conscrypt.android)
     implementation(libs.guava)
     implementation(libs.ipaddress)
     implementation(libs.jackson.databind)
     implementation(libs.material)
-    implementation(libs.okhttp)
-    implementation(libs.protobuf.javalite)
     implementation(libs.zxing)
 
     compileOnly(libs.lombock)
@@ -121,20 +117,6 @@ java {
     }
 }
 
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                create("java") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
 
 fun readStreamAsync(stream: InputStream, label: String) = thread {
     stream.bufferedReader().useLines { lines ->
@@ -149,7 +131,7 @@ task("conanInstall") {
     val absoluteBuildDirPath = buildDir.absolutePath
     println("Build directory: $absoluteBuildDirPath")
 
-    listOf("Debug").forEach { buildType ->
+    listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
         listOf("armv8", "x86_64").forEach { arch ->
             val cmd =
                 "$conanExecutable install " +
