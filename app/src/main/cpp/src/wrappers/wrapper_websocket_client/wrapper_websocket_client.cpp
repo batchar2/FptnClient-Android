@@ -134,7 +134,8 @@ void WrapperWebsocketClient::Run() {
       SPDLOG_ERROR("Connection failure: Could not establish connection");
       JNIEnv* env = getJniEnv();
       jclass cls_foo = env->GetObjectClass(wrapper_);
-      jmethodID on_failure_impl = env->GetMethodID(cls_foo, "onFailureImpl", "()V");
+      jmethodID on_failure_impl =
+          env->GetMethodID(cls_foo, "onFailureImpl", "()V");
       env->CallVoidMethod(wrapper_, on_failure_impl);
     }
     running_ = false;
@@ -143,38 +144,103 @@ void WrapperWebsocketClient::Run() {
 
 void WrapperWebsocketClient::onIPPacket(
     fptn::common::network::IPPacketPtr packet) {
-  if (packet && running_) {
-    JNIEnv* env = getJniEnv();
+  if (!packet || !running_) {
+      return;
+  }
 
-    const std::string serialized_packet = packet->ToString();
-    jbyteArray jpacket = env->NewByteArray(serialized_packet.size());
+  JNIEnv* env = getJniEnv();
+  if (!env) {
+    SPDLOG_ERROR("Failed to get JNI environment");
+    return;
+  }
+
+  const std::string serialized_packet = packet->ToString();
+  if (serialized_packet.empty()) {
+    SPDLOG_ERROR("Empty packet data");
+    return;
+  }
+
+  jbyteArray jpacket = env->NewByteArray(serialized_packet.size());
+  if (!jpacket) {
+    SPDLOG_ERROR("Failed to allocate byte array");
+    return;
+  }
+
+  try {
     env->SetByteArrayRegion(jpacket, 0, serialized_packet.size(),
         reinterpret_cast<const jbyte*>(serialized_packet.data()));
+    jclass cls = env->GetObjectClass(wrapper_);
+    if (!cls) {
+      SPDLOG_ERROR("Failed to get object class");
+      env->DeleteLocalRef(jpacket);
+      jpacket = nullptr;
 
-    jclass cls_foo = env->GetObjectClass(wrapper_);
+      return;
+    }
+
     jmethodID on_message_impl =
-        env->GetMethodID(cls_foo, "onMessageImpl", "([B)V");
+        env->GetMethodID(cls, "onMessageImpl", "([B)V");
+    if (!on_message_impl) {
+      SPDLOG_ERROR("Failed to get method ID");
+      env->DeleteLocalRef(jpacket);
+      jpacket = nullptr;
 
+      env->DeleteLocalRef(cls);
+      cls = nullptr;
+      return;
+    }
+
+    // Call java method
     env->CallVoidMethod(wrapper_, on_message_impl, jpacket);
+
+    // Clean up local references
+    env->DeleteLocalRef(jpacket);
+    jpacket = nullptr;
+
+    env->DeleteLocalRef(cls);
+    cls = nullptr;
+  } catch (...) {
+    SPDLOG_ERROR("Exception occurred in JNI call");
+    if (jpacket) {
+      env->DeleteLocalRef(jpacket);
+    }
   }
 }
 
 void WrapperWebsocketClient::onConnectedCallback() {
-  if (running_) {
-    JNIEnv* env = getJniEnv();
-    jclass cls_foo = env->GetObjectClass(wrapper_);
-    jmethodID on_open_impl = env->GetMethodID(cls_foo, "onOpenImpl", "()V");
-
-    env->CallVoidMethod(wrapper_, on_open_impl);
+  if (!running_) {
+    return;
   }
+
+  JNIEnv* env = getJniEnv();
+  if (!env) {
+    SPDLOG_ERROR("Failed to get JNI environment in onConnectedCallback");
+    return;
+  }
+
+  jclass cls_foo = env->GetObjectClass(wrapper_);
+  if (!cls_foo) {
+    SPDLOG_ERROR("Failed to get Java class in onConnectedCallback");
+    return;
+  }
+
+  jmethodID on_open_impl = env->GetMethodID(cls_foo, "onOpenImpl", "()V");
+  if (!on_open_impl) {
+    SPDLOG_ERROR("Failed to get method ID for onOpenImpl");
+    env->DeleteLocalRef(cls_foo);
+    return;
+  }
+
+  env->CallVoidMethod(wrapper_, on_open_impl);
+  env->DeleteLocalRef(cls_foo);
 }
 
 bool WrapperWebsocketClient::Send(std::string pkt) {
   auto ip_packet = fptn::common::network::IPPacket::Parse(std::move(pkt));
-  if (ip_packet) {
+  if (ip_packet && running_) {
     const std::unique_lock<std::mutex> lock(mutex_);  // mutex
 
-    if (client_ && client_->IsStarted()) {
+    if (running_ && client_ && client_->IsStarted()) {
       client_->Send(std::move(ip_packet));
       return true;
     }
