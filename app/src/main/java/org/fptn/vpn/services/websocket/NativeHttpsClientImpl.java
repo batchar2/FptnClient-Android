@@ -23,14 +23,20 @@ public class NativeHttpsClientImpl {
         );
     }
 
-    public NativeResponse Get(String url, int timeout)
-    {
+    public NativeResponse Get(String url, int timeout) {
         return nativeGet(nativeHandle, url, timeout);
     }
 
-    public NativeResponse Post(String url, String body, int timeout)
-    {
+    public NativeResponse Post(String url, String body, int timeout) {
         return nativePost(nativeHandle, url, body, timeout);
+    }
+
+    public synchronized void release() {
+        Log.d(TAG, "NativeHttpsClientImpl.release()");
+        if (nativeHandle != 0) {
+            nativeDestroy(nativeHandle);
+            nativeHandle = 0;
+        }
     }
 
     private native long nativeCreate(String server_ip,
@@ -40,9 +46,12 @@ public class NativeHttpsClientImpl {
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
         Log.d(TAG, "NativeHttpsClientImpl.finalize()");
-        nativeDestroy(nativeHandle);
+        try {
+            release();
+        } finally {
+            super.finalize();
+        }
     }
 
     private native void nativeDestroy(long nativeHandle);

@@ -9,6 +9,8 @@ import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
 public class NativeWebSocketClientImpl {
+    private static final String TAG = NativeWebSocketClientImpl.class.getName();
+
     static {
         System.loadLibrary("fptn_native_lib");
     }
@@ -17,7 +19,7 @@ public class NativeWebSocketClientImpl {
     private final OnMessageReceivedCallback onMessageReceivedCallback;
     private final OnFailureCallback onFailureCallback;
 
-    private final long nativeHandle;
+    private long nativeHandle;
 
     public NativeWebSocketClientImpl(
             String host,
@@ -69,34 +71,38 @@ public class NativeWebSocketClientImpl {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        Log.d(getTag(), "NativeWebSocketClientImpl.finalize()");
-        if (nativeHandle != 0L) {
+    public synchronized void release() {
+        Log.d(TAG, "NativeWebSocketClientImpl.release()");
+        if (nativeHandle != 0) {
             nativeDestroy(nativeHandle);
+            nativeHandle = 0;
         }
     }
 
-    private String getTag() {
-        return this.getClass().getCanonicalName();
+    @Override
+    protected void finalize() throws Throwable {
+        Log.d(TAG, "NativeWebSocketClientImpl.finalize()");
+        try {
+            release();
+        } finally {
+            super.finalize();
+        }
     }
 
     public void onOpenImpl() {
-        Log.d(getTag(), "NativeWebSocketClientImpl.onOpenImpl():start()");
+        Log.d(TAG, "NativeWebSocketClientImpl.onOpenImpl():start()");
         if (this.onOpenCallback != null) {
             this.onOpenCallback.onOpen();
         }
-        Log.d(getTag(), "NativeWebSocketClientImpl.onOpenImpl():end()");
+        Log.d(TAG, "NativeWebSocketClientImpl.onOpenImpl():end()");
     }
 
     public void onFailureImpl() {
-        Log.d(getTag(), "NativeWebSocketClientImpl.onFailureImpl():start()");
+        Log.d(TAG, "NativeWebSocketClientImpl.onFailureImpl():start()");
         if (this.onFailureCallback != null) {
             this.onFailureCallback.onFailure();
         }
-        Log.d(getTag(), "NativeWebSocketClientImpl.onFailureImpl():end()");
+        Log.d(TAG, "NativeWebSocketClientImpl.onFailureImpl():end()");
     }
 
     public void onMessageImpl(byte[] msg) {
