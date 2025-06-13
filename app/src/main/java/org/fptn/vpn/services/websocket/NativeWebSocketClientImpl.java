@@ -8,6 +8,8 @@ import org.fptn.vpn.services.websocket.callback.OnOpenCallback;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class NativeWebSocketClientImpl {
     private static final String TAG = NativeWebSocketClientImpl.class.getName();
 
@@ -15,10 +17,13 @@ public class NativeWebSocketClientImpl {
         System.loadLibrary("fptn_native_lib");
     }
 
+    private static final AtomicInteger SERIAL_NUM = new AtomicInteger(555);
+
     private final OnOpenCallback onOpenCallback;
     private final OnMessageReceivedCallback onMessageReceivedCallback;
     private final OnFailureCallback onFailureCallback;
 
+    private final int serialNum;
     private long nativeHandle;
 
     public NativeWebSocketClientImpl(
@@ -44,18 +49,22 @@ public class NativeWebSocketClientImpl {
                 md5ServerFingerprint
         );
 
+        this.serialNum = SERIAL_NUM.getAndIncrement();
+
         if (this.nativeHandle == 0L) {
             throw new PVNClientException(ErrorCode.CONNECT_TO_SERVER_ERROR);
         }
     }
 
     public void start() {
+        Log.d(TAG, "NativeWebSocketClientImpl.start() Thread.id: " + Thread.currentThread().getId() + " serialNum: " + serialNum);
         if (!nativeIsStarted(nativeHandle)) {
             nativeRun(nativeHandle);
         }
     }
 
     public void stop() {
+        Log.d(TAG, "NativeWebSocketClientImpl.stop() Thread.id: " + Thread.currentThread().getId() + " serialNum: " + serialNum);
         if (nativeIsStarted(nativeHandle)) {
             nativeStop(nativeHandle);
         }
@@ -72,7 +81,7 @@ public class NativeWebSocketClientImpl {
     }
 
     public synchronized void release() {
-        Log.d(TAG, "NativeWebSocketClientImpl.release()");
+        Log.d(TAG, "NativeWebSocketClientImpl.release() Thread.id: " + Thread.currentThread().getId() + " serialNum: " + serialNum);
         if (nativeHandle != 0) {
             nativeDestroy(nativeHandle);
             nativeHandle = 0;
@@ -81,7 +90,7 @@ public class NativeWebSocketClientImpl {
 
     @Override
     protected void finalize() throws Throwable {
-        Log.d(TAG, "NativeWebSocketClientImpl.finalize()");
+        Log.d(TAG, "NativeWebSocketClientImpl.finalize() Thread.id: " + Thread.currentThread().getId() + " serialNum: " + serialNum);
         try {
             release();
         } finally {
@@ -90,7 +99,7 @@ public class NativeWebSocketClientImpl {
     }
 
     public void onOpenImpl() {
-        Log.d(TAG, "NativeWebSocketClientImpl.onOpenImpl():start()");
+        Log.d(TAG, "NativeWebSocketClientImpl.onOpenImpl():start()" + " serialNum: " + serialNum);
         if (this.onOpenCallback != null) {
             this.onOpenCallback.onOpen();
         }
@@ -98,7 +107,7 @@ public class NativeWebSocketClientImpl {
     }
 
     public void onFailureImpl() {
-        Log.d(TAG, "NativeWebSocketClientImpl.onFailureImpl():start()");
+        Log.d(TAG, "NativeWebSocketClientImpl.onFailureImpl():start()" + " serialNum: " + serialNum);
         if (this.onFailureCallback != null) {
             this.onFailureCallback.onFailure();
         }

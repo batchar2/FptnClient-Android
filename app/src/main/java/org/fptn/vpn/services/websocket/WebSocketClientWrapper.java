@@ -45,7 +45,7 @@ public class WebSocketClientWrapper {
         this.nativeHttpsClient = new NativeHttpsClientImpl(fptnServerDto.host, fptnServerDto.port, this.sniHostName, fptnServerDto.md5ServerFingerprint);
     }
 
-    public void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
+    public synchronized void startWebSocket() throws PVNClientException, WebSocketAlreadyShutdownException {
         if (isShutdown()) {
             throw new WebSocketAlreadyShutdownException();
         }
@@ -63,13 +63,20 @@ public class WebSocketClientWrapper {
                 onMessageReceivedCallback,
                 onFailureCallback
         );
+        Log.d(getTag(), "startWebSocket() nativeWebSocketClient.start() Thread.id: " + Thread.currentThread().getId());
         nativeWebSocketClient.start();
     }
 
-    public void stopWebSocket() {
-        if (nativeWebSocketClient != null && nativeWebSocketClient.isStarted()) {
-            nativeWebSocketClient.stop();
-            nativeWebSocketClient.release();
+    public synchronized void stopWebSocket() {
+        Log.d(getTag(), "stopWebSocket()");
+        if (nativeWebSocketClient != null) {
+            if (nativeWebSocketClient.isStarted()) {
+                Log.d(getTag(), "stopWebSocket() nativeWebSocketClient.stop() Thread.id: " + Thread.currentThread().getId());
+                nativeWebSocketClient.stop();
+            }
+            /// if not explicit call, CG later call finilaze and release and Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 17404 (FinalizerDaemon), pid 17397 (org.fptn.vpn)
+            //Log.d(getTag(), "stopWebSocket() nativeWebSocketClient.release() Thread.id: " + Thread.currentThread().getId());
+            //nativeWebSocketClient.release();
             nativeWebSocketClient = null;
         }
     }
@@ -82,7 +89,7 @@ public class WebSocketClientWrapper {
         }
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         stopWebSocket();
         shutdown = true;
     }
