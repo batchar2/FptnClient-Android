@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ public class CustomVpnConnection extends Thread {
      */
     private static final int MAX_PACKET_SIZE = 1500;
     private static final int MAX_RECONNECT_COUNT = 5;
+    private static final long DELAY_BETWEEN_RECONNECT_ON_FAILURE = 1L;
     private static final String tunAddress = "10.10.0.1";
 
     @Getter
@@ -73,6 +75,7 @@ public class CustomVpnConnection extends Thread {
     private volatile ConnectionState currentConnectionState = ConnectionState.DISCONNECTED;
     @Getter
     private Instant connectionTime;
+    private ScheduledFuture<?> onFailureScheduledTask;
 
     public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
         this.service = service;
@@ -198,6 +201,7 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void onConnectionOpen() {
+        Log.d(getTag(), "onConnectionOpen()");
         if (!currentThread.isInterrupted()) {
             sendConnectionStateToService(ConnectionState.CONNECTED);
             reconnectCount.set(0);
@@ -216,31 +220,44 @@ public class CustomVpnConnection extends Thread {
     }
 
     private void onConnectionFailure() {
-        if (!currentThread.isInterrupted()) {
-            scheduler.execute(() -> {
+        try {
+            if (onFailureScheduledTask != null) {
+                onFailureScheduledTask.cancel(true);
+                onFailureScheduledTask = null;
+            }
+            onFailureScheduledTask = scheduler.scheduleWithFixedDelay(() -> {
                 int currentCount = reconnectCount.incrementAndGet();
                 Log.i(getTag(), "Reconnect WebSocket... currentCount: " + currentCount);
-                if (isTunInterfaceValid(vpnInterface) && currentCount < MAX_RECONNECT_COUNT) {
+                if (!currentThread.isInterrupted() && isTunInterfaceValid(vpnInterface) && currentCount <= MAX_RECONNECT_COUNT) {
                     try {
                         sendConnectionStateToService(ConnectionState.RECONNECTING);
                         webSocketClient.stopWebSocket();
-                        Thread.sleep(2000);
                         webSocketClient.startWebSocket();
                     } catch (PVNClientException e) {
-                        // todo: what next?
-                        sendExceptionToService(e);
-                    } catch (InterruptedException e) {
-                        // todo: thread is interrupted
-                        Log.w(getTag(), "The thread was interrupted", e);
+                        if (currentCount == MAX_RECONNECT_COUNT) {
+                            sendExceptionToService(e);
+                            onFailureInterrupt();
+                        }
                     } catch (WebSocketAlreadyShutdownException e) {
-                        // todo: what to do????
                         Log.w(getTag(), "The websocket already shutdown", e);
+                        onFailureInterrupt();
                     }
                 } else {
-                    currentThread.interrupt();
-                    sendExceptionToService(new PVNClientException(ErrorCode.RECONNECTING_FAILED));
+                    onFailureInterrupt();
                 }
-            });
+            }, 0L, DELAY_BETWEEN_RECONNECT_ON_FAILURE, TimeUnit.SECONDS);
+        } catch (RejectedExecutionException exception) {
+            Log.w(getTag(), "OnFailure task rejected!", exception);
+        }
+    }
+
+    private void onFailureInterrupt() {
+        if (!currentThread.isInterrupted()) {
+            currentThread.interrupt();
+        }
+        if (onFailureScheduledTask != null) {
+            onFailureScheduledTask.cancel(true);
+            onFailureScheduledTask = null;
         }
     }
 
