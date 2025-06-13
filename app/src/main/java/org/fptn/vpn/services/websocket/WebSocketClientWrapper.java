@@ -69,6 +69,7 @@ public class WebSocketClientWrapper {
     public void stopWebSocket() {
         if (nativeWebSocketClient != null && nativeWebSocketClient.isStarted()) {
             nativeWebSocketClient.stop();
+            nativeWebSocketClient.release();
             nativeWebSocketClient = null;
         }
     }
