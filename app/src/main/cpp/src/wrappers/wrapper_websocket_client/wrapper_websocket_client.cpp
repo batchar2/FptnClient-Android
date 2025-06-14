@@ -173,8 +173,6 @@ void WrapperWebsocketClient::onIPPacket(
     if (!cls) {
       SPDLOG_ERROR("Failed to get object class");
       env->DeleteLocalRef(jpacket);
-      jpacket = nullptr;
-
       return;
     }
 
@@ -183,10 +181,7 @@ void WrapperWebsocketClient::onIPPacket(
     if (!on_message_impl) {
       SPDLOG_ERROR("Failed to get method ID");
       env->DeleteLocalRef(jpacket);
-      jpacket = nullptr;
-
       env->DeleteLocalRef(cls);
-      cls = nullptr;
       return;
     }
 
@@ -195,10 +190,7 @@ void WrapperWebsocketClient::onIPPacket(
 
     // Clean up local references
     env->DeleteLocalRef(jpacket);
-    jpacket = nullptr;
-
     env->DeleteLocalRef(cls);
-    cls = nullptr;
   } catch (...) {
     SPDLOG_ERROR("Exception occurred in JNI call");
     if (jpacket) {
@@ -218,21 +210,21 @@ void WrapperWebsocketClient::onConnectedCallback() {
     return;
   }
 
-  jclass cls_foo = env->GetObjectClass(wrapper_);
-  if (!cls_foo) {
+  jclass cls = env->GetObjectClass(wrapper_);
+  if (!cls) {
     SPDLOG_ERROR("Failed to get Java class in onConnectedCallback");
     return;
   }
 
-  jmethodID on_open_impl = env->GetMethodID(cls_foo, "onOpenImpl", "()V");
+  jmethodID on_open_impl = env->GetMethodID(cls, "onOpenImpl", "()V");
   if (!on_open_impl) {
     SPDLOG_ERROR("Failed to get method ID for onOpenImpl");
-    env->DeleteLocalRef(cls_foo);
+    env->DeleteLocalRef(cls);
     return;
   }
 
   env->CallVoidMethod(wrapper_, on_open_impl);
-  env->DeleteLocalRef(cls_foo);
+  env->DeleteLocalRef(cls);
 }
 
 bool WrapperWebsocketClient::Send(std::string pkt) {
