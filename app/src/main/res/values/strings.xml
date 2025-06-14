@@ -109,7 +109,7 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="zero_time" translatable="false">00:00:00</string>
     <string name="zero_speed" translatable="false">0.00 Kbps</string>
     <string name="connecting_to">"Connecting to "</string>
-    <string name="connected_to">"Connected to "</string>
+    <string name="connected_to">"Connected"</string>
     <string name="reconnection_to">"Reconnection to "</string>
     <string name="try_number">"Reconnection attempt number: "</string>
     <string name="download_upload_speed_pattern">Download: %s Upload: %s</string>
