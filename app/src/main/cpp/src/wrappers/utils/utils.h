@@ -8,6 +8,8 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 #pragma once
 
 #include <jni.h>
+#include <spdlog/spdlog.h>
+
 #include <string>
 
 namespace fptn::wrapper {

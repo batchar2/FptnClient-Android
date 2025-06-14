@@ -168,7 +168,6 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeSend(
       env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);
     }
   }
-
   return static_cast<jboolean>(status);
 }
 
