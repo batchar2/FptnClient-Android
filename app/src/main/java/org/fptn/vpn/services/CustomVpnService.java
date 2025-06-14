@@ -259,7 +259,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 setStatusText(title);
             }
             case CONNECTED -> {
-                String title = getString(R.string.connected_to) + serverInfo;
+                String title = getString(R.string.connected_to); // + serverInfo;
                 updateNotificationWithMessage(title, "");
 
                 setConnectionState(ConnectionState.CONNECTED.getWithTime(connectionTime));
