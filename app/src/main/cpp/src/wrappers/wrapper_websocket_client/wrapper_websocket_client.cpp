@@ -138,7 +138,6 @@ void WrapperWebsocketClient::Run() {
           env->GetMethodID(cls_foo, "onFailureImpl", "()V");
       env->CallVoidMethod(wrapper_, on_failure_impl);
     }
-    running_ = false;
   }
 }
 
