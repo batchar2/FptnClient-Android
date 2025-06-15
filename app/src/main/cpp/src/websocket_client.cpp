@@ -103,9 +103,8 @@ Java_org_fptn_vpn_services_websocket_NativeWebSocketClientImpl_nativeDestroy(
   auto* websocket_client = proxy.Get(native_handle);
   if (websocket_client) {
     websocket_client->Stop();
-    delete websocket_client;
-
     proxy.Delete(native_handle);
+    delete websocket_client;
   }
 }
 
