@@ -17,13 +17,14 @@ public class NativeWebSocketClientImpl {
         System.loadLibrary("fptn_native_lib");
     }
 
+    /* Only for debug */
     private static final AtomicInteger SERIAL_NUM = new AtomicInteger(555);
+    private final int serialNum;
 
     private final OnOpenCallback onOpenCallback;
     private final OnMessageReceivedCallback onMessageReceivedCallback;
     private final OnFailureCallback onFailureCallback;
 
-    private final int serialNum;
     private long nativeHandle;
 
     public NativeWebSocketClientImpl(

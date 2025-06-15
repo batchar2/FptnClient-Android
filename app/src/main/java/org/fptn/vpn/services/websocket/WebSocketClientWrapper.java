@@ -74,9 +74,8 @@ public class WebSocketClientWrapper {
                 Log.d(getTag(), "stopWebSocket() nativeWebSocketClient.stop() Thread.id: " + Thread.currentThread().getId());
                 nativeWebSocketClient.stop();
             }
-            /// if not explicit call, CG later call finilaze and release and Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 17404 (FinalizerDaemon), pid 17397 (org.fptn.vpn)
-            //Log.d(getTag(), "stopWebSocket() nativeWebSocketClient.release() Thread.id: " + Thread.currentThread().getId());
-            //nativeWebSocketClient.release();
+            Log.d(getTag(), "stopWebSocket() nativeWebSocketClient.release() Thread.id: " + Thread.currentThread().getId());
+            nativeWebSocketClient.release();
             nativeWebSocketClient = null;
         }
     }

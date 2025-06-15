@@ -46,8 +46,8 @@ public class CustomVpnConnection extends Thread {
      * Maximum packet size is constrained by the MTU
      */
     private static final int MAX_PACKET_SIZE = 1500;
-    private static final int MAX_RECONNECT_COUNT = 10;
-    private static final long DELAY_BETWEEN_RECONNECT_ON_FAILURE = 3L;
+    private static final int MAX_RECONNECT_COUNT = 5;
+    private static final long DELAY_BETWEEN_RECONNECT_ON_FAILURE = 2L;
     private static final String tunAddress = "10.10.0.1";
 
     @Getter
@@ -223,16 +223,14 @@ public class CustomVpnConnection extends Thread {
 
     private void onConnectionFailure() {
         Log.d(getTag(), "onConnectionFailure() Thread.id: " + Thread.currentThread().getId());
+        cancelReconnectTask();
         try {
-            cancelReconnectTask();
             onFailureScheduledTask = scheduler.scheduleWithFixedDelay(() -> {
                 int currentCount = reconnectCount.incrementAndGet();
                 Log.i(getTag(), "Reconnect WebSocket... currentCount: " + currentCount);
                 if (!currentThread.isInterrupted() && isTunInterfaceValid(vpnInterface) && currentCount <= MAX_RECONNECT_COUNT) {
                     try {
                         sendConnectionStateToService(ConnectionState.RECONNECTING);
-/*                        webSocketClient.stopWebSocket();
-                        Thread.sleep(2000);*/
                         Log.d(getTag(), "onConnectionFailure() scheduler task Thread.id: " + Thread.currentThread().getId());
                         webSocketClient.startWebSocket();
                     } catch (PVNClientException e) {
@@ -244,13 +242,10 @@ public class CustomVpnConnection extends Thread {
                         Log.w(getTag(), "The websocket already shutdown", e);
                         onFailureInterrupt();
                     }
-                   /*  catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }*/
                 } else {
                     onFailureInterrupt();
                 }
-            }, 0L, DELAY_BETWEEN_RECONNECT_ON_FAILURE, TimeUnit.SECONDS);
+            }, 1L, DELAY_BETWEEN_RECONNECT_ON_FAILURE, TimeUnit.SECONDS);
         } catch (RejectedExecutionException exception) {
             Log.w(getTag(), "OnFailure task rejected!", exception);
         }
