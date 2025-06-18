@@ -45,9 +45,6 @@ bool WrapperWebsocketClient::Start() {
   running_ = true;
   th_ = std::thread(&WrapperWebsocketClient::Run, this);
   return th_.joinable();
-
-  // todo: for what second return need?
-  return true;
 }
 
 bool WrapperWebsocketClient::Stop() {
@@ -88,18 +85,26 @@ void WrapperWebsocketClient::Run() {
   auto window_start_time = std::chrono::steady_clock::now();
 
   while (running_ && reconnection_attempts_) {
-    {
-      const std::unique_lock<std::mutex> lock(mutex_);  // mutex
+    try {
+      {
+        const std::unique_lock<std::mutex> lock(mutex_);  // mutex
 
-      client_ = std::make_shared<WebsocketClient>(server_ip_, server_port_,
-          pcpp::IPv4Address(tun_ipv4_),
-          pcpp::IPv6Address(FPTN_CLIENT_DEFAULT_ADDRESS_IP6),
-          std::bind(
-              &WrapperWebsocketClient::onIPPacket, this, std::placeholders::_1),
-          sni_, access_token_, expected_md5_fingerprint_,
-          [this]() { onConnectedCallback(); });
+        client_ = std::make_shared<WebsocketClient>(server_ip_, server_port_,
+            pcpp::IPv4Address(tun_ipv4_),
+            pcpp::IPv6Address(FPTN_CLIENT_DEFAULT_ADDRESS_IP6),
+            std::bind(&WrapperWebsocketClient::onIPPacket, this,
+                std::placeholders::_1),
+            sni_, access_token_, expected_md5_fingerprint_,
+            [this]() { onConnectedCallback(); });
+      }
+      if (running_ && client_) {
+        client_->Run();
+      }
+    } catch (const std::exception& ex) {
+      SPDLOG_ERROR("Exception during client run: {}", ex.what());
+    } catch (...) {
+      SPDLOG_ERROR("Unknown exception during client run");
     }
-    client_->Run();
 
     if (!running_) {
       break;
@@ -115,7 +120,7 @@ void WrapperWebsocketClient::Run() {
       window_start_time = current_time;
     } else {
       // Decrement counter if within time window
-      reconnection_attempts_--;
+      --reconnection_attempts_;
     }
 
     // Log connection failure and wait before retrying
@@ -127,103 +132,154 @@ void WrapperWebsocketClient::Run() {
     std::this_thread::sleep_for(kReconnectionDelay);
   }
 
-  {
-    // const std::unique_lock<std::mutex> lock(mutex_);  // mutex
-
+  // Final failure handler
+  JNIEnv* env = nullptr;
+  jclass cls = nullptr;
+  try {
     if (running_ && !reconnection_attempts_) {
-      SPDLOG_ERROR("Connection failure: Could not establish connection");
-      JNIEnv* env = getJniEnv();
-      jclass cls_foo = env->GetObjectClass(wrapper_);
-      jmethodID on_failure_impl =
-          env->GetMethodID(cls_foo, "onFailureImpl", "()V");
+      SPDLOG_ERROR("Failed to establish connection after {} attempts",
+          kMaxReconnectionAttempts_);
+      env = getJniEnv();
+      if (!env) {
+        throw std::runtime_error("JNIEnv is null in final failure block");
+      }
+
+      cls = env->GetObjectClass(wrapper_);
+      if (!cls) {
+        throw std::runtime_error("Failed to get Java class from wrapper_");
+      }
+
+      jmethodID on_failure_impl = env->GetMethodID(cls, "onFailureImpl", "()V");
+      if (!on_failure_impl) {
+        throw std::runtime_error(
+            "Failed to find method ID for onFailureImpl()");
+        return;
+      }
+
       env->CallVoidMethod(wrapper_, on_failure_impl);
+      if (env->ExceptionCheck()) {
+        SPDLOG_ERROR("JNI Exception in CallVoidMethod(onFailureImpl)");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+      }
     }
+  } catch (const std::exception& e) {
+    SPDLOG_ERROR("Caught std::exception: {}", e.what());
+  } catch (...) {
+    SPDLOG_ERROR("Caught unknown exception");
+  }
+  if (env && cls) {
+    env->DeleteLocalRef(cls);
   }
 }
 
 void WrapperWebsocketClient::onIPPacket(
     fptn::common::network::IPPacketPtr packet) {
   if (!packet || !running_) {
-      return;
-  }
-
-  JNIEnv* env = getJniEnv();
-  if (!env) {
-    SPDLOG_ERROR("Failed to get JNI environment");
     return;
   }
 
-  const std::string serialized_packet = packet->ToString();
-  if (serialized_packet.empty()) {
-    SPDLOG_ERROR("Empty packet data");
-    return;
-  }
-
-  jbyteArray jpacket = env->NewByteArray(serialized_packet.size());
-  if (!jpacket) {
-    SPDLOG_ERROR("Failed to allocate byte array");
-    return;
-  }
-
+  JNIEnv* env = nullptr;
+  jbyteArray jpacket = nullptr;
+  jclass cls = nullptr;
   try {
+    env = getJniEnv();
+    if (!env) {
+      throw std::runtime_error("Failed to get JNI environment");
+    }
+
+    const std::string serialized_packet = packet->ToString();
+    if (serialized_packet.empty()) {
+      throw std::runtime_error("Serialized packet is empty");
+    }
+
+    jpacket = env->NewByteArray(serialized_packet.size());
+    if (!jpacket) {
+      throw std::runtime_error("Failed to allocate jbyteArray");
+    }
+
     env->SetByteArrayRegion(jpacket, 0, serialized_packet.size(),
         reinterpret_cast<const jbyte*>(serialized_packet.data()));
-    jclass cls = env->GetObjectClass(wrapper_);
+    if (env->ExceptionCheck()) {
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      throw std::runtime_error("JNI Exception in SetByteArrayRegion");
+    }
+
+    cls = env->GetObjectClass(wrapper_);
     if (!cls) {
-      SPDLOG_ERROR("Failed to get object class");
-      env->DeleteLocalRef(jpacket);
-      return;
+      throw std::runtime_error("Failed to get object class");
     }
 
-    jmethodID on_message_impl =
-        env->GetMethodID(cls, "onMessageImpl", "([B)V");
+    jmethodID on_message_impl = env->GetMethodID(cls, "onMessageImpl", "([B)V");
     if (!on_message_impl) {
-      SPDLOG_ERROR("Failed to get method ID");
-      env->DeleteLocalRef(jpacket);
-      env->DeleteLocalRef(cls);
-      return;
+      throw std::runtime_error("Failed to get method ID: onMessageImpl([B)V");
     }
-
     // Call java method
-    env->CallVoidMethod(wrapper_, on_message_impl, jpacket);
-
-    // Clean up local references
-    env->DeleteLocalRef(jpacket);
-    env->DeleteLocalRef(cls);
-  } catch (...) {
-    SPDLOG_ERROR("Exception occurred in JNI call");
-    if (jpacket) {
-      env->DeleteLocalRef(jpacket);
+    if (running_) {
+      env->CallVoidMethod(wrapper_, on_message_impl, jpacket);
+      if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        throw std::runtime_error("JNI Exception in CallVoidMethod");
+      }
     }
+  } catch (const std::exception& ex) {
+    SPDLOG_ERROR("Exception in onIPPacket: {}", ex.what());
+  } catch (...) {
+    SPDLOG_ERROR("Unknown exception in onIPPacket");
+  }
+
+  // Clean up
+  if (env && jpacket) {
+    env->DeleteLocalRef(jpacket);
+  }
+  if (env && cls) {
+    env->DeleteLocalRef(cls);
   }
 }
 
 void WrapperWebsocketClient::onConnectedCallback() {
   if (!running_) {
+    SPDLOG_WARN("onConnectedCallback called but client is not running");
     return;
   }
 
-  JNIEnv* env = getJniEnv();
-  if (!env) {
-    SPDLOG_ERROR("Failed to get JNI environment in onConnectedCallback");
-    return;
-  }
+  JNIEnv* env = nullptr;
+  jclass cls = nullptr;
 
-  jclass cls = env->GetObjectClass(wrapper_);
-  if (!cls) {
-    SPDLOG_ERROR("Failed to get Java class in onConnectedCallback");
-    return;
-  }
+  try {
+    env = getJniEnv();
+    if (!env) {
+      throw std::runtime_error("Failed to get JNI environment");
+    }
 
-  jmethodID on_open_impl = env->GetMethodID(cls, "onOpenImpl", "()V");
-  if (!on_open_impl) {
-    SPDLOG_ERROR("Failed to get method ID for onOpenImpl");
+    cls = env->GetObjectClass(wrapper_);
+    if (!cls) {
+      throw std::runtime_error("Failed to get Java class from wrapper_");
+    }
+
+    jmethodID on_open_impl = env->GetMethodID(cls, "onOpenImpl", "()V");
+    if (!on_open_impl) {
+      throw std::runtime_error("Failed to find method ID for onOpenImpl()");
+    }
+
+    env->CallVoidMethod(wrapper_, on_open_impl);
+    if (env->ExceptionCheck()) {
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      throw std::runtime_error(
+          "JNI Exception in CallVoidMethod for onOpenImpl()");
+    }
+  } catch (const std::exception& ex) {
+    SPDLOG_ERROR("Exception in onConnectedCallback: {}", ex.what());
+  } catch (...) {
+    SPDLOG_ERROR("Unknown exception in onConnectedCallback");
+  }
+  // Cleanup
+  if (env && cls) {
     env->DeleteLocalRef(cls);
-    return;
   }
-
-  env->CallVoidMethod(wrapper_, on_open_impl);
-  env->DeleteLocalRef(cls);
 }
 
 bool WrapperWebsocketClient::Send(std::string pkt) {
