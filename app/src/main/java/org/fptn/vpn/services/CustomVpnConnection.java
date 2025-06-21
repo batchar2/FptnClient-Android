@@ -1,5 +1,12 @@
 package org.fptn.vpn.services;
 
+import static org.fptn.vpn.enums.ConnectionSubnets.ALL_SUBNET;
+import static org.fptn.vpn.enums.ConnectionSubnets.FPTN_SUBNET;
+import static org.fptn.vpn.enums.ConnectionSubnets.HZ_WHAT_IS_THIS_IP;
+import static org.fptn.vpn.enums.ConnectionSubnets.LOCAL_SUBNET;
+import static org.fptn.vpn.enums.ConnectionSubnets.TUN_ADDRESS;
+import static org.fptn.vpn.enums.ConnectionSubnets.TUN_INTERFACE_SUBNET;
+
 import android.app.PendingIntent;
 import android.net.IpPrefix;
 import android.net.VpnService;
@@ -22,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +56,6 @@ public class CustomVpnConnection extends Thread {
     private static final int MAX_PACKET_SIZE = 1500;
     private static final int MAX_RECONNECT_COUNT = 5;
     private static final long DELAY_BETWEEN_RECONNECT_ON_FAILURE = 2L;
-    private static final String tunAddress = "10.10.0.1";
 
     @Getter
     private final int connectionId;
@@ -57,6 +64,8 @@ public class CustomVpnConnection extends Thread {
     @Getter
     private final FptnServerDto fptnServerDto;
     private final WebSocketClientWrapper webSocketClient;
+    @Getter
+    private final String currentActiveNetworkIP;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final DataRateCalculator downloadRate = new DataRateCalculator(1000);
@@ -72,17 +81,20 @@ public class CustomVpnConnection extends Thread {
     private FileOutputStream outputStream;
 
     @Getter
-    private volatile ConnectionState currentConnectionState = ConnectionState.DISCONNECTED;
-    @Getter
     private Instant connectionTime;
     private ScheduledFuture<?> onFailureScheduledTask;
 
-    public CustomVpnConnection(final CustomVpnService service, int connectionId, final FptnServerDto fptnServerDto, String sniHostName) throws PVNClientException {
+    public CustomVpnConnection(final CustomVpnService service,
+                               final int connectionId,
+                               final FptnServerDto fptnServerDto,
+                               final String sniHostName,
+                               final String currentActiveNetworkIP) throws PVNClientException {
         this.service = service;
         this.connectionId = connectionId;
         this.fptnServerDto = fptnServerDto;
+        this.currentActiveNetworkIP = currentActiveNetworkIP;
         this.webSocketClient = new WebSocketClientWrapper(this.fptnServerDto,
-                tunAddress,
+                TUN_ADDRESS.getIpAddress(),
                 sniHostName,
                 this::onConnectionOpen,
                 this::onMessageReceived,
@@ -99,8 +111,8 @@ public class CustomVpnConnection extends Thread {
 
             //todo: extract all magic constants to class
             VpnService.Builder builder = service.new Builder();
-            builder.addAddress(tunAddress, 32);
-            builder.addRoute("172.20.0.1", 32);
+            builder.addAddress(TUN_ADDRESS.getIpAddress(), TUN_ADDRESS.getPrefix());
+            builder.addRoute(HZ_WHAT_IS_THIS_IP.getIpAddress(), HZ_WHAT_IS_THIS_IP.getPrefix());
             builder.setMtu(MAX_PACKET_SIZE);
 
             final String dnsServer = webSocketClient.getDnsServerIPv4();
@@ -108,18 +120,20 @@ public class CustomVpnConnection extends Thread {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.excludeRoute(new IpPrefix(InetAddress.getByName(fptnServerDto.host), 32));
-                builder.excludeRoute(new IpPrefix(InetAddress.getByName("10.10.0.0"), 16));
-                builder.excludeRoute(new IpPrefix(InetAddress.getByName("172.16.0.0"), 12));
-                builder.excludeRoute(new IpPrefix(InetAddress.getByName("192.168.0.0"), 16));
-                builder.addRoute("0.0.0.0", 0);
+                builder.excludeRoute(TUN_INTERFACE_SUBNET.getAsIpPrefix());
+                builder.excludeRoute(FPTN_SUBNET.getAsIpPrefix());
+                builder.excludeRoute(LOCAL_SUBNET.getAsIpPrefix());
+                builder.addRoute(ALL_SUBNET.getIpAddress(), ALL_SUBNET.getPrefix());
             } else {
-                IPAddress rootSubnet = new IPAddressString("0.0.0.0/0").getAddress();
+                IPAddress rootSubnet = new IPAddressString(ALL_SUBNET.getAsIPWithPrefix()).getAddress();
                 List<IPAddress> subnetsToExclude = Stream.of(
                                 fptnServerDto.host + "/32",
-                                "10.10.0.0/16",
-                                "172.16.0.0/12",
-                                "192.168.0.0/16")
-                        .map(sub -> new IPAddressString(sub).getAddress()).collect(Collectors.toList());
+                                TUN_INTERFACE_SUBNET.getAsIPWithPrefix(),
+                                FPTN_SUBNET.getAsIPWithPrefix(),
+                                LOCAL_SUBNET.getAsIPWithPrefix()
+                        )
+                        .map(sub -> new IPAddressString(sub).getAddress())
+                        .collect(Collectors.toList());
 
                 List<IPAddress> subnetsToInclude = new ArrayList<>();
                 IPUtils.exclude(rootSubnet, subnetsToExclude, subnetsToInclude);
@@ -146,7 +160,9 @@ public class CustomVpnConnection extends Thread {
                     // Get download and upload speeds
                     String downloadSpeed = downloadRate.getFormatString();
                     String uploadSpeed = uploadRate.getFormatString();
-                    sendSpeedInfoToService(downloadSpeed, uploadSpeed);
+                    long durationInSeconds = (int) Duration.between(connectionTime, Instant.now()).getSeconds();
+
+                    sendSpeedInfoAndDurationToService(downloadSpeed, uploadSpeed, durationInSeconds);
                 }, 1, 1, TimeUnit.SECONDS); // Start after 1 second, repeat every 1 second
             } catch (RejectedExecutionException e) {
                 Log.w(getTag(), "update speed task rejected by scheduler", e);
@@ -269,18 +285,16 @@ public class CustomVpnConnection extends Thread {
         service.getHandler().sendMessage(Message.obtain(service.getHandler(), HandlerMessageTypes.ERROR.getValue(), connectionId, 0, exception));
     }
 
-    private void sendSpeedInfoToService(String downloadSpeed, String uploadSpeed) {
+    private void sendSpeedInfoAndDurationToService(String downloadSpeed, String uploadSpeed, long duration) {
         service.getHandler().sendMessage(
                 Message.obtain(service.getHandler(), HandlerMessageTypes.SPEED_INFO.getValue(), connectionId, 0,
-                        new Triple<>(downloadSpeed, uploadSpeed, fptnServerDto.getServerInfo()))
+                        new Triple<>(downloadSpeed, uploadSpeed, duration))
         );
     }
 
     private void sendConnectionStateToService(ConnectionState connectionState) {
-        currentConnectionState = connectionState;
         service.getHandler().sendMessage(
-                Message.obtain(service.getHandler(), HandlerMessageTypes.CONNECTION_STATE.getValue(), connectionId, reconnectCount.get(),
-                        new Triple<>(connectionState, Instant.now(), fptnServerDto.getServerInfo()))
+                Message.obtain(service.getHandler(), HandlerMessageTypes.CONNECTION_STATE.getValue(), connectionId, reconnectCount.get(), connectionState)
         );
     }
 

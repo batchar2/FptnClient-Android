@@ -46,9 +46,11 @@ public class LoginActivity extends AppCompatActivity {
 
     @SuppressLint({"InlinedApi", "ClickableViewAccessibility"})
     private void initializeVariable() {
+        // todo: it's some kind of hack?
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
         ListenableFuture<List<FptnServerDto>> allServersListFuture = fptnViewModel.getAllServers();
         Futures.addCallback(allServersListFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
+            // todo: why we remove all?
             fptnViewModel.deleteAll(); // delete all
         }, this.getMainExecutor());
 
