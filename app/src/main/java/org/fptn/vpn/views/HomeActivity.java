@@ -19,7 +19,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.util.Pair;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,16 +35,17 @@ import org.fptn.vpn.R;
 import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
+import org.fptn.vpn.services.CustomVpnServiceState;
 import org.fptn.vpn.utils.CustomSpinner;
 import org.fptn.vpn.views.adapter.FptnServerAdapter;
 import org.fptn.vpn.services.CustomVpnService;
 import org.fptn.vpn.viewmodel.FptnServerViewModel;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
+import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +79,6 @@ public class HomeActivity extends AppCompatActivity {
 
     //for service binding
     private ServiceConnection connection;
-    private CustomVpnService vpnService;
 
     private final ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), activityResult -> {
@@ -120,15 +119,13 @@ public class HomeActivity extends AppCompatActivity {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 Log.i(TAG, "onServiceConnected: " + name);
                 CustomVpnService.LocalBinder localBinder = (CustomVpnService.LocalBinder) service;
-                vpnService = localBinder.getService();
-                vpnService.setFptnViewModel(fptnViewModel);
-                vpnService.updateStateInViewModel();
+                fptnViewModel.subscribeService(localBinder.getService());
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 Log.i(TAG, "onServiceDisconnected: " + name);
-                vpnService.setFptnViewModel(null);
+                fptnViewModel.unsubscribe();
             }
         };
         bindService(getServiceIntent().setAction("ON_BIND"), connection, BIND_AUTO_CREATE);
@@ -187,8 +184,10 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        fptnViewModel.getConnectionStateMutableLiveData().observe(this, connectionStateInstantPair -> {
-            switch (connectionStateInstantPair.first) {
+
+        fptnViewModel.getServiceStateMutableLiveData().observe(this, customVpnServiceState -> {
+            // we can't change UI from viewModel
+            switch (customVpnServiceState.getConnectionState()) {
                 case CONNECTED:
                     connectedStateUiItems();
                     break;
@@ -198,42 +197,42 @@ public class HomeActivity extends AppCompatActivity {
                 default:
                     break;
             }
+
+            boolean activeState = customVpnServiceState.getConnectionState().isActiveState();
+            startStopButton.setChecked(activeState);
+            spinnerServers.setEnabled(!activeState);
+            settingsMenuItem.setEnabled(!activeState);
+
+            // we can't show Snackbar from viewModel
+            PVNClientException exception = customVpnServiceState.getException();
+            if (exception != null) {
+                if (ErrorCode.Companion.isNeedToOfferRefreshToken(exception.errorCode)) {
+                    String errorText = Optional.ofNullable(fptnViewModel.getErrorTextLiveData().getValue())
+                            .orElse(ErrorCode.UNKNOWN_ERROR.getValue());
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), errorText, 8000);
+                    if (ErrorCode.Companion.isNeedToOfferRefreshToken(exception.errorCode)) {
+                        snackbar.setAction(getString(R.string.refresh_token), v -> {
+                            Intent browserIntent = new
+                                    Intent(Intent.ACTION_VIEW,
+                                    Uri.parse(getString(R.string.telegram_bot_link)));
+                            startActivity(browserIntent);
+                        });
+                    }
+                    snackbar.show();
+                }
+            }
         });
+
         fptnViewModel.getDownloadSpeedAsStringLiveData().observe(this, downloadSpeed -> downloadTextView.setText(downloadSpeed));
         fptnViewModel.getUploadSpeedAsStringLiveData().observe(this, uploadSpeed -> uploadTextView.setText(uploadSpeed));
-        fptnViewModel.getErrorTextLiveData().observe(this, errorCodeText -> errorTextView.setText(errorCodeText));
-
         fptnViewModel.getTimerTextLiveData().observe(this, timerText -> connectionTimerTextView.setText(timerText));
+
+        fptnViewModel.getErrorTextLiveData().observe(this, errorCodeText -> errorTextView.setText(errorCodeText));
         fptnViewModel.getStatusTextLiveData().observe(this, statusText -> statusTextView.setText(statusText));
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavBar);
         bottomNavigationView.setSelectedItemId(R.id.menuHome);
         bottomNavigationView.setOnItemSelectedListener(new CustomBottomNavigationListener(this, bottomNavigationView, R.id.menuHome));
-
-        fptnViewModel.getActiveStateLiveData().observe(this, isActive -> {
-            startStopButton.setChecked(isActive);
-            spinnerServers.setEnabled(!isActive);
-            settingsMenuItem.setEnabled(!isActive);
-        });
-
-        fptnViewModel.getLastExceptionLiveData().observe(this, exception -> {
-            String errorMessage = Optional.ofNullable(
-                            getStringResourceByName(getApplication(), exception.errorCode.getValue())
-                    )
-                    .orElse(exception.errorMessage);
-            if (ErrorCode.Companion.isNeedToOfferRefreshToken(exception.errorCode)) {
-                Snackbar snackbar = Snackbar.make(findViewById(R.id.layout), errorMessage, 8000);
-                if (ErrorCode.Companion.isNeedToOfferRefreshToken(exception.errorCode)) {
-                    snackbar.setAction(getString(R.string.refresh_token), v -> {
-                        Intent browserIntent = new
-                                Intent(Intent.ACTION_VIEW,
-                                Uri.parse(getString(R.string.telegram_bot_link)));
-                        startActivity(browserIntent);
-                    });
-                }
-                snackbar.show();
-            }
-        });
 
         // hide
         disconnectedStateUiItems();
@@ -270,7 +269,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void onClickToStartStop(View v) {
-        ConnectionState currentConnectionState = Optional.ofNullable(fptnViewModel.getConnectionStateMutableLiveData().getValue()).map(pair -> pair.first)
+        ConnectionState currentConnectionState = Optional.ofNullable(fptnViewModel.getServiceStateMutableLiveData().getValue())
+                .map(CustomVpnServiceState::getConnectionState)
                 .orElse(ConnectionState.DISCONNECTED);
         if (currentConnectionState == ConnectionState.DISCONNECTED) {
             Intent intent = VpnService.prepare(HomeActivity.this);
@@ -278,8 +278,8 @@ public class HomeActivity extends AppCompatActivity {
                 // Request to user on launch vpn
                 intentActivityResultLauncher.launch(intent);
             } else {
-                //explicit assignment cause service may start slowly
-                fptnViewModel.getConnectionStateMutableLiveData().postValue(Pair.create(ConnectionState.CONNECTING, Instant.now()));
+                //todo: explicit assignment cause service may start slowly
+                fptnViewModel.getServiceStateMutableLiveData().postValue(CustomVpnServiceState.FAKE_CONNECTING);
 
                 startService(enrichIntent(getServiceIntent()).setAction(CustomVpnService.ACTION_CONNECT));
             }
@@ -287,8 +287,6 @@ public class HomeActivity extends AppCompatActivity {
             if (currentConnectionState.isActiveState()) {
                 startService(getServiceIntent().setAction(CustomVpnService.ACTION_DISCONNECT));
             }
-            //reset error text message if when trying reconnect press button
-            fptnViewModel.setErrorMessage("");
         }
     }
 

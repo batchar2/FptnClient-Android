@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.fptn.vpn.R;
@@ -35,6 +36,9 @@ public class SettingsActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
     private ListView serverListView;
+
+    private final MutableLiveData<String> SNIMutableLiveData = new MutableLiveData<>(getApplication().getString(R.string.default_sni));
+
     @Getter
     private FptnServerViewModel fptnViewModel;
 
@@ -90,7 +94,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         // SNI field
         TextView sniTextField = findViewById(R.id.SNI_text_field);
-        fptnViewModel.getCurrentSNI().observe(this, sniTextField::setText);
+        SNIMutableLiveData.observe(this, sniTextField::setText);
+        SNIMutableLiveData.postValue(fptnViewModel.getSavedSNI());
     }
 
     public void onLogout(View v) {
@@ -136,7 +141,7 @@ public class SettingsActivity extends AppCompatActivity {
     public void onEditSNIServer(View view) {
         View inflated = View.inflate(this, R.layout.sni_dialog_layout, null);
         TextInputEditText sniEditText = inflated.findViewById(R.id.text_edit_sni);
-        fptnViewModel.getCurrentSNI().observe(this, sniEditText::setText);
+        SNIMutableLiveData.observe(this, sniEditText::setText);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(inflated);
@@ -149,6 +154,7 @@ public class SettingsActivity extends AppCompatActivity {
                         //todo: add validation?
                         Log.d(TAG, "new SNI: " + newSni);
                         fptnViewModel.updateSNI(newSni);
+                        SNIMutableLiveData.postValue(newSni);
                     });
         });
         alertDialogBuilder.setNeutralButton(getString(R.string.reset_default_button), (dialog, which) -> {

@@ -6,7 +6,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -19,9 +18,10 @@ import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.repository.FptnServerRepository;
+import org.fptn.vpn.services.CustomVpnService;
+import org.fptn.vpn.services.CustomVpnServiceState;
 import org.fptn.vpn.utils.CountryFlags;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -34,17 +34,12 @@ import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
+import kotlin.Triple;
 import lombok.Getter;
 
 public class FptnServerViewModel extends AndroidViewModel {
@@ -58,22 +53,9 @@ public class FptnServerViewModel extends AndroidViewModel {
     private final FptnServerRepository fptnServerRepository;
 
     @Getter
-    private final MutableLiveData<Pair<ConnectionState, Instant>> connectionStateMutableLiveData = new MutableLiveData<>(Pair.create(ConnectionState.DISCONNECTED, Instant.now()));
-    private final Observer<Pair<ConnectionState, Instant>> connectionStateObserver;
-
-    @Getter
-    private final MutableLiveData<PVNClientException> lastExceptionLiveData = new MutableLiveData<>();
-    private final Observer<PVNClientException> lastExceptionObserver;
-
-    @Getter
-    private final MutableLiveData<Boolean> activeStateLiveData = new MutableLiveData<>(false);
-
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private ScheduledFuture<?> scheduledFuture;
+    private final MutableLiveData<CustomVpnServiceState> serviceStateMutableLiveData = new MutableLiveData<>(CustomVpnServiceState.INITIAL);
 
     /*Only for show on views*/
-    @Getter
-    private final MutableLiveData<String> currentSNI = new MutableLiveData<>(getApplication().getString(R.string.default_sni));
     @Getter
     private final MutableLiveData<String> timerTextLiveData = new MutableLiveData<>(getApplication().getString(R.string.zero_time));
     @Getter
@@ -87,69 +69,60 @@ public class FptnServerViewModel extends AndroidViewModel {
     @Getter
     private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
 
+    // observers
+    private final Observer<CustomVpnServiceState> serviceStateObserver;
+
     public FptnServerViewModel(@NonNull Application application) {
         super(application);
 
         fptnServerRepository = new FptnServerRepository(getApplication());
         serverDtoListLiveData = fptnServerRepository.getAllServersLiveData();
 
-        connectionStateObserver = connectionStateInstantPair -> {
-            ConnectionState connectionState = connectionStateInstantPair.first;
-            switch (connectionState) {
-                case DISCONNECTED -> {
-                    stopTimer();
-                    activeStateLiveData.postValue(false);
-                    statusTextLiveData.postValue(getApplication().getString(R.string.disconnected));
+        serviceStateObserver = customVpnServiceState -> {
+            if (customVpnServiceState != null) {
+                ConnectionState connectionState = customVpnServiceState.getConnectionState();
+                switch (connectionState) {
+                    case DISCONNECTED -> statusTextLiveData.postValue(getApplication().getString(R.string.disconnected));
+                    case CONNECTING -> {
+                        statusTextLiveData.postValue(getApplication().getString(R.string.connecting));
+                        resetErrorMessage();
+                    }
+                    case CONNECTED -> {
+                        statusTextLiveData.postValue(getApplication().getString(R.string.connected));
+                        resetErrorMessage();
+                    }
+                    case RECONNECTING -> statusTextLiveData.postValue(getApplication().getString(R.string.connected));
                 }
-                case CONNECTING -> {
-                    activeStateLiveData.postValue(true);
-                    statusTextLiveData.postValue(getApplication().getString(R.string.connecting));
-                    resetErrorMessage();
-                }
-                case CONNECTED -> {
-                    startTimer(connectionStateInstantPair.second);
-                    activeStateLiveData.postValue(true);
-                    resetErrorMessage();
-                }
-                case RECONNECTING -> {
-                    activeStateLiveData.postValue(true);
+
+                PVNClientException exception = customVpnServiceState.getException();
+                if (exception != null) {
+                    ErrorCode errorCode = exception.errorCode;
+                    if (errorCode != ErrorCode.UNKNOWN_ERROR) {
+                        String stringResourceByName = getStringResourceByName(getApplication(), errorCode.getValue());
+                        Log.e(getTag(), "Error as text: " + stringResourceByName);
+
+                        errorTextLiveData.postValue(stringResourceByName);
+                    } else {
+                        errorTextLiveData.postValue(exception.errorMessage);
+                    }
                 }
             }
         };
-        connectionStateMutableLiveData.observeForever(connectionStateObserver);
-
-        currentSNI.postValue(getSavedSNI());
-
-
-        lastExceptionObserver = exception -> {
-            if (exception != null) {
-                ErrorCode errorCode = exception.errorCode;
-                if (errorCode != ErrorCode.UNKNOWN_ERROR) {
-                    String stringResourceByName = getStringResourceByName(getApplication(), errorCode.getValue());
-                    Log.e(getTag(), "Error as text: " + stringResourceByName);
-
-                    setErrorMessage(stringResourceByName);
-                } else {
-                    setErrorMessage(exception.errorMessage);
-                }
-            }
-
-        };
-        lastExceptionLiveData.observeForever(lastExceptionObserver);
+        serviceStateMutableLiveData.observeForever(serviceStateObserver);
     }
 
-    public void setErrorMessage(String errorMessage) {
-        errorTextLiveData.postValue(errorMessage);
+    public void resetErrorMessage() {
+        errorTextLiveData.postValue("");
     }
 
-    private void resetErrorMessage() {
-        setErrorMessage("");
-    }
-
-    @NonNull
-    private String getSavedSNI() {
+    public String getSavedSNI() {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         return sharedPreferences.getString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getApplication().getString(R.string.default_sni));
+    }
+
+    public void updateSNI(String newSni) {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
     }
 
     public ListenableFuture<List<FptnServerDto>> getAllServers() {
@@ -157,7 +130,7 @@ public class FptnServerViewModel extends AndroidViewModel {
     }
 
     public void deleteAll() {
-        fptnServerRepository.deleteAll();
+        fptnServerRepository.deleteAllServers();
     }
 
     public void parseAndSaveFptnLink(String fptnTokenString) throws IOException, PVNClientException {
@@ -204,7 +177,7 @@ public class FptnServerViewModel extends AndroidViewModel {
             throw new PVNClientException(errorCode, errorMessage);
         }
 
-        fptnServerRepository.deleteAll(); // delete all old servers
+        fptnServerRepository.deleteAllServers(); // delete all old servers
         fptnServerRepository.insertAll(serverDtoList); // add new servers
     }
 
@@ -229,49 +202,26 @@ public class FptnServerViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
 
-        connectionStateMutableLiveData.removeObserver(connectionStateObserver);
-        lastExceptionLiveData.removeObserver(lastExceptionObserver);
-
-        stopTimer();
-    }
-
-    private void startTimer(Instant connectedFrom) {
-        Log.d(getTag(), "FptnServerViewModel.startTimer: " + connectedFrom);
-        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
-            scheduledFuture.cancel(true);
-            scheduledFuture = null;
-        }
-        scheduledFuture = scheduler.scheduleWithFixedDelay(() -> {
-            Instant now = Instant.now();
-            long durationInSeconds = Duration.between(connectedFrom, now).getSeconds();
-
-            String time = TimeUtils.getTime(durationInSeconds);
-            Log.d(getTag(), "FptnServerViewModel.time: " + time);
-            timerTextLiveData.postValue(time);
-        }, 1, 1, TimeUnit.SECONDS);
-    }
-
-    private void stopTimer() {
-        Log.d(getTag(), "FptnServerViewModel.stopTimer()");
-        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
-            scheduledFuture.cancel(true);
-            scheduledFuture = null;
-        }
-        timerTextLiveData.postValue(getApplication().getString(R.string.zero_time));
-    }
-
-    public void updateSNI(String newSni) {
-        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
-        currentSNI.postValue(newSni);
+        serviceStateMutableLiveData.removeObserver(serviceStateObserver);
     }
 
     private String getTag() {
         return this.getClass().getCanonicalName();
     }
 
-    public void updateSpeed(String downloadSpeed, String uploadSpeed) {
-        downloadSpeedAsStringLiveData.postValue(downloadSpeed);
-        uploadSpeedAsStringLiveData.postValue(uploadSpeed);
+    public void subscribeService(CustomVpnService service) {
+        service.getSpeedAndDurationMutableLiveData().observeForever(speedAndDuration -> {
+            if (speedAndDuration != null) {
+                downloadSpeedAsStringLiveData.postValue(speedAndDuration.getFirst());
+                uploadSpeedAsStringLiveData.postValue(speedAndDuration.getSecond());
+                timerTextLiveData.postValue(TimeUtils.getTime(speedAndDuration.getThird()));
+            }
+        });
+
+        service.getServiceStateMutableLiveData().observeForever(serviceStateMutableLiveData::postValue);
+    }
+
+    public void unsubscribe() {
+        // todo: check memory leaks and maybe remove observers
     }
 }
