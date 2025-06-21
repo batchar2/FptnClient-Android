@@ -24,7 +24,7 @@ WrapperHttpsClient::WrapperHttpsClient(JNIEnv* env,
       https_client_(
           std::move(host), port, std::move(sni), std::move(md5_fingerprint)) {
   // Synchronize VPN client time with NTP servers
-  fptn::time::TimeProvider::Instance()->NowTimestamp();
+  fptn::time::TimeProvider::Instance()->SyncWithNtp();
 }
 
 Response WrapperHttpsClient::Get(const std::string& handle, int timeout) {
