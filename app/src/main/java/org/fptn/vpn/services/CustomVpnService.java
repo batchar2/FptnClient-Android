@@ -146,7 +146,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             Log.i(TAG, "onStartCommand: disconnect!");
             /* if we need disconnect */
             // reset selected - TODO: DOES WE NEED TO RESET SELECTED SERVER IF WE CONNECTED OK?
-            // fptnServerRepository.resetSelected();
+            fptnServerRepository.resetSelected();
             // stop running threads
             disconnect();
             return START_NOT_STICKY;
