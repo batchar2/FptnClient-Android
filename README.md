@@ -58,24 +58,24 @@ compiler.libcxx=c++_static
 compiler.cppstd=17
 
 [tool_requires]
-*: android-ndk/r27c
+*: android-ndk/r28b
 ```
 [Hack] If above config doesn't help, install ndk 29.0.13599879 and point it out in 3 places:
   - app/build.gradle.kts in android section, for example
     ```android {
         ...
-        ndkVersion = "29.0.13599879"
+        ndkVersion = "28.1.13356709"
         ...
     ```
   - local.properties
     ```
-        ndk.dir=/Users/<user-name>/Library/Android/sdk/ndk/29.0.13599879
+        ndk.dir=/Users/<user-name>/Library/Android/sdk/ndk/28.1.13356709
     ```
   - ~/.conan2/profiles/android-studio in conf section
     ```
         ...
         [conf]
-        tools.android:ndk_path=/Users/ddeviatilov/Library/Android/sdk/ndk/29.0.13599879
+        tools.android:ndk_path=/Users/ddeviatilov/Library/Android/sdk/ndk/28.1.13356709
         ...
     ```
 
