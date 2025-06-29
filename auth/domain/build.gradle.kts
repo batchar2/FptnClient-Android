@@ -1,4 +1,4 @@
-import com.filantrop.pvnclient.gradle.extensions.ksp
+import org.fptn.vpn.gradle.extensions.ksp
 
 plugins {
     id("pvnclient.android.library.kotlin")

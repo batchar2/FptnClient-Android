@@ -11,24 +11,24 @@ buildscript {
 gradlePlugin {
     plugins {
         register("androidApplication") {
-            id = "pvnclient.android.application"
-            implementationClass = "com.filantrop.pvnclient.gradle.AndroidApplicationConventionPlugin"
+            id = "org.fptn.vpn.application"
+            implementationClass = "org.fptn.vpn.gradle.AndroidApplicationConventionPlugin"
         }
         register("androidApplicationCompose") {
-            id = "pvnclient.android.application.compose"
-            implementationClass = "com.filantrop.pvnclient.gradle.AndroidApplicationComposeConventionPlugin"
+            id = "org.fptn.vpn.application.compose"
+            implementationClass = "org.fptn.vpn.gradle.AndroidApplicationComposeConventionPlugin"
         }
         register("androidLibrary") {
-            id = "pvnclient.android.library.android"
-            implementationClass = "com.filantrop.pvnclient.gradle.AndroidLibraryConventionPlugin"
+            id = "org.fptn.vpn.library.android"
+            implementationClass = "org.fptn.vpn.gradle.AndroidLibraryConventionPlugin"
         }
         register("androidLibraryCompose") {
-            id = "pvnclient.android.library.android.compose"
-            implementationClass = "com.filantrop.pvnclient.gradle.AndroidLibraryComposeConventionPlugin"
+            id = "org.fptn.vpn.library.android.compose"
+            implementationClass = "org.fptn.vpn.gradle.AndroidLibraryComposeConventionPlugin"
         }
         register("kotlinLibrary") {
-            id = "pvnclient.android.library.kotlin"
-            implementationClass = "com.filantrop.pvnclient.gradle.KotlinLibraryConventionPlugin"
+            id = "org.fptn.vpn.library.kotlin"
+            implementationClass = "org.fptn.vpn.gradle.KotlinLibraryConventionPlugin"
         }
     }
 }

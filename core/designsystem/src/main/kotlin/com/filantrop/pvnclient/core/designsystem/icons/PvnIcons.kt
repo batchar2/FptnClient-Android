@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.designsystem.icons
+package org.fptn.vpn.core.designsystem.icons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home

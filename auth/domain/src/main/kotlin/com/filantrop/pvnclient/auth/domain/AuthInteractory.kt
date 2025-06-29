@@ -1,6 +1,6 @@
-package com.filantrop.pvnclient.auth.domain
+package org.fptn.vpn.auth.domain
 
-import com.filantrop.pvnclient.core.model.UserData
+import org.fptn.vpn.core.model.UserData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

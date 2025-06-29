@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.network
+package org.fptn.vpn.core.network
 
 import android.content.Context
 import android.net.ConnectivityManager

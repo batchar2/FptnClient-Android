@@ -4,13 +4,13 @@ import java.io.InputStream
 import kotlin.concurrent.thread
 
 plugins {
-    id("pvnclient.android.application")
+    id("org.fptn.vpn.application")
 }
 
 android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
-    // ndkVersion = "27.2.12479018"
+     ndkVersion = "29.0.13599879"
 
     signingConfigs {
         create("release") {

@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.ui
+package org.fptn.vpn.ui
 
 import android.content.Intent
 import android.graphics.Color
@@ -14,10 +14,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.filantrop.pvnclient.auth.ui.AuthScreen
-import com.filantrop.pvnclient.core.designsystem.theme.PvnTheme
-import com.filantrop.pvnclient.viewmodel.AuthActivityUiState
-import com.filantrop.pvnclient.viewmodel.MainViewModel
+import org.fptn.vpn.auth.ui.AuthScreen
+import org.fptn.vpn.core.designsystem.theme.PvnTheme
+import org.fptn.vpn.viewmodel.AuthActivityUiState
+import org.fptn.vpn.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 

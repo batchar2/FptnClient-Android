@@ -1,4 +1,4 @@
-import com.filantrop.pvnclient.gradle.extensions.ksp
+import org.fptn.vpn.gradle.extensions.ksp
 
 plugins {
     id("pvnclient.android.library.android")
@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.filantrop.pvnclient.core.network"
+    namespace = "org.fptn.vpn.core.network"
 }
 
 dependencies {

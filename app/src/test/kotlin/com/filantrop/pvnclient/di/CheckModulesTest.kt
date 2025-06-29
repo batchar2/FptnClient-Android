@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.di
+package org.fptn.vpn.di
 
 import org.junit.Test
 import org.junit.experimental.categories.Category

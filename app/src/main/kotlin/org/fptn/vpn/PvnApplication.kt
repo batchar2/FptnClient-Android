@@ -1,7 +1,7 @@
-package com.filantrop.pvnclient
+package org.fptn.vpn
 
 import android.app.Application
-import com.filantrop.pvnclient.di.appModule
+import org.fptn.vpn.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 

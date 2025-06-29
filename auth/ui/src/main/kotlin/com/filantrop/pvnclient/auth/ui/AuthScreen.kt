@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.auth.ui
+package org.fptn.vpn.auth.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -31,8 +31,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.filantrop.pvnclient.core.common.Constants.SPACE
-import com.filantrop.pvnclient.core.designsystem.icons.PvnIcons
+import org.fptn.vpn.core.common.Constants.SPACE
+import org.fptn.vpn.core.designsystem.icons.PvnIcons
 import org.koin.androidx.compose.koinViewModel
 
 private const val WEIGHT = 0.5f
@@ -115,7 +115,7 @@ fun ClickableLink() {
     Text(
         text = annotatedString,
         modifier = Modifier
-            .padding(dimensionResource(id = com.filantrop.pvnclient.core.designsystem.R.dimen.padding_medium)),
+            .padding(dimensionResource(id = org.fptn.vpn.core.designsystem.R.dimen.padding_medium)),
     )
 }
 

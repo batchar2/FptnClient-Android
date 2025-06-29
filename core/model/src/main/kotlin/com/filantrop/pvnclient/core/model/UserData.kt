@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.model
+package org.fptn.vpn.core.model
 
 data class UserData(
     val token: String,

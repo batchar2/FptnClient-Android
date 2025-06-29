@@ -1,7 +1,7 @@
-package com.filantrop.pvnclient.auth.data.di
+package org.fptn.vpn.auth.data.di
 
-import com.filantrop.pvnclient.auth.data.AuthRepositoryImpl
-import com.filantrop.pvnclient.auth.domain.AuthRepository
+import org.fptn.vpn.auth.data.AuthRepositoryImpl
+import org.fptn.vpn.auth.domain.AuthRepository
 import org.koin.dsl.module
 
 val authDataModule =

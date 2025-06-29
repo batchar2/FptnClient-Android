@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.designsystem.theme
+package org.fptn.vpn.core.designsystem.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.common
+package org.fptn.vpn.core.common
 
 object AgDispatchers {
     const val DISPATCHER_DEFAULT = "DispatcherDefault"

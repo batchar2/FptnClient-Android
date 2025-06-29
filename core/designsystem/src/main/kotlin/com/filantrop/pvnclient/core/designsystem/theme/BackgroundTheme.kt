@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.designsystem.theme
+package org.fptn.vpn.core.designsystem.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf

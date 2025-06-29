@@ -1,7 +1,7 @@
-package com.filantrop.pvnclient.auth.ui
+package org.fptn.vpn.auth.ui
 
-import com.filantrop.pvnclient.auth.data.di.authDataModule
-import com.filantrop.pvnclient.auth.domain.di.authDomainModule
+import org.fptn.vpn.auth.data.di.authDataModule
+import org.fptn.vpn.auth.domain.di.authDomainModule
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 

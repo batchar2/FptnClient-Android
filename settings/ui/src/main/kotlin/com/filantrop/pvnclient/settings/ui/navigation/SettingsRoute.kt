@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.settings.ui.navigation
+package org.fptn.vpn.settings.ui.navigation
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions

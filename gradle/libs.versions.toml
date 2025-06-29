@@ -1,10 +1,12 @@
 [versions]
 activity = "1.9.3"
+androidxComposeBom="2025.06.01"
 appcompat = "1.7.0"
 autonomousappsSorting = "0.14"
-autonomousappsUnused = "2.7.0"
+autonomousappsUnused = "2.19.0"
 constraintlayout = "2.2.0"
-detektPlugin = "1.23.7"
+detektPlugin = "1.23.8"
+firebaseBom = "33.15.0"
 gradlePlugin = "8.2.2"
 guava = "33.4.0-jre"
 ipaddress = "5.5.1"
@@ -19,13 +21,16 @@ material = "1.12.0"
 monitor = "1.7.2"
 protobuf = "4.26.1"
 roomRuntime = "2.6.1"
+timber = "5.0.1"
 zxing = "3.5.3"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitTest" }
 androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -40,9 +45,11 @@ kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-p
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 [plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
 deps-unused = { id = "com.autonomousapps.dependency-analysis", version.ref = "autonomousappsUnused" }
 

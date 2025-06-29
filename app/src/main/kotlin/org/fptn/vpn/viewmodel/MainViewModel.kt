@@ -1,11 +1,11 @@
-package com.filantrop.pvnclient.viewmodel
+package org.fptn.vpn.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.filantrop.pvnclient.auth.domain.AuthInteractor
-import com.filantrop.pvnclient.core.common.Result
-import com.filantrop.pvnclient.core.common.asResult
-import com.filantrop.pvnclient.core.model.UserData
+import org.fptn.vpn.auth.domain.AuthInteractor
+import org.fptn.vpn.core.common.Result
+import org.fptn.vpn.core.common.asResult
+import org.fptn.vpn.core.model.UserData
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

@@ -1,4 +1,4 @@
-package com.filantrop.pvnclient.core.persistent
+package org.fptn.vpn.core.persistent
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 private const val DATA_STORE_NAME = "PvnDataPreferencesStore"
-private const val BASE_NAMESPACE = "com.filantrop.pvnclient"
+private const val BASE_NAMESPACE = "org.fptn.vpn"
 const val PREFERENCE_CLIENT_UID = BASE_NAMESPACE + "current.client.uid"
 private val PREFERENCE_CLIENT_TOKEN_KEY = stringPreferencesKey(PREFERENCE_CLIENT_UID)
 
