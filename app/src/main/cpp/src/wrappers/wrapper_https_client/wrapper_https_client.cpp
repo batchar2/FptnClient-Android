@@ -7,8 +7,6 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 #include "wrapper_https_client.h"
 
-#include "fptn-protocol-lib/time/time_provider.h"
-
 using fptn::wrapper::WrapperHttpsClient;
 
 using fptn::protocol::https::Response;
@@ -23,8 +21,6 @@ WrapperHttpsClient::WrapperHttpsClient(JNIEnv* env,
       wrapper_(std::move(wrapper)),
       https_client_(
           std::move(host), port, std::move(sni), std::move(md5_fingerprint)) {
-  // Synchronize VPN client time with NTP servers
-  fptn::time::TimeProvider::Instance()->SyncWithNtp();
 }
 
 Response WrapperHttpsClient::Get(const std::string& handle, int timeout) {

@@ -9,7 +9,6 @@ Distributed under the MIT License (https://opensource.org/licenses/MIT)
 
 #include <jni.h>
 
-#include "fptn-protocol-lib/time/time_provider.h"
 #include "jnienv/jnienv.h"
 
 #ifndef FPTN_CLIENT_DEFAULT_ADDRESS_IP6
@@ -36,8 +35,6 @@ WrapperWebsocketClient::WrapperWebsocketClient(jobject wrapper,
       access_token_(std::move(access_token)),
       expected_md5_fingerprint_(std::move(expected_md5_fingerprint)) {
   (void)wrapper_;
-  // Synchronize VPN client time with NTP servers
-  fptn::time::TimeProvider::Instance()->NowTimestamp();
 }
 
 WrapperWebsocketClient::~WrapperWebsocketClient() { Stop(); }
