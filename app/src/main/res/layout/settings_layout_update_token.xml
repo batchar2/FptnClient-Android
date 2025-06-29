@@ -13,29 +13,31 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         tools:ignore="MissingConstraints">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/icon_settings_circle_100"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:layout_gravity="center"
-                android:layout_marginTop="100dp" />
+                android:layout_marginTop="30dp"
+                android:src="@drawable/icon_settings_circle_100" />
         </LinearLayout>
 
         <LinearLayout
-            android:padding="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
             android:layout_centerInParent="true"
-            app:layout_constraintTop_toTopOf="parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/fptn_login_html_label"
@@ -56,38 +58,38 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/round_back_white10_20"
-                android:hint="@string/paste_your_token"
-                android:longClickable="true"
                 android:clickable="true"
+                android:drawableEnd="@drawable/ic_baseline_close_24"
+                android:drawablePadding="8dp"
+                android:hint="@string/paste_your_token"
+                android:inputType="none"
+                android:longClickable="true"
                 android:maxHeight="150dp"
                 android:padding="10dp"
                 android:textColor="@color/black"
                 android:textColorHint="@color/hint"
-                android:textSize="16sp"
-                android:inputType="none"
                 android:textIsSelectable="true"
-                android:drawableEnd="@drawable/ic_baseline_close_24"
-                android:drawablePadding="8dp"/>
-                />
+                android:textSize="16sp" />
+            />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="32dp"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/fptn_login_cancel_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginRight="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/round_back_secondary_cancel_100"
                     android:onClick="onCancel"
                     android:padding="8dp"
-                    android:textAllCaps="false"
                     android:text="@string/cancel_button"
+                    android:textAllCaps="false"
                     android:textColor="@color/primary"
                     android:textSize="18sp" />
 
@@ -95,16 +97,27 @@
                     android:id="@+id/fptn_login_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/round_back_secondary_100"
                     android:onClick="onSave"
                     android:padding="8dp"
-                    android:textAllCaps="false"
                     android:text="@string/save_button"
+                    android:textAllCaps="false"
                     android:textColor="@color/primary"
                     android:textSize="18sp" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/errorTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:padding="8dp"
+                android:visibility="gone"
+                android:text=""
+                android:textColor="@color/yellow"
+                android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -112,9 +125,9 @@
         android:id="@+id/bottomNavBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/bottom_nav_bar_menu"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:menu="@menu/bottom_nav_bar_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

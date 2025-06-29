@@ -6,69 +6,233 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/application_background"
-    android:textSize="18sp">
+    android:orientation="vertical">
 
-    <androidx.core.widget.NestedScrollView
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        tools:ignore="MissingConstraints">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="80dp"
+        android:fadeScrollbars="false"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/icon_settings_circle_100"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:layout_gravity="center"
-                android:layout_marginTop="100dp" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_gravity="center"
-                android:textStyle="bold"
-                android:text="FPTN" />
+                android:layout_marginTop="30dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/icon_settings_circle_100" />
+
             <TextView
                 android:id="@+id/settings_fptn_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:layout_gravity="center"
-                android:textStyle="bold"
-                android:text="@string/app_version" />
+                android:layout_marginTop="10dp"
+                android:text="@string/app_version"
+                android:textStyle="bold" />
 
-            <!-- Your VPN servers -->
             <LinearLayout
-                android:background="@drawable/round_settings_back_white10_20"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:ignore="MissingConstraints"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_settings_back_white10_20"
                 android:orientation="vertical"
                 android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/settings_about"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="5dp"
+                    android:justificationMode="inter_word"
+                    android:text="@string/info_message_html"
+                    android:textAlignment="viewStart"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Your SNI -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_settings_back_white10_20"
+                android:onClick="onEditSNIServer"
+                android:orientation="vertical"
+                android:padding="10dp">
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/sni_image_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:paddingLeft="12dp"
+                        android:paddingRight="12dp"
+                        android:src="@drawable/ic_baseline_your_servers_24" />
+
+                    <TextView
+                        android:id="@+id/SNI_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/sni_image_view"
+                        android:text="@string/your_current_sni"
+                        android:textColor="@color/white"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:id="@+id/SNI_text_field"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="12dp"
+                        android:layout_toStartOf="@+id/imageView"
+                        android:layout_toEndOf="@id/SNI_label"
+                        android:paddingLeft="12dp"
+                        android:paddingRight="12dp"
+                        android:text="@string/default_sni"
+                        android:textColor="@color/white"
+                        android:textStyle="normal" />
+
+                    <ImageView
+                        android:id="@+id/imageView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_outline_arrow_forward_ios_16"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50dp">
+
+                    <TextView
+                        android:id="@+id/sni_text_description"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sni_text_description"
+                        android:textColor="@color/gray"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!-- UPDATE TOKEN -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_settings_back_white10_20"
+                android:onClick="onUpdateToken"
+                android:padding="10dp">
+
+                <ImageView
+                    android:id="@+id/setting_update_token_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_baseline_update_24" />
+
+                <TextView
+                    android:id="@+id/updateTokenLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_toStartOf="@+id/imageView2"
+                    android:layout_toEndOf="@id/setting_update_token_icon"
+                    android:text="@string/update_token_button"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:importantForAccessibility="no"
+                    android:paddingTop="12dp"
+                    android:src="@drawable/ic_outline_arrow_forward_ios_16"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/settings_token_info_html"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/updateTokenLabel"
+                    android:layout_marginStart="40dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="@string/settings_token_info_html"
+                    android:textColor="@color/gray"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+            <!-- Your VPN servers -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/round_settings_back_white10_20"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
                     <ImageView
                         android:id="@+id/settings_available_servers_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
-                        android:src="@drawable/ic_baseline_your_servers_24"
                         android:layout_gravity="center"
+                        android:importantForAccessibility="no"
                         android:paddingLeft="12dp"
-                        android:paddingRight="12dp" />
+                        android:paddingRight="12dp"
+                        android:src="@drawable/ic_baseline_your_servers_24" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:textColor="@color/white"
-                        android:textStyle="normal"
+                        android:layout_toEndOf="@id/settings_available_servers_icon"
                         android:text="@string/your_servers"
-                        android:layout_toEndOf="@+id/settings_available_servers_icon" />
+                        android:textColor="@color/white"
+                        android:textStyle="normal" />
                 </RelativeLayout>
 
                 <LinearLayout
@@ -76,132 +240,74 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="30dp"
                     android:orientation="vertical">
+
                     <ListView
                         android:id="@+id/settings_servers_list"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        tools:listitem="@layout/settings_server_list_item"
                         android:divider="@android:color/transparent"
                         android:dividerHeight="0dp"
-                        tools:ignore="NestedScrolling"/>
+                        tools:listitem="@layout/settings_server_list_item" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- UPDATE TOKEN -->
-            <LinearLayout
-                android:background="@drawable/round_settings_back_white10_20"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:ignore="MissingConstraints"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical"
-                android:padding="10dp"
-                android:onClick="onUpdateToken">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:id="@+id/setting_update_token_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_baseline_update_24"
-                        android:layout_gravity="center"
-                        android:paddingLeft="12dp"
-                        android:paddingRight="12dp"
-                        />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:text="@string/update_token_button"
-                        android:layout_toEndOf="@+id/setting_update_token_icon"
-                        />
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:src="@drawable/ic_outline_arrow_forward_ios_16"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true"
-                        />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="50dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/gray"
-                        android:textSize="12sp"
-                        android:text="@string/settings_token_info"
-                        />
-                </RelativeLayout>
-            </LinearLayout>
 
             <!-- LOGOUT -->
-            <LinearLayout
-                android:background="@drawable/round_settings_back_white10_20"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:ignore="MissingConstraints"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="20dp"
-                android:orientation="vertical"
-                android:padding="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/round_settings_back_white10_20"
                 android:onClick="onLogout"
-                >
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                android:orientation="vertical"
+                android:padding="10dp">
 
-                    <ImageView
-                        android:id="@+id/setting_logout_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_baseline_logout_24"
-                        android:layout_gravity="center"
-                        android:paddingLeft="12dp"
-                        android:paddingRight="12dp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:text="@string/logout_button"
-                        android:layout_toEndOf="@+id/setting_logout_icon" />
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:src="@drawable/ic_outline_arrow_forward_ios_16"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true" />
-                </RelativeLayout>
-            </LinearLayout>
+                <ImageView
+                    android:id="@+id/setting_logout_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:src="@drawable/ic_baseline_logout_24" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/arrow_logout_image_view"
+                    android:layout_toEndOf="@id/setting_logout_icon"
+                    android:text="@string/logout_button"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/arrow_logout_image_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_outline_arrow_forward_ios_16"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </RelativeLayout>
         </LinearLayout>
 
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/bottom_nav_bar_menu"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:menu="@menu/bottom_nav_bar_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

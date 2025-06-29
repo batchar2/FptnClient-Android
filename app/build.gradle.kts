@@ -1,24 +1,44 @@
-import com.filantrop.pvnclient.gradle.extensions.ksp
+import java.io.FileInputStream
+import java.util.Properties
+import java.io.InputStream
+import kotlin.concurrent.thread
 
 plugins {
     id("pvnclient.android.application")
-    id("pvnclient.android.application.compose")
-    id("kotlin-kapt")
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
 }
 
 android {
-    namespace = "com.filantrop.pvnclient"
+    namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
+    // ndkVersion = "27.2.12479018"
+
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile: File = rootProject.file("keystore.properties")
+            val keystoreProperties = Properties()
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+            } else {
+                println(
+                    "Warning: keystore.properties file not found. " +
+                            "Release signing configuration will not be applied.",
+                )
+            }
+        }
+    }
 
     defaultConfig {
-        applicationId = "com.filantrop.pvnclient"
+        applicationId = "org.fptn.vpn"
         val versionMajor: Int by rootProject.extra
         val versionMinor: Int by rootProject.extra
         val versionPatch: Int by rootProject.extra
         val versionBuild: Int by rootProject.extra
-        versionCode = 1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
+        versionCode =
+            1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch.$versionBuild"
 
         minSdk = rootProject.extra.get("minSdkVersion") as Int
@@ -27,6 +47,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         vectorDrawables.useSupportLibrary = true
+
+        externalNativeBuild {
+            cmake {
+                cppFlags("-v")
+                arguments("-DCMAKE_TOOLCHAIN_FILE=conan_android_toolchain.cmake")
+            }
+        }
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+//            abiFilters += listOf("x86_64", "arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -45,42 +77,30 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
+
+    externalNativeBuild {
+        cmake {
+            // version = "3.31.6"
+            path = file("src/main/cpp/CMakeLists.txt")
         }
     }
 }
 
 dependencies {
-    implementation(project(":auth:domain"))
-    implementation(project(":auth:ui"))
     implementation(project(":core:common"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:model"))
-    implementation(project(":core:network"))
-    implementation(project(":core:persistent"))
-    implementation(project(":home:ui"))
-    implementation(project(":settings:ui"))
     implementation(project(":vpnclient"))
-
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.foundation.android)
-    implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.compose.runtime.android)
+    // To use CallbackToFutureAdapter
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.monitor)
+    implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
     implementation(libs.guava)
     implementation(libs.ipaddress)
-    implementation(libs.koin.android)
-    implementation(libs.koin.core)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.jackson.databind)
     implementation(libs.material)
-    implementation(libs.okhttp)
-    implementation(libs.protobuf.javalite)
+    implementation(libs.zxing)
 
     compileOnly(libs.lombock)
 
@@ -88,9 +108,8 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
-    testImplementation(libs.koin.test.jvm)
 
-    ksp(libs.koin.ksp.compiler)
+    androidTestImplementation(libs.androidx.junit)
 }
 java {
     toolchain {
@@ -98,16 +117,39 @@ java {
     }
 }
 
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
+
+fun readStreamAsync(stream: InputStream, label: String) = thread {
+    stream.bufferedReader().useLines { lines ->
+        lines.forEach { println("[$label] $it") }
     }
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                create("java") {
-                    option("lite")
-                }
+}
+
+task("conanInstall") {
+    val conanExecutable = "conan" // define the path to your conan installation
+    val buildDir = file("build").apply { mkdirs() }
+
+    val absoluteBuildDirPath = buildDir.absolutePath
+    println("Build directory: $absoluteBuildDirPath")
+
+    listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
+        listOf("armv8", "x86_64", "armv7").forEach { arch ->
+            val cmd =
+                "$conanExecutable install " +
+                        "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
+                        "--build missing -c tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
+            println(">> $cmd")
+            val sout = StringBuilder()
+            val serr = StringBuilder()
+            val proc = Runtime.getRuntime().exec(cmd, null, buildDir)
+
+            val exportOut = readStreamAsync(proc.inputStream, "stdout")
+            val exportErr = readStreamAsync(proc.errorStream, "stderr")
+
+            val exitCode = proc.waitFor()
+            println("$sout $serr")
+
+            if (exitCode != 0) {
+                throw Exception("out> $sout err> $serr\nCommand: $cmd")
             }
         }
     }

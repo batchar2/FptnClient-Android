@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_version">Версия 1.0.0 </string>
+    <!-- app_name - translatable="false" -->
+
+
+    <string name="select_server">Выбор сервера</string>
+    <string name="connection_time">Время подключения</string>
+    <string name="state_disconnect">Отключено</string>
+
+    <string name="login_button">Войти</string>
+    <string name="logout_button">Выйти</string>
+    <string name="update_token_button">Обновление токена</string>
+
+    <string name="menu_home">Главная</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_share">Поделиться</string>
+
+    <string name="your_servers">Ваши VPN сервера</string>
+
+    <string name="settings_token_info_html">
+        <![CDATA[
+        Список доступных серверов зашифрован в токене.
+        <br/>
+        Чтобы обновить список серверов, введите новый токен.
+        <br/>
+        Токен работает как пароль: при его обновлении он перестанет действовать на всех устройствах, где использовался ранее.
+        ]]>
+    </string>
+    <string name="share_title">Поделиться через</string>
+    <string name="share_message">FPTN — это некоммерческий VPN, волонтерский проект для обхода цензуры.
+https://fptn.org
+https://play.google.com/store/apps/details?id=org.fptn.vpn
+    </string>
+    <string name="info_message_html">
+        <![CDATA[
+        FPTN — это некоммерческий VPN, волонтерский проект для обхода цензуры.
+        <br/>
+        <br/>
+        Наш сайт: <a href="https://batchar2.github.io/fptn/">fptn.org</a>
+        <br/>
+        Наша группа в Telegram <a href="https://t.me/fptn_project">@fptn_project</a>
+        <br/>
+        Приложение в <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
+        <br/>
+        Вы можете поддержать нас на Boosty <a href="https://boosty.to/fptn/donate">Boosty</a>
+        ]]>
+    </string>
+    <string name="vpn_permission_warning">Для работы FPTN необходимы разрешения!</string>
+
+    <string name="connecting">Подключаемся...</string>
+    <string name="reconnection">Переподключаемся...</string>
+    <string name="connected">Подключен</string>
+    <string name="disconnected">Отключен</string>
+    <string name="error">Ошибка подключения!</string>
+    <string name="paste_your_token">Скопируйте сюда токен...</string>
+    <string name="running">Подключено</string>
+
+    <string name="dialog_logout_title">Подтвердите действие</string>
+    <string name="dialog_logout_message">Вы уверены, что хотите выйти?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
+    <string name="cancel_button">Отмена</string>
+    <string name="save_button">Сохранить</string>
+
+    <string name="server_label">Сервер:</string>
+
+    <string name="telegram_bot_html">
+        <![CDATA[
+        Используйте Телеграм-бот <a href="https://t.me/fptn_bot">@fptn_bot</a> чтобы получить токен
+        ]]>
+    </string>
+
+    <string name="notification_channel_name">Когда подключено</string>
+    <string name="notification_group_name">Основные</string>
+    <string name="disconnect_action">Отключить</string>
+
+    <string name="token_was_updated">Токен был обновлен!</string>
+    <string name="token_saving_failed">Неверный формат токена!</string>
+
+    <!--Сообщения об ошибках-->
+    <string name="server_list_is_empty">Список серверов пуст!</string>
+    <string name="find_fastest_server_timeout">Превышен временной лимит при поиске самого быстрого сервера!</string>
+    <string name="all_servers_are_unreachable">Все сервера недоступны!</string>
+    <string name="connect_to_server_error">При подключении к серверу произошла техническая ошибка. Пожалуйста, проверьте правильность времени на устройстве и убедитесь, что используете актуальный токен.</string>
+    <string name="dns_server_error">Ошибка сети! Не удалось получить DNS сервер!</string>
+    <string name="no_active_internet_connections">Нет подключения к интернету!</string>
+    <string name="reconnecting_failed">Переподключение не удалось!</string>
+    <string name="vpn_interface_error">Не удалось создать VPN тунель!</string>
+    <string name="ciphers_error">Не удалось найти поддерживаемые шифры!</string>
+
+    <string name="access_token_error">Ошибка аутентификации! Обновите ваш токен доступа в настройках приложения</string>
+
+    <string name="ssl_context_init_failed">Ошибка при инициализации контекста SSL!</string>
+
+    <string name="unknown_error">Произошла неизвестная ошибка!</string>
+
+    <string name="notifications_request_title">Необходимо разрешение на вывод уведомлений!</string>
+    <string name="notifications_request_reason">Для устойчивой работы сервиса приложению необходимо выводить уведомление об активном соединении</string>
+    <string name="grant">Предоставить</string>
+    <string name="deny">Отказать</string>
+
+    <string name="connecting_to">"Подключаемся к "</string>
+    <string name="connected_to">"Подключен к "</string>
+    <string name="reconnection_to">"Переподключаемся к "</string>
+    <string name="try_number">"Попытка номер: "</string>
+    <string name="download_upload_speed_pattern">Загрузка: %s Выгрузка: %s</string>
+    <string name="refresh_token">Обновить токен...</string>
+    <string name="close_button_text">Закрыть</string>
+    <string name="share_via_message">Поделиться в сообщении</string>
+    <string name="sni_text_description">Server Name Indication (SNI) — адрес сайта, декларируемый при подключении к VPN-серверу. Укажите какой-нибудь популярный сайт доступный без VPN из вашей страны.</string>
+    <string name="your_current_sni">Текущий SNI:</string>
+    <string name="sni_text_view_hint">Новый SNI</string>
+    <string name="reset_default_button">Сбросить по умолчанию</string>
+</resources>

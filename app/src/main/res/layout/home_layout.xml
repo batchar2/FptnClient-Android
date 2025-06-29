@@ -16,49 +16,45 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:context=".views.HomeActivity">
+        tools:context="org.fptn.vpn.views.HomeActivity">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="10dp"
-            tools:ignore="MissingConstraints">
+            android:padding="10dp">
 
-            <!-- Connection time (fix height to hide) -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="80dp"
                 android:layout_marginTop="80dp"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:padding="10dp"
-                tools:ignore="MissingConstraints">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/home_connection_timer_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/connection_time"
-                    android:textColor="@color/white" />
-            </LinearLayout>
+                <!--Don't remove this layout! - all will change position when hidden-->
+                <LinearLayout
+                    android:id="@+id/home_connection_timer_frame"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="10dp">
 
-            <!-- Timer (fix height to hide) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="10dp"
-                tools:ignore="MissingConstraints">
+                    <TextView
+                        android:id="@+id/home_connection_timer_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/connection_time"
+                        android:textColor="@color/white" />
 
-                <TextView
-                    android:id="@+id/home_connection_timer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="00:00:00"
-                    android:textColor="@color/white" />
+                    <TextView
+                        android:id="@+id/home_connection_timer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/zero_time"
+                        android:textColor="@color/white" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Toggle button -->
@@ -66,8 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="vertical"
-                tools:ignore="MissingConstraints">
+                android:orientation="vertical">
 
                 <ToggleButton
                     android:id="@+id/home_do_connect_button"
@@ -118,7 +113,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Estonia (127.0.0.1)"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
 
             <!-- Speed status -->
@@ -146,8 +142,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginEnd="10dp"
-                        android:contentDescription="Upload Icon"
-                        app:srcCompat="@drawable/dowload" />
+                        app:srcCompat="@drawable/download" />
 
                     <TextView
                         android:id="@+id/home_download_speed"
@@ -198,7 +193,7 @@
                 android:padding="5dp"
                 tools:ignore="MissingConstraints">
 
-                <com.filantrop.pvnclient.utils.CustomSpinner
+                <org.fptn.vpn.utils.CustomSpinner
                     android:id="@+id/home_server_spinner"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
@@ -230,6 +225,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="20dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginBottom="20dp"
                     android:text=""
                     android:textColor="@color/yellow" />
             </LinearLayout>

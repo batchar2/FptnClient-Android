@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_version" >Version 1.0.0 </string>
+    <string name="app_version">Version 1.0.0 </string>
     <string name="app_name" translatable="false">FPTN VPN</string>
 
 
@@ -18,11 +18,34 @@
 
     <string name="your_servers">Your VPN servers</string>
 
-    <string name="settings_token_info">Available servers are encrypted in the token. To update the server list, update the token.</string>
+    <string name="settings_token_info_html">
+        <![CDATA[
+        The list of available servers is encrypted in the token.
+        <br/>
+        To update the server list, enter a new token.
+        <br/>
+        The token works like a password: once updated, it will no longer be valid on any devices where it was previously used.
+        ]]>
+    </string>
 
     <string name="share_title">Share via</string>
-    <string name="share_message">FPTN is a free VPN designed to bypass censorship. No registration required!
-https://batchar2.github.io/fptn/
+    <string name="share_message">FPTN is a non-commercial VPN, a volunteer project for bypassing censorship.
+https://fptn.org
+https://play.google.com/store/apps/details?id=org.fptn.vpn
+    </string>
+    <string name="info_message_html">
+        <![CDATA[
+        FPTN is a non-commercial, volunteer-driven VPN project aimed at bypassing censorship.
+        <br/>
+        <br/>
+        Our website: <a href="https://batchar2.github.io/fptn/">fptn.org</a>
+        <br/>
+        Our Telegram group: <a href="https://t.me/fptn_project">@fptn_project</a>
+        <br/>
+        App on <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
+        <br/>
+        You can support us on <a href="https://boosty.to/fptn/donate">Boosty</a>
+        ]]>
     </string>
 
     <string name="connecting">FptnVPN is connecting...</string>
@@ -31,6 +54,7 @@ https://batchar2.github.io/fptn/
     <string name="error">Error on connecting occurs!</string>
     <string name="paste_your_token">Paste your token here...</string>
     <string name="running">FptnVPN is running</string>
+    <string name="reconnection">FptnVPN is reconnecting...</string>
 
     <string name="vpn_permission_warning">For running FptnVPN need permissions!</string>
 
@@ -45,8 +69,11 @@ https://batchar2.github.io/fptn/
 
     <string name="server_label">Server:</string>
 
-    <string name="telegram_bot">the Telegram-bot</string>
-    <string name="telegram_text_template">Use {} to get a token</string>
+    <string name="telegram_bot_html">
+        <![CDATA[
+        Use the Telegram-bot <a href="https://t.me/fptn_bot">@fptn_bot</a> to get a token
+        ]]>
+    </string>
 
     <string name="notification_channel_name">When connected</string>
     <string name="notification_group_name">Main</string>
@@ -59,18 +86,43 @@ https://batchar2.github.io/fptn/
 
     <!--Error codes strings-->
     <string name="server_list_is_empty">Server list is empty</string>
-    <string name="find_fastest_server_timeout">Time limit to find the fastest server expired!</string>
-    <string name="all_servers_are_unreachable">"All servers are unreachable!"</string>
-    <string name="authentication_error">Authentication error! Please refresh your access token in the application settings.</string>
-    <string name="dns_server_error">Network error! Failed to retrieve DNS from the server.</string>
-    <string name="vpn_interface_error">Failed to create the VPN interface!</string>
-    <string name="ciphers_error">The list of supported ciphers is empty!</string>
+    <string name="find_fastest_server_timeout">The time limit to find the fastest server has expired.</string>
+    <string name="all_servers_are_unreachable">All servers are currently unreachable.</string>
+    <string name="connect_to_server_error">A technical error occurred while connecting to the server. Please check your device\'s time settings and make sure you are using a valid token.</string>
+    <string name="dns_server_error">Network error: Failed to retrieve DNS information from the server.</string>
+    <string name="vpn_interface_error">Failed to create the VPN interface.</string>
+    <string name="ciphers_error">The list of supported ciphers is empty.</string>
+    <string name="no_active_internet_connections">Not connected to Internet.</string>
+    <string name="reconnecting_failed">Reconnection Failed.</string>
 
     <string name="access_token_error">Authentication error! Please refresh your access token in the application settings.</string>
 
     <string name="ssl_context_init_failed">SSL context initialization failed!</string>
 
-    <string name="unknown_error">Error unknown! We don\'t know what has happened and it\'s scary</string>
+    <string name="unknown_error">Unknown error occurred! We don\'t know what has happened and it\'s scary.</string>
+    <string name="list_point" translatable="false">•</string>
+
+    <string name="notifications_request_title">Please enable notifications.</string>
+    <string name="notifications_request_reason">For a stable connection, the application needs to show a notification once the connection is established.</string>
+    <string name="grant">Grant</string>
+    <string name="deny">Deny</string>
+    <string name="zero_time" translatable="false">00:00:00</string>
+    <string name="zero_speed" translatable="false">0.00 Kbps</string>
+    <string name="connecting_to">"Connecting to "</string>
+    <string name="connected_to">"Connected to "</string>
+    <string name="reconnection_to">"Reconnection to "</string>
+    <string name="try_number">"Reconnection attempt number: "</string>
+    <string name="download_upload_speed_pattern">Download: %s Upload: %s</string>
+    <string name="refresh_token">Refresh token...</string>
+    <string name="play_market_link" translatable="false">https://play.google.com/store/apps/details?id=org.fptn.vpn</string>
+    <string name="close_button_text">Close</string>
+    <string name="share_via_message">Share via message</string>
+    <string name="sni_text_description">Server Name Indication (SNI) — the website address declared when connecting to a VPN server. Please specify some popular website accessible without a VPN from your country.</string>
+    <string name="your_current_sni">Your current SNI:</string>
+    <string name="default_sni" translatable="false">rutube.ru</string>
+    <string name="sni_text_view_hint">New SNI</string>
+    <string name="reset_default_button">Reset to default</string>
+
 
     <string name="home_title">Home</string>
     <string name="settings_title">Settings</string>

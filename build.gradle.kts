@@ -1,6 +1,6 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-import com.filantrop.pvnclient.gradle.options.DetektOptions.applyDetektOptions
-import com.filantrop.pvnclient.gradle.options.FormattingOptions.applyPrecheckOptions
+ // Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.fptn.vpn.gradle.DetektOptions.applyDetektOptions
+import org.fptn.vpn.gradle.FormattingOptions.applyPrecheckOptions
 
 buildscript {
 
@@ -32,20 +32,17 @@ extra["compileSdkVersion"] = 35
 extra["minSdkVersion"] = 28
 extra["targetSdkVersion"] = 35
 extra["versionMajor"] = 1
-extra["versionMinor"] = 0
-extra["versionPatch"] = 0
-extra["versionBuild"] = 6
+extra["versionMinor"] = 2
+extra["versionPatch"] = 8
+extra["versionBuild"] = 0
 
 tasks.register("clean", Delete::class) {
     delete(rootProject.layout.buildDirectory)
 }
 
 plugins {
-    alias(libs.plugins.compose.compiler) apply false
-    alias(libs.plugins.deps.sorting) apply true
+    alias(libs.plugins.deps.sorting) apply false
     alias(libs.plugins.deps.unused) apply true
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
 }
 
 applyPrecheckOptions()

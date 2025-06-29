@@ -1,7 +1,9 @@
 app/.classpath
 app/.project
+app/release
+auth/
+#core/
 .idea/
-.kotlin/
 .project
 .settings/
 *.iml
@@ -20,3 +22,4 @@ app/.project
 .externalNativeBuild
 .cxx
 local.properties
+keystore.properties
