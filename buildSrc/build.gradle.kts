@@ -8,6 +8,16 @@ buildscript {
     }
 }
 
+dependencies {
+    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
+    implementation(libs.android.gradle.plugin)
+    implementation(libs.detekt)
+    implementation(libs.java.poet)
+    implementation(libs.guava)
+    implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.ksp.gradle.plugin)
+}
+
 gradlePlugin {
     plugins {
         register("androidApplication") {
@@ -30,13 +40,9 @@ gradlePlugin {
             id = "org.fptn.vpn.library.kotlin"
             implementationClass = "org.fptn.vpn.gradle.KotlinLibraryConventionPlugin"
         }
+        register("koinLibrary") {
+            id = "org.fptn.vpn.library.koin"
+            implementationClass = "org.fptn.vpn.gradle.KoinConventionPlugin"
+        }
     }
-}
-
-dependencies {
-    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
-    implementation(libs.detekt)
-    implementation(libs.android.gradle.plugin)
-    implementation(libs.guava)
-    implementation(libs.kotlin.gradle.plugin)
 }

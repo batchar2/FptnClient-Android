@@ -1,8 +1,8 @@
 import org.fptn.vpn.gradle.extensions.ksp
 
 plugins {
-    id("pvnclient.android.library.android")
-    alias(libs.plugins.ksp)
+    id("org.fptn.vpn.library.android")
+    
 }
 
 android {
@@ -10,10 +10,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.tracing.ktx)
     implementation(libs.koin.core)
     implementation(libs.kotlinx.coroutines.core)
 
-    ksp(libs.koin.ksp.compiler)
+    
 }

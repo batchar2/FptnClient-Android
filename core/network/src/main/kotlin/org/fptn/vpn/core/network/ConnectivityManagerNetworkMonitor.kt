@@ -9,7 +9,6 @@ import android.net.NetworkRequest
 import android.net.NetworkRequest.Builder
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import androidx.core.content.getSystemService
 import androidx.tracing.trace
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose

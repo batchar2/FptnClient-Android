@@ -23,7 +23,7 @@ import org.gradle.kotlin.dsl.dependencies
 /**
  * Configure Firebase-specific options
  */
-internal fun Project.configureAndroidFirebase(commonExtension: CommonExtension<*, *, *, *, *>) {
+internal fun Project.configureAndroidFirebase(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
         dependencies {
             implementation(platform(buildLibs.firebase.bom))

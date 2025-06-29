@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
-     ndkVersion = "29.0.13599879"
+//     ndkVersion = "29.0.13599879"
 
     signingConfigs {
         create("release") {
@@ -56,7 +56,7 @@ android {
         }
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+            abiFilters += listOf("arm64-v8a")
 //            abiFilters += listOf("x86_64", "arm64-v8a")
         }
     }
@@ -132,11 +132,11 @@ task("conanInstall") {
     println("Build directory: $absoluteBuildDirPath")
 
     listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
-        listOf("armv8", "x86_64", "armv7").forEach { arch ->
+        listOf("armv8").forEach { arch ->
             val cmd =
                 "$conanExecutable install " +
-                        "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
-                        "--build missing -c tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
+                        "$absoluteBuildDirPath/../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
+                        "--build missing"
             println(">> $cmd")
             val sout = StringBuilder()
             val serr = StringBuilder()

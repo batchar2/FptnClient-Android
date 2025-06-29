@@ -1,11 +1,9 @@
 plugins {
-    id("pvnclient.android.library.kotlin")
-    alias(libs.plugins.ksp)
+    id("org.fptn.vpn.library.kotlin")
+    id("org.fptn.vpn.library.koin")
 }
 
 dependencies {
-    implementation(libs.koin.core)
     implementation(libs.kotlinx.coroutines.core)
 
-    ksp(libs.koin.ksp.compiler)
 }

@@ -1,10 +1,10 @@
 import org.fptn.vpn.gradle.extensions.ksp
 
 plugins {
-    id("pvnclient.android.library.kotlin")
-    alias(libs.plugins.ksp)
+    id("org.fptn.vpn.library.kotlin")
+    
 }
 
 dependencies {
-    ksp(libs.koin.ksp.compiler)
+    
 }
