@@ -19,15 +19,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import lombok.SneakyThrows;
-
 public class SpeedTestUtils {
     private static final String TAG = SpeedTestUtils.class.getName();
     private static final long SEARCH_BEST_SERVER_MAX_TIMEOUT = 6L;
 
-    @SneakyThrows
     public static FptnServerDto findFastestServer(List<FptnServerDto> fptnServerDtoList, String sniHostName) throws PVNClientException {
-        Log.d(TAG, "findFastestServer start: " + Instant.now());
+        Log.d(TAG, "SpeedTestUtils.findFastestServer() start: " + Instant.now() + ", Thread.Id: " + Thread.currentThread().getId());
         if (fptnServerDtoList != null && !fptnServerDtoList.isEmpty()) {
             ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             List<NativeSpeedTestTask> nativeSpeedTestTaskList = fptnServerDtoList.stream()
@@ -39,7 +36,8 @@ public class SpeedTestUtils {
                         .map(nativeSpeedTestResultFuture -> {
                             try {
                                 return nativeSpeedTestResultFuture.get();
-                            } catch (ExecutionException | CancellationException | InterruptedException e) {
+                            } catch (ExecutionException | CancellationException |
+                                     InterruptedException e) {
                                 Log.e(TAG, "nativeSpeedTestResultFuture exception: " + e.getMessage(), e);
                                 return null;
                             }
@@ -52,9 +50,9 @@ public class SpeedTestUtils {
                 if (bestTimeOptional.isPresent()) {
                     NativeSpeedTestResult nativeSpeedTestResult = bestTimeOptional.get();
                     if (nativeSpeedTestResult.isSuccess()) {
-                        Log.d(TAG, "Best server: " + nativeSpeedTestResult.getFptnServerDto().getServerInfo() +
+                        Log.d(TAG, "SpeedTestUtils.findFastestServer()  bestServer: " + nativeSpeedTestResult.getFptnServerDto().getServerInfo() +
                                 " with response time: " + nativeSpeedTestResult.getDurationsMillis() + " ms");
-                        Log.d(TAG, "findFastestServer end: " + Instant.now());
+                        Log.d(TAG, "SpeedTestUtils.findFastestServer() end: " + Instant.now());
                         return nativeSpeedTestResult.getFptnServerDto();
                     }
                 } else {

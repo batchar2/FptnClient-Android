@@ -2,7 +2,6 @@ package org.fptn.vpn.views;
 
 import static org.fptn.vpn.core.common.Constants.SELECTED_SERVER;
 import static org.fptn.vpn.core.common.Constants.SELECTED_SERVER_ID_AUTO;
-import static org.fptn.vpn.utils.ResourcesUtils.getStringResourceByName;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
