@@ -8,7 +8,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -31,6 +30,7 @@ import org.fptn.vpn.enums.HandlerMessageTypes;
 import org.fptn.vpn.repository.FptnServerRepository;
 import org.fptn.vpn.utils.NetworkUtils;
 import org.fptn.vpn.utils.NotificationUtils;
+import org.fptn.vpn.utils.SharedPrefUtils;
 import org.fptn.vpn.views.HomeActivity;
 import org.fptn.vpn.views.speedtest.SpeedTestUtils;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -84,6 +86,9 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
     @Getter
     private final MutableLiveData<Triple<String, String, Long>> speedAndDurationMutableLiveData = new MutableLiveData<>();
 
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
     /**
      * Class used for the client Binder.  Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -101,7 +106,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
 
     @Override
     public void onCreate() {
-        Log.i(TAG, "CustomVpnService.onCreate: " + Thread.currentThread().getId());
+        Log.i(TAG, "CustomVpnService.onCreate() Thread.Id: " + Thread.currentThread().getId());
         // The handler is only used to show messages.
         if (handler == null) {
             handler = new Handler(this);
@@ -117,99 +122,75 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 PendingIntent.FLAG_IMMUTABLE);
         fptnServerRepository = new FptnServerRepository(getApplicationContext());
 
+        /* check if notification allowed */
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        isNotificationAllowed = notificationManager.areNotificationsEnabled();
+
         connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         registerNetworkCallback();
-    }
-
-    @NonNull
-    private String getSniHostname() {
-        SharedPreferences sharedPreferences = getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        return sharedPreferences.getString(Constants.CURRENT_SNI_SHARED_PREF_KEY, getString(R.string.default_sni));
     }
 
     @SneakyThrows
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "CustomVpnService.onStartCommand: " + intent);
+        Log.i(TAG, "CustomVpnService.onStartCommand() Intent: " + intent + ", Thread.Id: " + Thread.currentThread().getId());
 
-        /* check if notification allowed */
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        isNotificationAllowed = notificationManager.areNotificationsEnabled();
-
-        /* check is internet connection available */
-        if (!NetworkUtils.isOnline(connectivityManager)) {
-            Log.e(TAG, "onStartCommand: no active internet connections!");
-            disconnect(new PVNClientException(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS));
-            return START_NOT_STICKY;
-        }
-
-        final String sniHostname = getSniHostname();
-        if (intent == null) {
-            /* restart after service destruction because all fields of intent is null */
-            Log.w(TAG, "onStartCommand: restart after error");
-            return connectToPreviouslySelectedServer(sniHostname);
-        } else if (ACTION_DISCONNECT.equals(intent.getAction())) {
-            Log.i(TAG, "onStartCommand: disconnect!");
-            /* if we need disconnect */
-            // reset selected - TODO: DOES WE NEED TO RESET SELECTED SERVER IF WE CONNECTED OK?
-            fptnServerRepository.resetSelected();
-            // stop running threads
-            disconnect();
-            return START_NOT_STICKY;
-        } else if (ACTION_CONNECT.equals(intent.getAction())) {
-            int serverId = intent.getIntExtra(SELECTED_SERVER, SELECTED_SERVER_ID_AUTO);
-            if (serverId == SELECTED_SERVER_ID_AUTO) {
-                try {
-                    List<FptnServerDto> fptnServerDtos = fptnServerRepository.getServersListFuture(false).get();
-                    setConnectionState(ConnectionState.CONNECTING, null);
-                    FptnServerDto server = SpeedTestUtils.findFastestServer(fptnServerDtos, sniHostname);
-                    return connectToServer(server.id, sniHostname);
-                } catch (PVNClientException e) {
-                    Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
-                    /* We don't need to connect if all servers are unreachable */
-                    fptnServerRepository.resetSelected().get();
-                    disconnect(e);
-                    return START_NOT_STICKY;
-                }
-            } else {
-                Log.i(TAG, "onStartCommand: connectToServer with id: " + serverId);
-                return connectToServer(serverId, sniHostname);
+        executorService.submit(() -> {
+            /* check is internet connection available */
+            if (!NetworkUtils.isOnline(connectivityManager)) {
+                Log.e(TAG, "onStartCommand: no active internet connections!");
+                disconnect(new PVNClientException(ErrorCode.NO_ACTIVE_INTERNET_CONNECTIONS));
             }
-        } else {
-            // should not happen
-            Log.e(TAG, "onStartCommand: action not recognize!");
-            return START_NOT_STICKY;
-        }
+
+            try {
+                String sniHostname = SharedPrefUtils.getSniHostname(getApplicationContext());
+                if (intent == null) {
+                    /* restart after service destruction - all fields of intent is null */
+                    Log.w(TAG, "onStartCommand: restart after service was killed");
+                    FptnServerDto server = fptnServerRepository.getSelected().get();
+                    if (server != null) {
+                        connect(server, sniHostname);
+                    } else {
+                        /* selected server not selected - that should means that we were disconnected correct previously */
+                        Log.i(TAG, "connectToPreviouslySelectedServer: previously selected server is null. No need to reconnect");
+                        disconnect();
+                    }
+                } else if (ACTION_DISCONNECT.equals(intent.getAction())) {
+                    Log.i(TAG, "onStartCommand: disconnect!");
+                    /* if we need disconnect */
+                    // todo: move to settings option
+                    fptnServerRepository.resetSelected();
+                    // stop running threads
+                    disconnect();
+                } else if (ACTION_CONNECT.equals(intent.getAction())) {
+                    setConnectionState(ConnectionState.CONNECTING, null);
+
+                    int serverId = intent.getIntExtra(SELECTED_SERVER, SELECTED_SERVER_ID_AUTO);
+                    if (serverId == SELECTED_SERVER_ID_AUTO) {
+                        try {
+                            List<FptnServerDto> fptnServerDtos = fptnServerRepository.getServersListFuture(false).get();
+                            FptnServerDto server = SpeedTestUtils.findFastestServer(fptnServerDtos, sniHostname);
+                            fptnServerRepository.setIsSelected(server.id);
+                            connect(server, sniHostname);
+                        } catch (PVNClientException e) {
+                            /* We don't need to connect if all servers are unreachable */
+                            Log.e(TAG, "onStartCommand: findFastestServer error! ", e);
+                            disconnect(e);
+                        }
+                    } else {
+                        Log.i(TAG, "onStartCommand: connectToServer with id: " + serverId);
+                        fptnServerRepository.setIsSelected(serverId).get();
+                        FptnServerDto server = fptnServerRepository.getSelected().get();
+                        connect(server, sniHostname);
+                    }
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                disconnect(new PVNClientException(e.getMessage()));
+            }
+        });
+        return START_STICKY;
     }
 
-    private int connectToServer(int serverId, String sniHostname) throws ExecutionException, InterruptedException {
-        fptnServerRepository.resetSelected().get();
-        fptnServerRepository.setIsSelected(serverId).get();
-
-        FptnServerDto server = fptnServerRepository.getSelected().get();
-        if (server != null) {
-            connect(server, sniHostname);
-            return START_STICKY;
-        } else {
-            /* selected server with selected id not found in DB - very */
-            Log.e(TAG, "connectToServer: selected server not found in DB");
-            setConnectionState(ConnectionState.DISCONNECTED, null);
-            return START_NOT_STICKY;
-        }
-    }
-
-    private int connectToPreviouslySelectedServer(String sniHostname) throws ExecutionException, InterruptedException {
-        FptnServerDto server = fptnServerRepository.getSelected().get();
-        if (server != null) {
-            connect(server, sniHostname);
-            return START_STICKY;
-        } else {
-            /* selected server not selected - that should mean that we were disconnected correct previously */
-            Log.i(TAG, "connectToPreviouslySelectedServer: previously selected server is null. No need to reconnect");
-            setConnectionState(ConnectionState.DISCONNECTED, null);
-            return START_NOT_STICKY;
-        }
-    }
 
     @Override
     public void onDestroy() {
@@ -224,6 +205,8 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
             @Override
             public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
                 super.onCapabilitiesChanged(network, networkCapabilities);
+                Log.i(TAG, "ConnectivityManager.NetworkCallback.onCapabilitiesChanged() Thread.Id: " + Thread.currentThread().getId());
+
                 CustomVpnConnection customVpnConnection = activeConnection.get();
                 if (customVpnConnection != null
                         && serviceStateMutableLiveData.getValue().getConnectionState().isActiveState()
@@ -234,7 +217,7 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                         if (!Objects.equals(currentIPAddress, customVpnConnection.getCurrentActiveNetworkIP())) {
                             FptnServerDto fptnServerDto = customVpnConnection.getFptnServerDto();
                             setActiveConnection(null);
-                            connect(fptnServerDto, getSniHostname());
+                            connect(fptnServerDto, SharedPrefUtils.getSniHostname(getApplicationContext()));
                         }
                     } catch (SocketException e) {
                         Log.e(TAG, "onCapabilitiesChanged() exception", e);
@@ -281,7 +264,8 @@ public class CustomVpnService extends VpnService implements Handler.Callback {
                 .orElse("");
     }
 
-    private void setConnectionState(ConnectionState connectionState, PVNClientException exception) {
+    private void setConnectionState(ConnectionState connectionState, PVNClientException
+            exception) {
         serviceStateMutableLiveData.postValue(CustomVpnServiceState.builder()
                 .connectionState(connectionState)
                 .exception(exception)
