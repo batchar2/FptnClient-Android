@@ -37,7 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private ListView serverListView;
 
-    private final MutableLiveData<String> SNIMutableLiveData = new MutableLiveData<>(getApplication().getString(R.string.default_sni));
+    private MutableLiveData<String> SNIMutableLiveData;
 
     @Getter
     private FptnServerViewModel fptnViewModel;
@@ -48,6 +48,9 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_layout);
+
+        SNIMutableLiveData = new MutableLiveData<>(getApplication().getString(R.string.default_sni));
+
         initializeVariable();
     }
 
