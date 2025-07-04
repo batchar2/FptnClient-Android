@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class SpeedTestUtils {
     private static final String TAG = SpeedTestUtils.class.getName();
-    private static final long SEARCH_BEST_SERVER_MAX_TIMEOUT = 6L;
+    private static final long SEARCH_BEST_SERVER_MAX_TIMEOUT = 10L;
 
     public static FptnServerDto findFastestServer(List<FptnServerDto> fptnServerDtoList, String sniHostName) throws PVNClientException {
         Log.d(TAG, "SpeedTestUtils.findFastestServer() start: " + Instant.now() + ", Thread.Id: " + Thread.currentThread().getId());
