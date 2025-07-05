@@ -2,9 +2,12 @@ name: Android CI
 
 on:
   push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+    branches:
+      - '**'
+    tags:
+      - '*'
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -20,8 +23,12 @@ jobs:
         distribution: 'zulu'
         cache: gradle
 
+    - name: Git
+      run: git submodule update --init --recursive
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    - name: Stop gradle
+      run: ./gradlew --stop
     - name: Build with Gradle
       run: ./gradlew build
     - name: Checks
