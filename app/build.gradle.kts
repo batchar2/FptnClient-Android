@@ -4,7 +4,7 @@ import java.io.InputStream
 import kotlin.concurrent.thread
 
 plugins {
-    id("pvnclient.android.application")
+    id("org.fptn.vpn.application")
 }
 
 android {
@@ -137,8 +137,8 @@ task("conanInstall") {
         listOf("armv8", "armv7").forEach { arch ->
             val cmd =
                 "$conanExecutable install " +
-                        "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
-                        "--build missing -c tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
+                        "$absoluteBuildDirPath/../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
+                        "--build missing"
             println(">> $cmd")
             val sout = StringBuilder()
             val serr = StringBuilder()
