@@ -28,12 +28,10 @@ jobs:
       if: github.event_name == 'release'
       run: |
         echo "Release Version: $RELEASE_VERSION"
-    - name: Set Gradle env
+    - name: Build with Gradle
       run: |
         export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
-        yes | sdkmanager --licenses
-        ANDROID_HOME=/home/ubuntu/android-sdk/
-    - name: Build with Gradle
-      run: ./gradlew build
+        export ANDROID_HOME=/home/ubuntu/android-sdk
+        ./gradlew build
     - name: Checks
       run: ANDROID_HOME=/home/ubuntu/android-sdk/ ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
