@@ -1,6 +1,6 @@
 import java.io.FileInputStream
-import java.util.Properties
 import java.io.InputStream
+import java.util.Properties
 import kotlin.concurrent.thread
 
 plugins {
@@ -25,7 +25,7 @@ android {
             } else {
                 println(
                     "Warning: keystore.properties file not found. " +
-                            "Release signing configuration will not be applied.",
+                        "Release signing configuration will not be applied.",
                 )
             }
         }
@@ -119,40 +119,41 @@ java {
     }
 }
 
-
-fun readStreamAsync(stream: InputStream, label: String) = thread {
+fun readStreamAsync(
+    stream: InputStream,
+    label: String,
+) = thread {
     stream.bufferedReader().useLines { lines ->
         lines.forEach { println("[$label] $it") }
     }
 }
 
-task("conanInstall") {
-    val conanExecutable = "conan" // define the path to your conan installation
-    val buildDir = file("build").apply { mkdirs() }
-
-    val absoluteBuildDirPath = buildDir.absolutePath
-    println("Build directory: $absoluteBuildDirPath")
-
-    listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
-        listOf("armv8", "armv7").forEach { arch ->
-            val cmd =
-                "$conanExecutable install " +
-                        "../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
-                        "--build missing -c tools.cmake.cmake_layout:build_folder_vars=['settings.arch']"
-            println(">> $cmd")
-            val sout = StringBuilder()
-            val serr = StringBuilder()
-            val proc = Runtime.getRuntime().exec(cmd, null, buildDir)
-
-            val exportOut = readStreamAsync(proc.inputStream, "stdout")
-            val exportErr = readStreamAsync(proc.errorStream, "stderr")
-
-            val exitCode = proc.waitFor()
-            println("$sout $serr")
-
-            if (exitCode != 0) {
-                throw Exception("out> $sout err> $serr\nCommand: $cmd")
+tasks.register("conanInstall") {
+    group = "c++"
+    doLast {
+        val buildDir = file("$buildDir/conan").apply { mkdirs() }
+        listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
+            listOf("armv8", "armv7").forEach { arch ->
+                exec {
+                    workingDir = buildDir
+                    commandLine(
+                        "conan",
+                        "install",
+                        "$projectDir/src/main/cpp",
+                        "--profile",
+                        "$rootDir/conan/profiles/android-studio",
+                        "-s",
+                        "build_type=$buildType",
+                        "-s",
+                        "arch=$arch",
+                        "--build",
+                        "missing",
+                        "-c",
+                        "tools.cmake.cmake_layout:build_folder_vars=['settings.arch']",
+                    )
+                }
             }
         }
     }
 }
+tasks.named("preBuild") { dependsOn("conanInstall") }

@@ -7,21 +7,21 @@ data class VersionInfo(
     val major: Int,
     val minor: Int,
     val patch: Int,
-    val build: Int
+    val build: Int,
 )
 
 fun parseVersionTag(versionTag: String?): VersionInfo {
     if (versionTag.isNullOrBlank()) {
-        return VersionInfo(0, 0, 0, 0)
+        return VersionInfo(0, 0, 0, 1)
     }
     val cleanTag = versionTag.removePrefix("v")
     val parts = cleanTag.split(".").mapNotNull { it.toIntOrNull() }
     return when (parts.size) {
-        1 -> VersionInfo(parts[0], 0, 0, 0)
-        2 -> VersionInfo(parts[0], parts[1], 0, 0)
-        3 -> VersionInfo(parts[0], parts[1], parts[2], 0)
+        1 -> VersionInfo(parts[0], 0, 0, 1)
+        2 -> VersionInfo(parts[0], parts[1], 0, 1)
+        3 -> VersionInfo(parts[0], parts[1], parts[2], 1)
         4 -> VersionInfo(parts[0], parts[1], parts[2], parts[3])
-        else -> VersionInfo(0, 0, 0, 0)
+        else -> VersionInfo(0, 0, 0, 1)
     }
 }
 
@@ -35,9 +35,8 @@ println(
     - Minor: ${versionInfo.minor}
     - Patch: ${versionInfo.patch}
     - Build: ${versionInfo.build}
-""".trimIndent()
+    """.trimIndent(),
 )
-
 
 buildscript {
     repositories {

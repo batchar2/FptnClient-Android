@@ -6,5 +6,4 @@ class PVNClientException(
 ) : Exception(errorMessage) {
     constructor(errorCode: ErrorCode) : this(errorCode, errorCode.value)
     constructor(errorMessage: String) : this(ErrorCode.UNKNOWN_ERROR, errorMessage)
-
 }
