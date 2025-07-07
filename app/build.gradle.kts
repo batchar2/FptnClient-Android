@@ -5,6 +5,8 @@ import kotlin.concurrent.thread
 
 plugins {
     id("org.fptn.vpn.application")
+    id("org.fptn.vpn.application.compose")
+    id("org.fptn.vpn.application.koin")
 }
 
 android {
@@ -86,11 +88,17 @@ android {
 }
 
 dependencies {
+    implementation(project(":auth:domain"))
+    implementation(project(":auth:ui"))
     implementation(project(":core:common"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:network"))
+    implementation(project(":core:persistent"))
+    implementation(project(":home:ui"))
     implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
-    // To use CallbackToFutureAdapter
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.room.guava)
@@ -98,6 +106,7 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.ipaddress)
     implementation(libs.jackson.databind)
+    implementation(libs.koin.android)
     implementation(libs.material)
     implementation(libs.zxing)
 

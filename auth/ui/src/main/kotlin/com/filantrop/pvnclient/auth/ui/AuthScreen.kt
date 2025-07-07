@@ -1,4 +1,4 @@
-package org.fptn.vpn.auth.ui
+package com.filantrop.pvnclient.auth.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +31,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.fptn.vpn.auth.ui.R
 import org.fptn.vpn.core.common.Constants.SPACE
 import org.fptn.vpn.core.designsystem.icons.PvnIcons
 import org.koin.androidx.compose.koinViewModel

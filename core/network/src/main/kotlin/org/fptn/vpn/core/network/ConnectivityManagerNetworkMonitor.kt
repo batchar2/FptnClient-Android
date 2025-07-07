@@ -7,8 +7,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.NetworkRequest.Builder
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import androidx.tracing.trace
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
@@ -24,7 +22,7 @@ internal class ConnectivityManagerNetworkMonitor(
     override val isOnline: Flow<Boolean> =
         callbackFlow {
             trace("NetworkMonitor.callbackFlow") {
-                val connectivityManager = context.getSystemService<ConnectivityManager>()
+                val connectivityManager = context.getSystemService("ftpn.vpn") as? ConnectivityManager
                 if (connectivityManager == null) {
                     channel.trySend(false)
                     channel.close()
@@ -72,11 +70,7 @@ internal class ConnectivityManagerNetworkMonitor(
 
     @Suppress("DEPRECATION")
     private fun ConnectivityManager.isCurrentlyConnected(): Boolean =
-        if (VERSION.SDK_INT >= VERSION_CODES.M) {
-            activeNetwork
-                ?.let(::getNetworkCapabilities)
-                ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
-        } else {
-            activeNetworkInfo?.isConnected ?: false
-        }
+        activeNetwork
+            ?.let(::getNetworkCapabilities)
+            ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
 }

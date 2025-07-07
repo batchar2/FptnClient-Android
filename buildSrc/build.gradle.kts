@@ -28,6 +28,10 @@ gradlePlugin {
             id = "org.fptn.vpn.application.compose"
             implementationClass = "org.fptn.vpn.gradle.AndroidApplicationComposeConventionPlugin"
         }
+        register("androidApplicationKoin") {
+            id = "org.fptn.vpn.application.koin"
+            implementationClass = "org.fptn.vpn.gradle.AndroidApplicationKoinConventionPlugin"
+        }
         register("androidLibrary") {
             id = "org.fptn.vpn.library.android"
             implementationClass = "org.fptn.vpn.gradle.AndroidLibraryConventionPlugin"

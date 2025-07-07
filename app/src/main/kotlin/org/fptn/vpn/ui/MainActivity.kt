@@ -14,7 +14,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import org.fptn.vpn.auth.ui.AuthScreen
+import com.filantrop.pvnclient.auth.ui.AuthScreen
 import org.fptn.vpn.core.designsystem.theme.PvnTheme
 import org.fptn.vpn.viewmodel.AuthActivityUiState
 import org.fptn.vpn.viewmodel.MainViewModel

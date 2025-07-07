@@ -1,8 +1,6 @@
-import org.fptn.vpn.gradle.extensions.ksp
-
 plugins {
     id("org.fptn.vpn.library.android")
-    
+    id("org.fptn.vpn.library.koin")
 }
 
 android {
@@ -12,6 +10,5 @@ android {
 dependencies {
     implementation(libs.koin.core)
     implementation(libs.kotlinx.coroutines.core)
-
-    
+    implementation(libs.androidx.tracing)
 }

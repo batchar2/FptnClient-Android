@@ -1,4 +1,4 @@
-package org.fptn.vpn.auth.ui
+package com.filantrop.pvnclient.auth.ui
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

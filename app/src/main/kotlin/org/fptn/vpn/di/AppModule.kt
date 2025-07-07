@@ -1,6 +1,6 @@
 package org.fptn.vpn.di
 
-import org.fptn.vpn.auth.ui.authModule
+import com.filantrop.pvnclient.auth.ui.authModule
 import org.fptn.vpn.core.common.commonModule
 import org.fptn.vpn.core.network.networkModule
 import org.fptn.vpn.core.persistent.di.persistentModule

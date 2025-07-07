@@ -1,4 +1,4 @@
-package org.fptn.vpn.auth.ui
+package com.filantrop.pvnclient.auth.ui
 
 import org.fptn.vpn.auth.data.di.authDataModule
 import org.fptn.vpn.auth.domain.di.authDomainModule

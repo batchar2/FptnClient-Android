@@ -1,14 +1,13 @@
-package org.fptn.vpn.home.ui.navigation
+package com.filantrop.pvnclient.home.ui.navigation
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import kotlinx.serialization.Serializable
 
-@Serializable data object HomeRoute // route to Home screen
+data object HomeRoute // route to Home screen
 
 const val HOME_ROUTE = "homeRoute"
 
-@Serializable data object HomeBaseRoute // route to base navigation graph
+data object HomeBaseRoute // route to base navigation graph
 
 const val HOME_BASE_ROUTE = "homeRouteStr"
 
