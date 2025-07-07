@@ -124,4 +124,8 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="reset_default_button">Reset to default</string>
 
 
+    <string name="home_title">Home</string>
+    <string name="settings_title">Settings</string>
+    <string name="not_connected">⚠️ You aren’t connected to the internet</string>
+
 </resources>
