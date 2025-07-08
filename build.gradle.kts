@@ -66,8 +66,6 @@ repositories {
 extra["compileSdkVersion"] = 35
 extra["minSdkVersion"] = 28
 extra["targetSdkVersion"] = 35
-
-// set version automatically using CI
 extra["versionMajor"] = versionInfo.major
 extra["versionMinor"] = versionInfo.minor
 extra["versionPatch"] = versionInfo.patch
