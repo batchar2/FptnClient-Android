@@ -49,9 +49,11 @@ jobs:
 
     # export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
     - name: Build with Gradle
-      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew build
+      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew assembleDebug
     - name: Checks
       run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+    - name: Run tests
+      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew test
 
     - name: Build apk and aab
       run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew assembleRelease bundleRelease
