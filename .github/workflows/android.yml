@@ -53,9 +53,6 @@ jobs:
 #        echo "ANDROID_HOME in Gradle:"
 #        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew -q androidDependencies | grep "SDK:"
 
-    - name: Conan version
-      run: conan --version
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
@@ -70,7 +67,7 @@ jobs:
 
     # export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      run:  ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew assembleDebug
     - name: Checks
       run:  ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
     - name: Run tests
