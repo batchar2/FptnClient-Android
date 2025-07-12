@@ -25,7 +25,7 @@ android {
             } else {
                 println(
                     "Warning: keystore.properties file not found. " +
-                        "Release signing configuration will not be applied.",
+                            "Release signing configuration will not be applied.",
                 )
             }
         }
@@ -56,7 +56,11 @@ android {
         }
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+            abiFilters += listOf(
+                "x86_64",
+                //    "arm64-v8a",
+                //    "armeabi-v7a"
+            )
         }
     }
 
@@ -132,8 +136,16 @@ tasks.register("conanInstall") {
     group = "c++"
     doLast {
         val buildDir = file("$buildDir/conan").apply { mkdirs() }
-        listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
-            listOf("armv8", "armv7").forEach { arch ->
+        listOf(
+            "Debug",
+            //    "Release",
+            //    "RelWithDebInfo"
+        ).forEach { buildType ->
+            listOf(
+                "x86_64",
+                //        "armv8",
+                //        "armv7"
+            ).forEach { arch ->
                 exec {
                     workingDir = buildDir
                     commandLine(
