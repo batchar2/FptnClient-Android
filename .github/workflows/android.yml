@@ -47,14 +47,14 @@ jobs:
       run: |
         echo "Release Version: $RELEASE_VERSION"
 
+    # export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
     - name: Build with Gradle
-      run: ./gradlew build
-
+      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew build
     - name: Checks
-      run: ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
 
     - name: Build apk and aab
-      run: ./gradlew assembleRelease bundleRelease
+      run: ANDROID_HOME=$ANDROID_HOME ./gradlew assembleRelease bundleRelease
 
     - name: Upload apk
       if: github.event_name == 'release'
