@@ -17,6 +17,17 @@ jobs:
       with:
         submodules: true
 
+    - name: Set version environment variables
+      if: github.event_name == 'release'
+      run: |
+        echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        echo "RELEASE_VERSION_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Set dev version environment variables
+      if: github.event_name != 'release'
+      run: |
+        echo "RELEASE_VERSION=0.0.0.0" >> $GITHUB_ENV
+        echo "RELEASE_VERSION_NAME=$(date +'%Y-%m-%d__%H-%M-%S')-dev" >> $GITHUB_ENV
+
     - name: Set environment variables
       run: |
         echo "PATH=$CMDLINE_TOOLS:$PATH" >> $GITHUB_ENV
@@ -39,10 +50,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Set env
-      if: github.event_name == 'release'
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
     - name: Print Release Version
       if: github.event_name == 'release'
       run: |
@@ -55,35 +62,41 @@ jobs:
     - name: Run tests
       run: ./gradlew test
 
-    - name: Build apk and aab
-      run: ./gradlew assembleRelease bundleRelease
+    - name: Build APK and AAB
+      run: |
+        ./gradlew assembleRelease bundleRelease
+        AAB_FILE=(app/build/outputs/bundle/release/app-release.aab)
+        if [ -f "$AAB_FILE" ]; then
+          cp -v "$AAB_FILE" "fptn-android-${RELEASE_VERSION_NAME}.aab"
+        else
+          echo "Error: AAB file not found at $AAB_FILE"
+          exit 1
+        fi
+        APK_FILES=(app/build/outputs/apk/release/*.apk)
+        if [ -f "${APK_FILES[0]}" ]; then
+          cp -v "${APK_FILES[0]}" "app-android-${RELEASE_VERSION_NAME}.apk"
+        else
+          echo "Error: No APK files found in app/build/outputs/apk/release/"
+          exit 1
+        fi
 
-    - name: Upload apk
+    - name: Upload APK to Release
       if: github.event_name == 'release'
       uses: AButler/upload-release-assets@v3.0
       with:
-        files: "app/build/outputs/apk/release/*.apk"
+        files: "*.apk"
         repo-token: ${{ secrets.CI_TOKEN }}
-
-    - name: Upload aab
+    - name: Upload AAB to Release
       if: github.event_name == 'release'
       uses: AButler/upload-release-assets@v3.0
       with:
-        files: "app/build/outputs/bundle/release/*.aab"
+        files: "*.aab"
         repo-token: ${{ secrets.CI_TOKEN }}
-
-    - name: Upload APK Artifacts
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ApkArtifacts
+        name: AndroidArtifacts
         path: |
-          app/build/outputs/apk/release/*.apk
-        if-no-files-found: warn
-
-    - name: Upload AAB Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: AabArtifacts
-        path: |
-          app/build/outputs/bundle/release/*.aab
+          *.apk
+          *.aab
         if-no-files-found: warn
