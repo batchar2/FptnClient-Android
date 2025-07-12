@@ -54,7 +54,7 @@ jobs:
       run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
 
     - name: Build apk and aab
-      run: ANDROID_HOME=$ANDROID_HOME ./gradlew assembleRelease bundleRelease
+      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew assembleRelease bundleRelease
 
     - name: Upload apk
       if: github.event_name == 'release'
