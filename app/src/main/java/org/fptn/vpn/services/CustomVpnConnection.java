@@ -155,6 +155,11 @@ public class CustomVpnConnection extends Thread {
             }
             Log.i(getTag(), "New interface: " + vpnInterface);
 
+            // Packets received need to be written to this output stream.
+            outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
+            webSocketClient.startWebSocket();
+
+            connectionTime = Instant.now();
             try {
                 scheduler.scheduleWithFixedDelay(() -> {
                     // Get download and upload speeds
@@ -167,12 +172,6 @@ public class CustomVpnConnection extends Thread {
             } catch (RejectedExecutionException e) {
                 Log.w(getTag(), "update speed task rejected by scheduler", e);
             }
-
-
-            // Packets received need to be written to this output stream.
-            outputStream = new FileOutputStream(vpnInterface.getFileDescriptor());
-            webSocketClient.startWebSocket();
-            connectionTime = Instant.now();
 
             // Packets to be sent are queued in this input stream.
             try (FileInputStream inputStream = new FileInputStream(vpnInterface.getFileDescriptor())) {
