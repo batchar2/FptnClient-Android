@@ -10,19 +10,26 @@ on:
 jobs:
   build_android:
     runs-on: ubuntu22.04_x64
+    environment: RELEASE_ENVIRONMENT
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
         submodules: true
-    - name: show alias
-      run: echo "My variable is ${{ vars.KEY_ALIAS }}"
-    - name: show pass
-      run: echo "My variable is ${{ vars.KEYSTORE_PATH }}"
-
+    - name: Use secret
+      run: |
+        echo "KEY_ALIAS=$KEY_ALIAS KEYSTORE_PATH=$KEYSTORE_PATH"
+        echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+        echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+        echo "STORE_PASSWORD=${{ secrets.STORE_PASSWORD }}" >> $GITHUB_ENV
+        echo "KEYSTORE_PATH=${{ vars.KEYSTORE_PATH }}" >> $GITHUB_ENV
+      env:
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        KEYSTORE_PATH: ${{ vars.KEYSTORE_PATH }}
     - name: Conan version
       run: conan --version
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Set env
