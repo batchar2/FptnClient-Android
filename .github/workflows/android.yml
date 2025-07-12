@@ -32,6 +32,33 @@ jobs:
         ANDROID_HOME: ${{ vars.ANDROID_HOME }}
         CMDLINE_TOOLS: ${{ vars.CMDLINE_TOOLS }}
 
+    - name: Verify Android SDK path
+      run: |
+        echo "ANDROID_HOME = $ANDROID_HOME"
+        ls -la $ANDROID_HOME
+
+
+    - name: Create local.properties
+      run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+    - name: Show local.properties
+      run: |
+        pwd
+        ls -la
+        cat local.properties
+
+    - name: Verify Android SDK path
+      run: |
+        echo "ANDROID_HOME path: $ANDROID_HOME"
+        ls -la $ANDROID_HOME
+        ls -la $ANDROID_HOME/cmdline-tools/
+
+    - name: Validate Gradle environment
+      run: |
+          ./gradlew --version
+          echo "ANDROID_HOME in Gradle:"
+          ./gradlew -q androidDependencies | grep "SDK:"
+
     - name: Conan version
       run: conan --version
 
@@ -49,14 +76,14 @@ jobs:
 
     # export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
     - name: Build with Gradle
-      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew assembleDebug
+      run: ./gradlew assembleDebug
     - name: Checks
-      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+      run: ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
     - name: Run tests
-      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew test
+      run: ./gradlew test
 
     - name: Build apk and aab
-      run: ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew assembleRelease bundleRelease
+      run: ./gradlew assembleRelease bundleRelease
 
     - name: Upload apk
       if: github.event_name == 'release'
