@@ -16,6 +16,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: true
+
     - name: Set environment variables
       run: |
         echo "PATH=$CMDLINE_TOOLS:$PATH" >> $GITHUB_ENV
@@ -29,40 +30,11 @@ jobs:
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         KEYSTORE_PATH: ${{ vars.KEYSTORE_PATH }}
-        ANDROID_HOME: /home/ubuntu/android-sdk
+        ANDROID_HOME: /home/ubuntu/android-sdk #${{ vars.ANDROID_HOME }}
         CMDLINE_TOOLS: ${{ vars.CMDLINE_TOOLS }}
-
-    - name: Verify Android SDK path
-      run: |
-        echo "ANDROID_HOME = $ANDROID_HOME"
-        ls -la $ANDROID_HOME
-    - name: Verify Android SDK contents
-      run: |
-        echo "ANDROID_HOME path: $ANDROID_HOME"
-        ls -la $ANDROID_HOME
-        CMDLINE_PATH="$ANDROID_HOME/cmdline-tools"
-        echo "Checking cmdline-tools at: $CMDLINE_PATH"
-        if [ -d "$CMDLINE_PATH" ]; then
-          ls -la "$CMDLINE_PATH"
-        else
-          echo "cmdline-tools directory missing! Need to install."
-          echo "Expected path: $CMDLINE_PATH"
-        fi
 
     - name: Create local.properties
       run: echo "sdk.dir=$ANDROID_HOME" > local.properties
-
-    - name: Show local.properties
-      run: |
-        pwd
-        ls -la
-        cat local.properties
-
-#    - name: Validate Gradle environment
-#      run: |
-#        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew --version
-#        echo "ANDROID_HOME in Gradle:"
-#        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew -q androidDependencies | grep "SDK:"
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -76,16 +48,15 @@ jobs:
       run: |
         echo "Release Version: $RELEASE_VERSION"
 
-    # export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
-    - name: Build with Gradle
-      run:  ./gradlew assembleDebug
+    - name: Build project
+      run: ./gradlew assembleDebug
     - name: Checks
-      run:  ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+      run: ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
     - name: Run tests
-      run:  ./gradlew test
+      run: ./gradlew test
 
     - name: Build apk and aab
-      run:  ./gradlew assembleRelease bundleRelease
+      run: ./gradlew assembleRelease bundleRelease
 
     - name: Upload apk
       if: github.event_name == 'release'
