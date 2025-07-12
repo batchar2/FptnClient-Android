@@ -28,6 +28,8 @@ jobs:
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         KEYSTORE_PATH: ${{ vars.KEYSTORE_PATH }}
+        ANDROID_HOME: ${{ vars.ANDROID_HOME }}
+
     - name: Conan version
       run: conan --version
     - name: Grant execute permission for gradlew
@@ -41,8 +43,34 @@ jobs:
         echo "Release Version: $RELEASE_VERSION"
     - name: Build with Gradle
       run: |
-        export PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH
-        export ANDROID_HOME=/home/ubuntu/android-sdk
-        ./gradlew build
+        PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH ./gradlew build
     - name: Checks
-      run: ANDROID_HOME=/home/ubuntu/android-sdk/ ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+      run: PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+
+    - name: Upload apk
+      if: github.event_name == 'release'
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: "app/build/outputs/apk/release/*.apk"
+        repo-token: ${{ secrets.CI_TOKEN }}
+    - name: Upload aab
+      if: github.event_name == 'release'
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: "app/build/outputs/bundle/release/*.aab"
+        repo-token: ${{ secrets.CI_TOKEN }}
+
+    - name: Upload APK Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ApkArtifacts
+        path: |
+          app/build/outputs/apk/release/*.apk
+        if-no-files-found: warn
+    - name: Upload AAB Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: AabArtifacts
+        path: |
+          app/build/outputs/bundle/release/*.aab
+        if-no-files-found: warn
