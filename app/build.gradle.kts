@@ -1,6 +1,4 @@
-import java.io.FileInputStream
 import java.io.InputStream
-import java.util.Properties
 import kotlin.concurrent.thread
 
 plugins {
@@ -14,10 +12,10 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
-            storeFile = file(System.getenv("KEYSTORE_PATH"))
-            storePassword = System.getenv("STORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
+            storePassword = System.getenv("STORE_PASSWORD") ?: ""
         }
     }
 
