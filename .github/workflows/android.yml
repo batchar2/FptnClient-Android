@@ -15,6 +15,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: true
+    - name: show alias
+      run: echo "My variable is ${{ vars.KEY_ALIAS }}"
+    - name: show pass
+      run: echo "My variable is ${{ vars.KEYSTORE_PATH }}"
 
     - name: Conan version
       run: conan --version
