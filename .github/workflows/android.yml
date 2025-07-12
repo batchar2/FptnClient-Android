@@ -47,11 +47,11 @@ jobs:
         ls -la
         cat local.properties
 
-    - name: Validate Gradle environment
-      run: |
-        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew --version
-        echo "ANDROID_HOME in Gradle:"
-        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew -q androidDependencies | grep "SDK:"
+#    - name: Validate Gradle environment
+#      run: |
+#        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew --version
+#        echo "ANDROID_HOME in Gradle:"
+#        ANDROID_HOME=/home/ubuntu/android-sdk ./gradlew -q androidDependencies | grep "SDK:"
 
     - name: Conan version
       run: conan --version
