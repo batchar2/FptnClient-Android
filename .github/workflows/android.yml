@@ -45,7 +45,12 @@ jobs:
       run: |
         PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH ./gradlew build
     - name: Checks
-      run: PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+      run: |
+        PATH=/home/ubuntu/android-sdk/cmdline-tools/latest/bin/:$PATH ./gradlew tomlCheck ktlintCheck detektCheck checkSortDependencies projectHealth
+
+    - name: Build apk and aab
+      run: |
+        ./gradlew assembleRelease bundleRelease
 
     - name: Upload apk
       if: github.event_name == 'release'
