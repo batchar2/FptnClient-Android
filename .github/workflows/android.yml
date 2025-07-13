@@ -41,7 +41,7 @@ jobs:
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         KEYSTORE_PATH: ${{ vars.KEYSTORE_PATH }}
-        ANDROID_HOME: /home/ubuntu/android-sdk #${{ vars.ANDROID_HOME }}
+        ANDROID_HOME: ${{ vars.ANDROID_HOME }}
         CMDLINE_TOOLS: ${{ vars.CMDLINE_TOOLS }}
 
     - name: Create local.properties
