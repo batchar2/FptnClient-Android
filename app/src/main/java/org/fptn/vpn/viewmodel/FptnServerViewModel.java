@@ -39,7 +39,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-import kotlin.Triple;
 import lombok.Getter;
 
 public class FptnServerViewModel extends AndroidViewModel {
@@ -82,7 +81,8 @@ public class FptnServerViewModel extends AndroidViewModel {
             if (customVpnServiceState != null) {
                 ConnectionState connectionState = customVpnServiceState.getConnectionState();
                 switch (connectionState) {
-                    case DISCONNECTED -> statusTextLiveData.postValue(getApplication().getString(R.string.disconnected));
+                    case DISCONNECTED ->
+                            statusTextLiveData.postValue(getApplication().getString(R.string.disconnected));
                     case CONNECTING -> {
                         statusTextLiveData.postValue(getApplication().getString(R.string.connecting));
                         resetErrorMessage();
@@ -91,24 +91,29 @@ public class FptnServerViewModel extends AndroidViewModel {
                         statusTextLiveData.postValue(getApplication().getString(R.string.connected));
                         resetErrorMessage();
                     }
-                    case RECONNECTING -> statusTextLiveData.postValue(getApplication().getString(R.string.connected));
+                    case RECONNECTING ->
+                            statusTextLiveData.postValue(getApplication().getString(R.string.connected));
                 }
 
                 PVNClientException exception = customVpnServiceState.getException();
                 if (exception != null) {
-                    ErrorCode errorCode = exception.errorCode;
-                    if (errorCode != ErrorCode.UNKNOWN_ERROR) {
-                        String stringResourceByName = getStringResourceByName(getApplication(), errorCode.getValue());
-                        Log.e(getTag(), "Error as text: " + stringResourceByName);
-
-                        errorTextLiveData.postValue(stringResourceByName);
-                    } else {
-                        errorTextLiveData.postValue(exception.errorMessage);
-                    }
+                    handlePVNClientException(exception);
                 }
             }
         };
         serviceStateMutableLiveData.observeForever(serviceStateObserver);
+    }
+
+    private void handlePVNClientException(PVNClientException exception) {
+        ErrorCode errorCode = exception.errorCode;
+        if (errorCode != ErrorCode.UNKNOWN_ERROR) {
+            String stringResourceByName = getStringResourceByName(getApplication(), errorCode.getValue());
+            Log.e(getTag(), "Error as text: " + stringResourceByName);
+
+            errorTextLiveData.postValue(stringResourceByName);
+        } else {
+            errorTextLiveData.postValue(exception.errorMessage);
+        }
     }
 
     public void resetErrorMessage() {
@@ -133,52 +138,56 @@ public class FptnServerViewModel extends AndroidViewModel {
         fptnServerRepository.deleteAllServers();
     }
 
-    public void parseAndSaveFptnLink(String fptnTokenString) throws IOException, PVNClientException {
-        List<FptnServerDto> serverDtoList = new ArrayList<>();
-
-        // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
-        final String clearedtoken = fptnTokenString.replaceAll("\\s+", "")
-                .replace("fptn://", "")
-                .replace("fptn:", "");
-        String decodedToken = new String(Base64.getDecoder().decode(clearedtoken));
+    public void parseAndSaveFptnLink(String fptnTokenString) throws PVNClientException {
         try {
-            FptnToken fptnToken = OBJECT_MAPPER.readValue(decodedToken, FptnToken.class);
-            FptnTokenValidationUtils.validate(fptnToken);
+            List<FptnServerDto> serverDtoList = new ArrayList<>();
 
-            String username = fptnToken.getUsername();
-            String password = fptnToken.getPassword();
-            // add normal servers
-            List<FptnTokenServer> servers = fptnToken.getServers();
-            if (servers != null && !servers.isEmpty()) {
-                for (FptnTokenServer server : servers) {
-                    FptnServerDto fptnServerDto = createFptnServerDto(server, username, password, false);
-                    serverDtoList.add(fptnServerDto);
-                    Log.d(getTag(), "Server from token: " + fptnServerDto.getServerInfo());
+            // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn:
+            final String clearedToken = fptnTokenString.replaceAll("\\s+", "")
+                    .replace("fptn://", "")
+                    .replace("fptn:", "");
+            try {
+                String decodedToken = new String(Base64.getDecoder().decode(clearedToken));
+                FptnToken fptnToken = OBJECT_MAPPER.readValue(decodedToken, FptnToken.class);
+                FptnTokenValidationUtils.validate(fptnToken);
+
+                String username = fptnToken.getUsername();
+                String password = fptnToken.getPassword();
+                // add normal servers
+                List<FptnTokenServer> servers = fptnToken.getServers();
+                if (servers != null && !servers.isEmpty()) {
+                    for (FptnTokenServer server : servers) {
+                        FptnServerDto fptnServerDto = createFptnServerDto(server, username, password, false);
+                        serverDtoList.add(fptnServerDto);
+                        Log.d(getTag(), "Server from token: " + fptnServerDto.getServerInfo());
+                    }
                 }
-            }
-            // add censured servers
-            List<FptnTokenServer> censoredServers = fptnToken.getCensoredServers();
-            if (censoredServers != null && !censoredServers.isEmpty()) {
-                for (FptnTokenServer server : censoredServers) {
-                    FptnServerDto fptnServerDto = createFptnServerDto(server, username, password, true);
-                    serverDtoList.add(fptnServerDto);
-                    Log.d(getTag(), "Censured server from token: " + fptnServerDto.getServerInfo());
+                // add censured servers
+                List<FptnTokenServer> censoredServers = fptnToken.getCensoredServers();
+                if (censoredServers != null && !censoredServers.isEmpty()) {
+                    for (FptnTokenServer server : censoredServers) {
+                        FptnServerDto fptnServerDto = createFptnServerDto(server, username, password, true);
+                        serverDtoList.add(fptnServerDto);
+                        Log.d(getTag(), "Censured server from token: " + fptnServerDto.getServerInfo());
+                    }
                 }
+            } catch (IOException e) {
+                String errorMessage = "Can't parse FPTNLink!: ";
+                Log.e(getTag(), errorMessage, e);
+                throw new PVNClientException(ErrorCode.ACCESS_TOKEN_FORMAT_ERROR);
             }
-        } catch (IOException e) {
-            Log.e(getTag(), "Can't parse FPTNLink!", e);
+
+            if (serverDtoList.isEmpty()) {
+                Log.e(getTag(), "Server list from token is empty!");
+                throw new PVNClientException(ErrorCode.SERVER_LIST_NULL_OR_EMPTY);
+            }
+
+            fptnServerRepository.deleteAllServers(); // delete all old servers
+            fptnServerRepository.insertAll(serverDtoList); // add new servers
+        } catch (PVNClientException e) {
+            handlePVNClientException(e);
             throw e;
         }
-
-        if (serverDtoList.isEmpty()) {
-            ErrorCode errorCode = ErrorCode.SERVER_LIST_NULL_OR_EMPTY;
-            String errorMessage = Optional.ofNullable(getStringResourceByName(getApplication(), errorCode.getValue()))
-                    .orElse(errorCode.getValue());
-            throw new PVNClientException(errorCode, errorMessage);
-        }
-
-        fptnServerRepository.deleteAllServers(); // delete all old servers
-        fptnServerRepository.insertAll(serverDtoList); // add new servers
     }
 
     @NonNull

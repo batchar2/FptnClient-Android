@@ -91,6 +91,7 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="ciphers_error">Не удалось найти поддерживаемые шифры!</string>
 
     <string name="access_token_error">Ошибка аутентификации! Обновите ваш токен доступа в настройках приложения</string>
+    <string name="access_token_format">Неверный формат токена! Проверьте правильность ввода</string>
 
     <string name="ssl_context_init_failed">Ошибка при инициализации контекста SSL!</string>
 

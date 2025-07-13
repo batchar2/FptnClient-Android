@@ -14,6 +14,7 @@ enum class ErrorCode(
     CIPHERS_ERROR("ciphers_error"),
     SSL_CONTEXT_INIT_FAILED("ssl_context_init_failed"),
     ACCESS_TOKEN_ERROR("access_token_error"),
+    ACCESS_TOKEN_FORMAT_ERROR("access_token_format"),
     UNKNOWN_ERROR("unknown_error"),
     ;
 
