@@ -74,7 +74,7 @@ jobs:
         fi
         APK_FILES=(app/build/outputs/apk/release/*.apk)
         if [ -f "${APK_FILES[0]}" ]; then
-          cp -v "${APK_FILES[0]}" "app-android-${RELEASE_VERSION_NAME}.apk"
+          cp -v "${APK_FILES[0]}" "fptn-android-${RELEASE_VERSION_NAME}.apk"
         else
           echo "Error: No APK files found in app/build/outputs/apk/release/"
           exit 1
