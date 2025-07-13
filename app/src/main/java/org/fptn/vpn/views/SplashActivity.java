@@ -29,6 +29,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.splash_layout);
 
         initializeVariable();
+        throw new RuntimeException("Test Crash");
     }
 
     private void initializeVariable() {

@@ -78,6 +78,7 @@ tasks.register("clean", Delete::class) {
 
 plugins {
     alias(libs.plugins.deps.sorting) apply false
+    alias(libs.plugins.crashlytics) apply false
     alias(libs.plugins.deps.unused) apply true
 }
 
