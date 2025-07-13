@@ -12,6 +12,10 @@ android {
 
     signingConfigs {
         create("release") {
+            System.out.println("KEY_ALIAS: ${System.getenv("KEY_ALIAS") ?: ""} end")
+            System.out.println("KEY_PASSWORD: ${System.getenv("KEY_PASSWORD") ?: ""} end")
+            System.out.println("KEYSTORE_PATH: ${System.getenv("KEYSTORE_PATH") ?: ""} end")
+            System.out.println("STORE_PASSWORD: ${System.getenv("STORE_PASSWORD") ?: ""} end")
             keyAlias = System.getenv("KEY_ALIAS") ?: ""
             keyPassword = System.getenv("KEY_PASSWORD") ?: ""
             storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
@@ -29,6 +33,12 @@ android {
             1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch.$versionBuild"
 
+        System.out.println("versionMajor: $versionMajor end")
+        System.out.println("versionMinor: $versionMinor end")
+        System.out.println("versionPatch: $versionPatch end")
+        System.out.println("versionBuild: $versionBuild end")
+        System.out.println("versionName: $versionName end")
+        System.out.println("versionCode: $versionCode end")
         minSdk = rootProject.extra.get("minSdkVersion") as Int
         targetSdk = rootProject.extra.get("targetSdkVersion") as Int
 
