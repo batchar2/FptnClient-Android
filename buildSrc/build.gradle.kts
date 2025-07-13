@@ -15,6 +15,7 @@ dependencies {
     implementation(libs.java.poet)
     implementation(libs.guava)
     implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.kotlin.metadata.jvm)
     implementation(libs.ksp.gradle.plugin)
 }
 

@@ -46,9 +46,11 @@ public class LoginActivity extends AppCompatActivity {
 
     @SuppressLint({"InlinedApi", "ClickableViewAccessibility"})
     private void initializeVariable() {
+        // todo: it's some kind of hack?
         fptnViewModel = new ViewModelProvider(this).get(FptnServerViewModel.class);
         ListenableFuture<List<FptnServerDto>> allServersListFuture = fptnViewModel.getAllServers();
         Futures.addCallback(allServersListFuture, (DBFutureCallback<List<FptnServerDto>>) result -> {
+            // todo: why we remove all?
             fptnViewModel.deleteAll(); // delete all
         }, this.getMainExecutor());
 
@@ -75,8 +77,8 @@ public class LoginActivity extends AppCompatActivity {
     public void onLogin(View v) {
         final EditText linkInput = findViewById(R.id.fptn_login_link_input);
         final String fptnLink = linkInput.getText().toString();
-        final TextView errorText = findViewById(R.id.errorTextView);
-
+        final TextView errorTextView = findViewById(R.id.errorTextView);
+        fptnViewModel.getErrorTextLiveData().observe(this, errorTextView::setText);
         try {
             fptnViewModel.parseAndSaveFptnLink(fptnLink);
 
@@ -86,8 +88,7 @@ public class LoginActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(getTag(), "Token invalid: ", e);
             Toast.makeText(getApplicationContext(), R.string.token_saving_failed, Toast.LENGTH_SHORT).show();
-            errorText.setVisibility(View.VISIBLE);
-            errorText.setText(e.getMessage());
+            errorTextView.setVisibility(View.VISIBLE);
         }
     }
 

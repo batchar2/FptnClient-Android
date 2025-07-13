@@ -33,7 +33,7 @@ public class FptnServerRepository {
         return database.fptnServerDAO().getAllServersLiveData();
     }
 
-    public void deleteAll() {
+    public void deleteAllServers() {
         executorService.execute(() -> database.fptnServerDAO().deleteAll());
     }
 

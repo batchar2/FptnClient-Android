@@ -1,8 +1,8 @@
 package org.fptn.vpn.auth.domain
 
-import org.fptn.vpn.core.model.UserData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.fptn.vpn.core.model.UserData
 
 interface AuthInteractor {
     val userData: Flow<UserData>

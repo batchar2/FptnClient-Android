@@ -8,13 +8,13 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import org.fptn.vpn.R;
 import org.fptn.vpn.database.model.FptnServerDto;
 import org.fptn.vpn.repository.FptnServerRepository;
 import org.fptn.vpn.views.callback.DBFutureCallback;
-
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.List;
 import java.util.Optional;

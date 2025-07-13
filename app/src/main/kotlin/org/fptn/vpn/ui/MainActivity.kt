@@ -15,10 +15,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.filantrop.pvnclient.auth.ui.AuthScreen
+import kotlinx.coroutines.launch
 import org.fptn.vpn.core.designsystem.theme.PvnTheme
 import org.fptn.vpn.viewmodel.AuthActivityUiState
 import org.fptn.vpn.viewmodel.MainViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {

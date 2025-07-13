@@ -1,34 +1,46 @@
 import java.io.FileInputStream
-import java.util.Properties
 import java.io.InputStream
+import java.util.Properties
 import kotlin.concurrent.thread
 
 plugins {
     id("org.fptn.vpn.application")
     id("org.fptn.vpn.application.compose")
     id("org.fptn.vpn.application.koin")
+    id("com.google.gms.google-services")
+    alias(libs.plugins.crashlytics)
 }
+
+val keystorePropertiesFile: File = rootProject.file("keystore.properties")
 
 android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
     ndkVersion = "28.1.13356709"
 
+    var isCI = System.getenv("KEY_ALIAS") != null
+
     signingConfigs {
         create("release") {
-            val keystorePropertiesFile: File = rootProject.file("keystore.properties")
-            val keystoreProperties = Properties()
-            if (keystorePropertiesFile.exists()) {
-                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"]!!)
-                storePassword = keystoreProperties["storePassword"] as String
+            if (isCI) {
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+                storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
+                storePassword = System.getenv("STORE_PASSWORD") ?: ""
             } else {
-                println(
-                    "Warning: keystore.properties file not found. " +
+                if (keystorePropertiesFile.exists()) {
+                    val keystoreProperties = Properties()
+                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                    keyAlias = keystoreProperties["keyAlias"] as String
+                    keyPassword = keystoreProperties["keyPassword"] as String
+                    storeFile = file(keystoreProperties["storeFile"]!!)
+                    storePassword = keystoreProperties["storePassword"] as String
+                } else {
+                    println(
+                        "Warning: keystore.properties file not found. " +
                             "Release signing configuration will not be applied.",
-                )
+                    )
+                }
             }
         }
     }
@@ -65,15 +77,31 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            isShrinkResources = false
+            isDebuggable = false
+            if (isCI || keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
         }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isMinifyEnabled = false
+            isDebuggable = true
+            manifestPlaceholders["appName"] = "FPTN VPN debug"
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
     }
     buildFeatures {
         viewBinding = true
@@ -90,6 +118,7 @@ android {
 dependencies {
     implementation(project(":auth:domain"))
     implementation(project(":auth:ui"))
+    implementation(platform(libs.firebase.bom))
     implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:network"))
@@ -103,6 +132,8 @@ dependencies {
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics.ndk)
     implementation(libs.guava)
     implementation(libs.ipaddress)
     implementation(libs.jackson.databind)
@@ -125,40 +156,41 @@ java {
     }
 }
 
-
-fun readStreamAsync(stream: InputStream, label: String) = thread {
+fun readStreamAsync(
+    stream: InputStream,
+    label: String,
+) = thread {
     stream.bufferedReader().useLines { lines ->
         lines.forEach { println("[$label] $it") }
     }
 }
 
-task("conanInstall") {
-    val conanExecutable = "conan" // define the path to your conan installation
-    val buildDir = file("build").apply { mkdirs() }
-
-    val absoluteBuildDirPath = buildDir.absolutePath
-    println("Build directory: $absoluteBuildDirPath")
-
-    listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
-        listOf("armv8", "armv7").forEach { arch ->
-            val cmd =
-                "$conanExecutable install " +
-                        "$absoluteBuildDirPath/../src/main/cpp --profile android-studio -s build_type=$buildType -s arch=$arch " +
-                        "--build missing"
-            println(">> $cmd")
-            val sout = StringBuilder()
-            val serr = StringBuilder()
-            val proc = Runtime.getRuntime().exec(cmd, null, buildDir)
-
-            val exportOut = readStreamAsync(proc.inputStream, "stdout")
-            val exportErr = readStreamAsync(proc.errorStream, "stderr")
-
-            val exitCode = proc.waitFor()
-            println("$sout $serr")
-
-            if (exitCode != 0) {
-                throw Exception("out> $sout err> $serr\nCommand: $cmd")
+tasks.register("conanInstall") {
+    group = "c++"
+    doLast {
+        val buildDir = file("$buildDir/conan").apply { mkdirs() }
+        listOf("Debug", "Release", "RelWithDebInfo").forEach { buildType ->
+            listOf("armv8", "armv7").forEach { arch ->
+                exec {
+                    workingDir = buildDir
+                    commandLine(
+                        "conan",
+                        "install",
+                        "$projectDir/src/main/cpp",
+                        "--profile",
+                        "$rootDir/conan/profiles/android-studio",
+                        "-s",
+                        "build_type=$buildType",
+                        "-s",
+                        "arch=$arch",
+                        "--build",
+                        "missing",
+                        "-c",
+                        "tools.cmake.cmake_layout:build_folder_vars=['settings.arch']",
+                    )
+                }
             }
         }
     }
 }
+tasks.named("preBuild") { dependsOn("conanInstall") }

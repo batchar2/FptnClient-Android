@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "298983592317",
+    "project_id": "fptn-andoid-client",
+    "storage_bucket": "fptn-andoid-client.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:298983592317:android:85edafa8705ebf55dc3c14",
+        "android_client_info": {
+          "package_name": "org.fptn.vpn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC07GBg8KHYmZzZ_bATr_M7JvU5AJsQ2TY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:298983592317:android:dd5f66b17bb52a3adc3c14",
+        "android_client_info": {
+          "package_name": "org.fptn.vpn.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC07GBg8KHYmZzZ_bATr_M7JvU5AJsQ2TY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

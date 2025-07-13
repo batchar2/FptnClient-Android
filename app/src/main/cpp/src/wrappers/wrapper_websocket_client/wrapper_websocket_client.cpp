@@ -188,18 +188,20 @@ void WrapperWebsocketClient::onIPPacket(
       throw std::runtime_error("Failed to get JNI environment");
     }
 
-    const std::string serialized_packet = packet->ToString();
-    if (serialized_packet.empty()) {
+    const auto* raw_packet = packet->GetRawPacket();
+    const void* data = static_cast<const void*>(raw_packet->getRawData());
+    const auto len = raw_packet->getRawDataLen();
+
+    if (!len || data == nullptr) {
       throw std::runtime_error("Serialized packet is empty");
     }
 
-    jpacket = env->NewByteArray(serialized_packet.size());
+    jpacket = env->NewByteArray(len);
     if (!jpacket) {
       throw std::runtime_error("Failed to allocate jbyteArray");
     }
 
-    env->SetByteArrayRegion(jpacket, 0, serialized_packet.size(),
-        reinterpret_cast<const jbyte*>(serialized_packet.data()));
+    env->SetByteArrayRegion(jpacket, 0, len, reinterpret_cast<const jbyte*>(data));
     if (env->ExceptionCheck()) {
       env->ExceptionDescribe();
       env->ExceptionClear();

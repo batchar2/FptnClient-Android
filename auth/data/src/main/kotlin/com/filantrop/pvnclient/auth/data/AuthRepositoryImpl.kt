@@ -1,8 +1,8 @@
 package org.fptn.vpn.auth.data
 
+import kotlinx.coroutines.flow.Flow
 import org.fptn.vpn.auth.domain.AuthRepository
 import org.fptn.vpn.core.persistent.PreferenceStore
-import kotlinx.coroutines.flow.Flow
 
 class AuthRepositoryImpl(
     private val preferenceStore: PreferenceStore,

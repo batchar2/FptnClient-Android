@@ -2,14 +2,14 @@ package org.fptn.vpn.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.fptn.vpn.auth.domain.AuthInteractor
-import org.fptn.vpn.core.common.Result
-import org.fptn.vpn.core.common.asResult
-import org.fptn.vpn.core.model.UserData
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import org.fptn.vpn.auth.domain.AuthInteractor
+import org.fptn.vpn.core.common.Result
+import org.fptn.vpn.core.common.asResult
+import org.fptn.vpn.core.model.UserData
 
 class MainViewModel(
     authInteractor: AuthInteractor,

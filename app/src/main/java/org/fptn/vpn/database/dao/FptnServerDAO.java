@@ -6,6 +6,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 
 import org.fptn.vpn.database.model.FptnServerDto;
+
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface FptnServerDAO {
     @Query("SELECT * FROM server_table WHERE censured = :censured")
     ListenableFuture<List<FptnServerDto>> getServersListFuture(boolean censured);
 
-    @Query("UPDATE server_table SET isSelected = 1 WHERE id = :id")
+    @Query("UPDATE server_table SET isSelected = CASE WHEN id = :id THEN 1 ELSE 0 END")
     ListenableFuture<Integer> setIsSelected(int id);
 
     @Query("SELECT * FROM server_table WHERE isSelected = 1")

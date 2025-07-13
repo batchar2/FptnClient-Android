@@ -2,10 +2,10 @@ package org.fptn.vpn.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
-import org.fptn.vpn.R
-import org.fptn.vpn.core.designsystem.icons.PvnIcons
 import com.filantrop.pvnclient.home.ui.navigation.HOME_BASE_ROUTE
 import com.filantrop.pvnclient.home.ui.navigation.HOME_ROUTE
+import org.fptn.vpn.R
+import org.fptn.vpn.core.designsystem.icons.PvnIcons
 import org.fptn.vpn.settings.ui.navigation.SETTINGS_ROUTE
 
 enum class TopLevelDestination(
