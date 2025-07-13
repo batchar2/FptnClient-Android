@@ -12,10 +12,10 @@ android {
 
     signingConfigs {
         create("release") {
-            System.out.println("KEY_ALIAS: ${System.getenv("KEY_ALIAS") ?: ""} end")
-            System.out.println("KEY_PASSWORD: ${System.getenv("KEY_PASSWORD") ?: ""} end")
-            System.out.println("KEYSTORE_PATH: ${System.getenv("KEYSTORE_PATH") ?: ""} end")
-            System.out.println("STORE_PASSWORD: ${System.getenv("STORE_PASSWORD") ?: ""} end")
+            System.out.println("KEY_ALIAS length: ${System.getenv("KEY_ALIAS")?.length ?: 0}")
+            System.out.println("KEY_PASSWORD length: ${System.getenv("KEY_PASSWORD")?.length ?: 0}")
+            System.out.println("KEYSTORE_PATH length: ${System.getenv("KEYSTORE_PATH")?.length ?: 0}")
+            System.out.println("STORE_PASSWORD length: ${System.getenv("STORE_PASSWORD")?.length ?: 0}")
             keyAlias = System.getenv("KEY_ALIAS") ?: ""
             keyPassword = System.getenv("KEY_PASSWORD") ?: ""
             storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
