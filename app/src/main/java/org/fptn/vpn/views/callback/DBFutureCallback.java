@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.google.common.util.concurrent.FutureCallback;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface DBFutureCallback<V extends @Nullable Object> extends FutureCallback<V> {
 

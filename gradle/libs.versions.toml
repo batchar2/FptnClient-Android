@@ -1,28 +1,29 @@
 [versions]
-activity = "1.9.3"
+activity = "1.10.1"
 appcompat = "1.7.1"
 autonomousappsSorting = "0.14"
-autonomousappsUnused = "2.7.0"
+autonomousappsUnused = "2.19.0"
 constraintlayout = "2.2.1"
 crashlytics = "3.0.4"
 detektPlugin = "1.23.8"
-firebase = "33.16.0"
-gradlePlugin = "8.2.2"
-guava = "33.4.0-jre"
+firebaseBom = "33.16.0"
+firebaseCrashlyticsPlugin = "3.0.4"
+googlePlayServices = "4.4.3"
+gradlePlugin = "8.11.1"
+guava = "33.4.8-jre"
 ipaddress = "5.5.1"
 jacksonDatabind = "2.19.1"
 java = "17"
 junit = "4.13.2"
 junitTest = "1.2.1"
-kotlin = "1.9.25"
-ksp = "2.0.20-1.0.24"
+kotlin = "2.2.0"
+ksp = "2.2.0-2.0.2"
 lombock = "1.18.38"
 material = "1.12.0"
 monitor = "1.7.2"
 protobuf = "4.26.1"
-roomRuntime = "2.6.1"
+roomRuntime = "2.7.2"
 zxing = "3.5.3"
-googlePlayServices = "4.4.3"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
@@ -35,19 +36,21 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detektPlugin" }
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-crashlytics-ndk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
+google-services = { group = "com.google.gms", name = "google-services", version.ref = "googlePlayServices" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddress" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlin" }
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
-google-services = { group = "com.google.gms", name = "google-services", version.ref = "googlePlayServices" }
 
 [plugins]
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }

@@ -2,7 +2,6 @@
 import org.fptn.vpn.gradle.DetektOptions.applyDetektOptions
 import org.fptn.vpn.gradle.FormattingOptions.applyPrecheckOptions
 
-
 data class VersionInfo(
     val major: Int,
     val minor: Int,
@@ -25,7 +24,7 @@ fun parseVersionTag(versionTag: String?): VersionInfo {
     }
 }
 
-val versionTag = System.getenv("RELEASE_VERSION") ?: System.getenv("VERSION_TAG")
+val versionTag: String? = System.getenv("RELEASE_VERSION") ?: System.getenv("VERSION_TAG")
 val versionInfo = parseVersionTag(versionTag)
 
 println(
@@ -46,9 +45,8 @@ buildscript {
         maven("https://plugins.gradle.org/m2/")
     }
     dependencies {
+        classpath(libs.firebase.crashlytics.gradle)
         classpath(libs.google.services)
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
     }
 }
 
@@ -77,8 +75,8 @@ tasks.register("clean", Delete::class) {
 }
 
 plugins {
-    alias(libs.plugins.deps.sorting) apply false
     alias(libs.plugins.crashlytics) apply false
+    alias(libs.plugins.deps.sorting) apply false
     alias(libs.plugins.deps.unused) apply true
 }
 

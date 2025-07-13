@@ -1,29 +1,42 @@
+import java.io.FileInputStream
 import java.io.InputStream
+import java.util.Properties
 import kotlin.concurrent.thread
 
 plugins {
     id("pvnclient.android.application")
+    id("com.google.gms.google-services")
     alias(libs.plugins.crashlytics)
 }
+
+val keystorePropertiesFile: File = rootProject.file("keystore.properties")
 
 android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
     ndkVersion = "28.1.13356709"
-    var isRelease = System.getenv("KEY_ALIAS") != null
+    var isCI = System.getenv("KEY_ALIAS") != null
     signingConfigs {
         create("release") {
-
-            if (isRelease) {
+            if (isCI) {
                 keyAlias = System.getenv("KEY_ALIAS") ?: ""
                 keyPassword = System.getenv("KEY_PASSWORD") ?: ""
                 storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
                 storePassword = System.getenv("STORE_PASSWORD") ?: ""
             } else {
-                println(
-                    "Warning: keystore.properties file not found. " +
-                        "Release signing configuration will not be applied.",
-                )
+                if (keystorePropertiesFile.exists()) {
+                    val keystoreProperties = Properties()
+                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                    keyAlias = keystoreProperties["keyAlias"] as String
+                    keyPassword = keystoreProperties["keyPassword"] as String
+                    storeFile = file(keystoreProperties["storeFile"]!!)
+                    storePassword = keystoreProperties["storePassword"] as String
+                } else {
+                    println(
+                        "Warning: keystore.properties file not found. " +
+                            "Release signing configuration will not be applied.",
+                    )
+                }
             }
         }
     }
@@ -62,7 +75,7 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             isDebuggable = false
-            if (isRelease) {
+            if (isCI || keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
             proguardFiles(
@@ -99,6 +112,7 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.firebase.bom))
     implementation(project(":core:common"))
     implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)
