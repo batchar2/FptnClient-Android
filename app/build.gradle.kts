@@ -69,6 +69,14 @@ android {
                 "proguard-rules.pro",
             )
         }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isMinifyEnabled = false
+            isDebuggable = true
+            manifestPlaceholders["appName"] = "FPTN VPN debug"
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
