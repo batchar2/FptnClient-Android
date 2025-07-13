@@ -20,6 +20,7 @@ monitor = "1.7.2"
 protobuf = "4.26.1"
 roomRuntime = "2.6.1"
 zxing = "3.5.3"
+googlePlayServices = "4.4.3"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradlePlugin" }
@@ -41,6 +42,7 @@ ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devt
 lombock = { group = "org.projectlombok", name = "lombok", version.ref = "lombock" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
+google-services = { group = "com.google.gms", name = "google-services", version.ref = "googlePlayServices" }
 
 [plugins]
 deps-sorting = { id = "com.squareup.sort-dependencies", version.ref = "autonomousappsSorting" }
