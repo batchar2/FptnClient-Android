@@ -3,6 +3,7 @@ import kotlin.concurrent.thread
 
 plugins {
     id("pvnclient.android.application")
+    alias(libs.plugins.crashlytics)
 }
 
 android {
@@ -107,6 +108,8 @@ dependencies {
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.room.guava)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics.ndk)
     implementation(libs.guava)
     implementation(libs.ipaddress)
     implementation(libs.jackson.databind)
