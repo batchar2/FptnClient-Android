@@ -63,6 +63,7 @@ jobs:
       run: ./gradlew test
 
     - name: Build APK and AAB
+      if: github.event_name == 'release'
       run: |
         ./gradlew assembleRelease bundleRelease
         AAB_FILE=(app/build/outputs/bundle/release/app-release.aab)

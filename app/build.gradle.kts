@@ -9,17 +9,21 @@ android {
     namespace = "org.fptn.vpn"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
     ndkVersion = "28.1.13356709"
-
+    var isRelease = System.getenv("KEY_ALIAS") != null
     signingConfigs {
         create("release") {
-            System.out.println("KEY_ALIAS length: ${System.getenv("KEY_ALIAS")?.length ?: 0}")
-            System.out.println("KEY_PASSWORD length: ${System.getenv("KEY_PASSWORD")?.length ?: 0}")
-            System.out.println("KEYSTORE_PATH length: ${System.getenv("KEYSTORE_PATH")?.length ?: 0}")
-            System.out.println("STORE_PASSWORD length: ${System.getenv("STORE_PASSWORD")?.length ?: 0}")
-            keyAlias = System.getenv("KEY_ALIAS") ?: ""
-            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
-            storePassword = System.getenv("STORE_PASSWORD") ?: ""
+
+            if (isRelease) {
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+                storeFile = file(System.getenv("KEYSTORE_PATH") ?: "android-keystore.jks")
+                storePassword = System.getenv("STORE_PASSWORD") ?: ""
+            } else {
+                println(
+                    "Warning: keystore.properties file not found. " +
+                        "Release signing configuration will not be applied.",
+                )
+            }
         }
     }
 
@@ -33,12 +37,6 @@ android {
             1000 * (1000 * versionMajor + 100 * versionMinor + versionPatch) + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch.$versionBuild"
 
-        System.out.println("versionMajor: $versionMajor end")
-        System.out.println("versionMinor: $versionMinor end")
-        System.out.println("versionPatch: $versionPatch end")
-        System.out.println("versionBuild: $versionBuild end")
-        System.out.println("versionName: $versionName end")
-        System.out.println("versionCode: $versionCode end")
         minSdk = rootProject.extra.get("minSdkVersion") as Int
         targetSdk = rootProject.extra.get("targetSdkVersion") as Int
 
@@ -60,7 +58,12 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
+            if (isRelease) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
