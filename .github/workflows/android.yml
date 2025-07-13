@@ -25,7 +25,7 @@ jobs:
     - name: Set dev version environment variables
       if: github.event_name != 'release'
       run: |
-        echo "RELEASE_VERSION=0.0.0.0" >> $GITHUB_ENV
+        echo "RELEASE_VERSION=0.0.0.1" >> $GITHUB_ENV
         echo "RELEASE_VERSION_NAME=$(date +'%Y-%m-%d__%H-%M-%S')-dev" >> $GITHUB_ENV
 
     - name: Set environment variables
