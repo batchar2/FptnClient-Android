@@ -26,6 +26,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FptnClient"
         tools:targetApi="33">
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
         <activity
             android:screenOrientation="portrait"
             android:name="org.fptn.vpn.views.SplashActivity"
