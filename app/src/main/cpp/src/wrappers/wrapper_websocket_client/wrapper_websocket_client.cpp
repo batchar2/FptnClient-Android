@@ -62,10 +62,11 @@ bool WrapperWebsocketClient::Stop() {
   running_ = false;
   if (client_) {
     client_->Stop();
-    if (th_.joinable()) {
-      th_.join();
-    }
     client_.reset();
+  }
+
+  if (th_.joinable()) {
+    th_.join();
   }
   return true;
 }
