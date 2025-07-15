@@ -66,7 +66,7 @@ public class FptnServerViewModel extends AndroidViewModel {
     @Getter
     private final MutableLiveData<String> statusTextLiveData = new MutableLiveData<>(getApplication().getString(R.string.disconnected));
     @Getter
-    private final LiveData<List<FptnServerDto>> serverDtoListLiveData;
+    public final LiveData<List<FptnServerDto>> serverDtoListLiveData;
 
     // observers
     private final Observer<CustomVpnServiceState> serviceStateObserver;
