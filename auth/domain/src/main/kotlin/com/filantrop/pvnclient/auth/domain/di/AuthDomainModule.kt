@@ -1,7 +1,7 @@
-package org.fptn.vpn.auth.domain.di
+package com.filantrop.pvnclient.auth.domain.di
 
-import org.fptn.vpn.auth.domain.AuthInteractor
-import org.fptn.vpn.auth.domain.AuthInteractorImpl
+import com.filantrop.pvnclient.auth.domain.AuthInteractor
+import com.filantrop.pvnclient.auth.domain.AuthInteractorImpl
 import org.koin.dsl.module
 
 val authDomainModule =

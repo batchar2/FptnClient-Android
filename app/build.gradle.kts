@@ -116,9 +116,9 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.firebase.bom))
     implementation(project(":auth:domain"))
     implementation(project(":auth:ui"))
-    implementation(platform(libs.firebase.bom))
     implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
@@ -153,6 +153,7 @@ dependencies {
     annotationProcessor(libs.lombock)
 
     testImplementation(libs.junit)
+    testImplementation(libs.koin.test)
 
     androidTestImplementation(libs.androidx.junit)
 }

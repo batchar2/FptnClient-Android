@@ -1,5 +1,6 @@
 plugins {
     id("org.fptn.vpn.library.android")
+    id("org.fptn.vpn.library.koin")
 }
 
 android {
@@ -7,5 +8,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.navigation.compose)
+    implementation(libs.androidx.navigation.runtime.android)
 }

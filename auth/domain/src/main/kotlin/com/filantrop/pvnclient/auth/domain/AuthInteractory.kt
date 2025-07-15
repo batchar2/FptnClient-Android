@@ -1,4 +1,4 @@
-package org.fptn.vpn.auth.domain
+package com.filantrop.pvnclient.auth.domain
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

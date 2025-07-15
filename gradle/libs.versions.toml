@@ -21,7 +21,7 @@ java = "17"
 javaPoet = "1.13.0"
 junit = "4.13.2"
 junitTest = "1.2.1"
-koinBom = "4.1.0"
+koin = "4.1.0"
 kotlin = "2.2.0"
 ksp = "2.2.0-2.0.2"
 lombock = "1.18.38"
@@ -51,10 +51,11 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "composeConstraintLayout" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitTest" }
 androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
+androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigation" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-guava = { module = "androidx.room:room-guava", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
@@ -71,12 +72,13 @@ ipaddress = { module = "com.github.seancfoley:ipaddress", version.ref = "ipaddre
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
 java-poet = { group = "com.squareup", name = "javapoet", version.ref = "javaPoet" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koinBom" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose" }
 koin-androidx-runtime-android = { group = "io.insert-koin", name = "koin-androidx-runtime-android" }
-koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koinBom" }
+koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin" }
 koin-core = { group = "io.insert-koin", name = "koin-core" }
 koin-core-viewmodel-jvm = { group = "io.insert-koin", name = "koin-core-viewmodel-jvm" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlin" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesCore" }

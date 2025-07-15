@@ -8,7 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.tracing)
     implementation(libs.koin.core)
     implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.androidx.tracing)
 }

@@ -1,7 +1,7 @@
-package org.fptn.vpn.auth.data
+package com.filantrop.pvnclient.auth.data
 
+import com.filantrop.pvnclient.auth.domain.AuthRepository
 import kotlinx.coroutines.flow.Flow
-import org.fptn.vpn.auth.domain.AuthRepository
 import org.fptn.vpn.core.persistent.PreferenceStore
 
 class AuthRepositoryImpl(

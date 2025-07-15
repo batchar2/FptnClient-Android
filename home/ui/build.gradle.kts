@@ -7,5 +7,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.navigation.compose)
+    implementation(libs.androidx.navigation.runtime.android)
 }
