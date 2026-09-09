@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -145,7 +145,7 @@ fun UpdateTokenScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .heightIn(min = 48.dp, max = 140.dp)
                     .padding(top = 16.dp)
                     .legacyDrawableBackground(R.drawable.round_back_white10_20),
             ) {
@@ -154,14 +154,15 @@ fun UpdateTokenScreen(
                     onValueChange = { tokenText = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.CenterStart)
+                        .align(Alignment.TopStart)
                         .padding(start = 10.dp, top = 10.dp, bottom = 10.dp, end = 76.dp),
                     textStyle = TextStyle(color = Black, fontSize = 16.sp),
-                    singleLine = true,
+                    singleLine = false,
+                    maxLines = 5,
                     cursorBrush = SolidColor(Black),
                     interactionSource = interactionSource,
                     decorationBox = { innerTextField ->
-                        Box(contentAlignment = Alignment.CenterStart) {
+                        Box(contentAlignment = Alignment.TopStart) {
                             if (tokenText.text.isEmpty()) {
                                 Text(
                                     text = stringResource(R.string.paste_your_token),
@@ -175,8 +176,8 @@ fun UpdateTokenScreen(
                 )
                 Row(
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 8.dp),
+                        .align(Alignment.TopEnd)
+                        .padding(top = 10.dp, end = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
