@@ -363,15 +363,15 @@ private fun AppRow(app: AppInfo, mode: PerAppVpnMode, onToggle: () -> Unit) {
             Image(
                 bitmap = icon.asImageBitmap(),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(32.dp),
             )
         } else {
-            Spacer(modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.size(32.dp))
         }
         Text(
             text = app.label,
             color = if (forcedExcluded) TealAccent else White,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .weight(1f)
