@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,8 +47,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -81,15 +83,24 @@ private const val TOKEN_MAX_AGE_MS = 14L * 24 * 60 * 60 * 1000
 private const val TOKEN_STALE_AGE_MS = 3L * 24 * 60 * 60 * 1000
 private const val CONNECT_FAILURES_BEFORE_HELP = 2
 
+// Matches home_layout.xml's `app:layout_constraintVertical_bias="0.38"` on the connect button,
+// which is constant — it does not vary by screen height.
+private const val CONNECT_BUTTON_VERTICAL_BIAS = 0.38f
+
 /**
  * Compose port of the legacy `HomeActivity` / `home_layout.xml`. Reuses [HomeActivityViewModel]
- * unchanged. The connect button's vertical position (originally a ConstraintLayout bias tuned
- * per screen height) is approximated with a top spacer sized to the same bias fraction rather
- * than pulled in via `constraintlayout-compose`, matching how every other ported screen in this
- * app favors plain Compose layout primitives over new layout dependencies. Similarly the traffic
- * card no longer stretches to fill the remaining space down to the bottom nav — it just wraps its
- * content, which reads the same in practice since the card was always top-aligned within that
- * space unless the (rarely toggled) speed chart was showing.
+ * unchanged. The connect button's vertical position (originally a ConstraintLayout bias against
+ * the parent, independent of its siblings) is reproduced with a top spacer sized via
+ * [CONNECT_BUTTON_VERTICAL_BIAS] against the actually measured available height, rather than
+ * pulled in via `constraintlayout-compose`, matching how every other ported screen in this app
+ * favors plain Compose layout primitives over new layout dependencies. Because the timer block
+ * above the button is always composed (see below), its measured height is subtracted from the
+ * spacer so the button itself still lands at the same bias-determined position regardless of
+ * connection state, matching the original where the timer's GONE/visible height never affected
+ * the button (its constraints ran straight to the parent, not through the timer). Similarly the
+ * traffic card no longer stretches to fill the remaining space down to the bottom nav — it just
+ * wraps its content, which reads the same in practice since the card was always top-aligned
+ * within that space unless the (rarely toggled) speed chart was showing.
  */
 @Composable
 fun HomeScreen(
@@ -390,87 +401,94 @@ fun HomeScreen(
                 }
             }
 
-            Column(
+            BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val screenHeightDp = LocalConfiguration.current.screenHeightDp
-                val verticalBias = when {
-                    screenHeightDp < 600 -> 0.10f
-                    screenHeightDp < 700 -> 0.15f
-                    else -> 0.25f
-                }
-                Spacer(modifier = Modifier.height((screenHeightDp * verticalBias).dp))
-
+                val availableHeight = maxHeight
+                val buttonSize = dimensionResource(R.dimen.toggle_button_size)
+                val density = LocalDensity.current
                 // Always composed (never conditionally removed) so it reserves the same layout
                 // space whether shown or not — otherwise the button below would jump down by the
                 // timer's height the moment it appears on connect. The legacy ConstraintLayout
                 // avoided this because the button's position came from its own bias against the
-                // parent, independent of the timer view above it; a plain Column has no such
-                // independence, so the space has to be reserved instead.
+                // parent, independent of the timer view above it; here the timer's measured
+                // height is subtracted from the spacer below instead, so the button still lands
+                // at the same bias-determined position either way.
+                var timerHeight by remember { mutableStateOf(0.dp) }
+                val spacerHeight = ((availableHeight - buttonSize) * CONNECT_BUTTON_VERTICAL_BIAS - timerHeight)
+                    .coerceAtLeast(0.dp)
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .alpha(if (showConnectedUi) 1f else 0f)
-                        .then(if (showConnectedUi) Modifier else Modifier.semantics { hideFromAccessibility() }),
+                    modifier = Modifier.fillMaxSize(),
                 ) {
-                    Text(text = stringResource(R.string.connection_time), color = White)
-                    Text(text = timerText, color = White, modifier = Modifier.padding(bottom = 4.dp))
-                }
+                    Spacer(modifier = Modifier.height(spacerHeight))
 
-                Image(
-                    painter = painterResource(if (activeState) R.drawable.toggle_button_on else R.drawable.toggle_button_off),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.toggle_button_size))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) { onToggleConnectClick() },
-                )
-
-                Text(
-                    text = statusText,
-                    color = Yellow,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
-                )
-
-                if (showConnectedUi) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 6.dp),
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .alpha(if (showConnectedUi) 1f else 0f)
+                            .then(if (showConnectedUi) Modifier else Modifier.semantics { hideFromAccessibility() })
+                            .onSizeChanged { size -> timerHeight = with(density) { size.height.toDp() } },
                     ) {
-                        Text(text = stringResource(R.string.server_label), color = White, modifier = Modifier.padding(end = 5.dp))
-                        Text(text = connectedServerInfo.orEmpty(), color = White, maxLines = 2)
+                        Text(text = stringResource(R.string.connection_time), color = White)
+                        Text(text = timerText, color = White, modifier = Modifier.padding(bottom = 4.dp))
                     }
-                } else {
-                    ServerDropdown(
-                        servers = serverEntities,
-                        selected = selectedServer,
-                        onSelect = { selectedServer = it },
-                        enabled = !activeState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .padding(top = 8.dp),
-                    )
-                }
 
-                if (showConnectedUi) {
-                    TrafficCard(
-                        downloadSpeed = downloadSpeed,
-                        uploadSpeed = uploadSpeed,
-                        downloadTraffic = downloadTraffic,
-                        uploadTraffic = uploadTraffic,
-                        showChart = showTrafficChart,
-                        speedSample = speedSample,
+                    Image(
+                        painter = painterResource(if (activeState) R.drawable.toggle_button_on else R.drawable.toggle_button_off),
+                        contentDescription = null,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
+                            .size(buttonSize)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { onToggleConnectClick() },
                     )
+
+                    Text(
+                        text = statusText,
+                        color = Yellow,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                    )
+
+                    if (showConnectedUi) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 6.dp),
+                        ) {
+                            Text(text = stringResource(R.string.server_label), color = White, modifier = Modifier.padding(end = 5.dp))
+                            Text(text = connectedServerInfo.orEmpty(), color = White, maxLines = 2)
+                        }
+                    } else {
+                        ServerDropdown(
+                            servers = serverEntities,
+                            selected = selectedServer,
+                            onSelect = { selectedServer = it },
+                            enabled = !activeState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .padding(top = 8.dp),
+                        )
+                    }
+
+                    if (showConnectedUi) {
+                        TrafficCard(
+                            downloadSpeed = downloadSpeed,
+                            uploadSpeed = uploadSpeed,
+                            downloadTraffic = downloadTraffic,
+                            uploadTraffic = uploadTraffic,
+                            showChart = showTrafficChart,
+                            speedSample = speedSample,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                        )
+                    }
                 }
             }
 
