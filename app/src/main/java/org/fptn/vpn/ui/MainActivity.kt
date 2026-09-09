@@ -12,20 +12,18 @@ import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.FptnTheme
 
 /**
- * The single entry-point activity hosting the whole Compose UI. Every screen is now a Compose
- * destination in [AppNavHost].
+ * The single entry-point activity hosting the whole Compose UI. Every screen is a Compose
+ * destination in [AppNavHost], and screen-to-screen navigation goes straight through the
+ * `NavController` — no [intentForRoute] involved.
  *
  * Two ways in:
  * - Normal launch: starts at [AppRoute.SPLASH], which resolves the user's destination and
  *   navigates within the same [AppNavHost].
- * - Reverse bridge: a Compose screen already hosted here (e.g. Settings linking to Bypass
- *   Methods, or HomeScreen linking to Settings) launches this activity via [intentForRoute],
- *   which starts directly at that route instead of at the splash. Since this activity is
- *   `singleTop`, that Intent is usually delivered to [onNewIntent] instead of a fresh
- *   `onCreate`, and is forwarded into the existing `NavController` — this keeps every entry
- *   point (a fresh launch, a notification tap, a tile click, a screen already hosted here)
- *   going through the same code path instead of assuming an existing `NavController` reference
- *   is safe to use directly.
+ * - External launch: something outside the Compose graph that has no `NavController` to call —
+ *   today just `SniCheckerService`'s notification tap `PendingIntent` — builds an [intentForRoute]
+ *   Intent to open a specific route directly. Since this activity is `singleTop`, that Intent is
+ *   usually delivered to [onNewIntent] instead of a fresh `onCreate`, and is forwarded into the
+ *   existing `NavController`.
  */
 class MainActivity : ComponentActivity() {
 
@@ -48,11 +46,10 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        // This activity's `singleTop` launch mode delivers a reverse-bridge Intent here
-        // (instead of a fresh onCreate) whenever it's already on top — which now happens on
-        // every navigation between two reverse-bridge screens hosted here, e.g. Settings
-        // linking to Bypass Methods. Forward the route into the existing NavHost instead of
-        // silently dropping it.
+        // This activity's `singleTop` launch mode delivers an intentForRoute Intent here
+        // (instead of a fresh onCreate) whenever it's already on top, e.g. the app is already
+        // open when the SNI-check notification is tapped. Forward the route into the existing
+        // NavHost instead of silently dropping it.
         val route = intent.getStringExtra(EXTRA_ROUTE) ?: return
         navController.navigate(route) {
             launchSingleTop = true
@@ -62,7 +59,11 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_ROUTE = "route"
 
-        /** Intent for a legacy `Activity` to open an already-ported Compose [AppRoute] directly. */
+        /**
+         * Intent for launch points outside the Compose graph — with no `NavController` to call
+         * directly — to open a specific [AppRoute] (e.g. `SniCheckerService`'s notification tap
+         * `PendingIntent`).
+         */
         @JvmStatic
         fun intentForRoute(context: Context, route: String): Intent =
             Intent(context, MainActivity::class.java).putExtra(EXTRA_ROUTE, route)

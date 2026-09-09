@@ -36,12 +36,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.LegacyPillButton
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.Primary
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.backup.SettingsBackupManager
@@ -63,7 +61,10 @@ private const val TAG = "BackupSettingsScreen"
  * `ActivityResultLauncher` fields to `rememberLauncherForActivityResult`.
  */
 @Composable
-fun BackupSettingsScreen() {
+fun BackupSettingsScreen(
+    onNavigateHome: () -> Unit,
+    onNavigateSettings: () -> Unit,
+) {
     val context = LocalContext.current
     var showRestoreConfirm by remember { mutableStateOf<Uri?>(null) }
     var showShareDialog by remember { mutableStateOf(false) }
@@ -200,8 +201,8 @@ fun BackupSettingsScreen() {
         BottomNavBar(
             isHomeScreen = false,
             isSettingsScreen = false,
-            onNavigateHome = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.HOME)) },
-            onNavigateSettings = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS)) },
+            onNavigateHome = onNavigateHome,
+            onNavigateSettings = onNavigateSettings,
             onShare = { showShareDialog = true },
         )
     }

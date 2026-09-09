@@ -48,14 +48,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
 import org.fptn.vpn.enums.PerAppVpnMode
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.HtmlLinkText
 import org.fptn.vpn.ui.common.LinkifiedText
 import org.fptn.vpn.ui.common.MultilineTextInputDialog
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.Gray
 import org.fptn.vpn.ui.theme.TealAccent
 import org.fptn.vpn.ui.theme.White
@@ -70,6 +68,8 @@ private const val TAG = "PerAppVpnModeScreen"
  */
 @Composable
 fun PerAppVpnModeScreen(
+    onNavigateHome: () -> Unit,
+    onNavigateSettings: () -> Unit,
     viewModel: PerAppVpnModeViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -282,8 +282,8 @@ fun PerAppVpnModeScreen(
         BottomNavBar(
             isHomeScreen = false,
             isSettingsScreen = false,
-            onNavigateHome = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.HOME)) },
-            onNavigateSettings = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS)) },
+            onNavigateHome = onNavigateHome,
+            onNavigateSettings = onNavigateSettings,
             onShare = { showShareDialog = true },
         )
     }

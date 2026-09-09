@@ -1,6 +1,5 @@
 package org.fptn.vpn.ui.updatetoken
 
-import android.app.Activity
 import android.content.ClipboardManager
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -48,13 +47,11 @@ import com.elvishew.xlog.XLog
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import org.fptn.vpn.R
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.HtmlLinkText
 import org.fptn.vpn.ui.common.LegacyPillButton
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.Black
 import org.fptn.vpn.ui.theme.Hint
 import org.fptn.vpn.ui.theme.Primary
@@ -66,12 +63,12 @@ private val TOKEN_CLIPBOARD_PREFIXES = listOf("fptn:", "fptnb:")
 
 /**
  * Compose port of the legacy `UpdateTokenActivity` / `settings_layout_update_token.xml`.
- * Reuses [UpdateTokenViewModel] unchanged. Home and Settings aren't ported yet, so every
- * exit from this screen bridges to them via a plain legacy `Intent`, exactly like the
- * Activity it replaces.
+ * Reuses [UpdateTokenViewModel] unchanged.
  */
 @Composable
 fun UpdateTokenScreen(
+    onNavigateHome: () -> Unit,
+    onDoneNavigateSettings: () -> Unit,
     viewModel: UpdateTokenViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -97,12 +94,7 @@ fun UpdateTokenScreen(
         }
     }
 
-    fun goToSettingsAndFinish() {
-        context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS))
-        (context as? Activity)?.finish()
-    }
-
-    fun onCancel() = goToSettingsAndFinish()
+    fun onCancel() = onDoneNavigateSettings()
 
     fun onSave() {
         try {
@@ -112,7 +104,7 @@ fun UpdateTokenScreen(
                 object : FutureCallback<Void?> {
                     override fun onSuccess(result: Void?) {
                         Toast.makeText(context, R.string.token_was_updated, Toast.LENGTH_SHORT).show()
-                        goToSettingsAndFinish()
+                        onDoneNavigateSettings()
                     }
 
                     override fun onFailure(t: Throwable) {
@@ -255,8 +247,8 @@ fun UpdateTokenScreen(
         BottomNavBar(
             isHomeScreen = false,
             isSettingsScreen = false,
-            onNavigateHome = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.HOME)) },
-            onNavigateSettings = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS)) },
+            onNavigateHome = onNavigateHome,
+            onNavigateSettings = onDoneNavigateSettings,
             onShare = { showShareDialog = true },
         )
     }

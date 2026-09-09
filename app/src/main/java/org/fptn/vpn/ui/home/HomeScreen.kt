@@ -66,13 +66,11 @@ import org.fptn.vpn.enums.ConnectionState
 import org.fptn.vpn.services.tile.FptnTileService
 import org.fptn.vpn.services.vpn.FptnService
 import org.fptn.vpn.services.vpn.FptnServiceState
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.ServerDropdown
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.findActivity
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.ui.theme.Yellow
 import org.fptn.vpn.utils.PermissionsUtils
@@ -94,7 +92,12 @@ private const val CONNECT_FAILURES_BEFORE_HELP = 2
  * space unless the (rarely toggled) speed chart was showing.
  */
 @Composable
-fun HomeScreen(viewModel: HomeActivityViewModel = viewModel()) {
+fun HomeScreen(
+    onNavigateSettings: () -> Unit,
+    onNavigateUpdateToken: () -> Unit,
+    onNavigateBypassMethods: () -> Unit,
+    viewModel: HomeActivityViewModel = viewModel(),
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -475,7 +478,7 @@ fun HomeScreen(viewModel: HomeActivityViewModel = viewModel()) {
                 isHomeScreen = true,
                 isSettingsScreen = false,
                 onNavigateHome = {},
-                onNavigateSettings = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS)) },
+                onNavigateSettings = onNavigateSettings,
                 onShare = { showShareDialog = true },
                 settingsEnabled = !activeState,
             )
@@ -497,7 +500,7 @@ fun HomeScreen(viewModel: HomeActivityViewModel = viewModel()) {
         TokenReminderDialog(
             onUpdateToken = {
                 showTokenReminderDialog = false
-                context.startActivity(MainActivity.intentForRoute(context, AppRoute.UPDATE_TOKEN))
+                onNavigateUpdateToken()
             },
             onLater = {
                 showTokenReminderDialog = false
@@ -557,11 +560,11 @@ fun HomeScreen(viewModel: HomeActivityViewModel = viewModel()) {
             tokenIsStale = connectFailedTokenStale,
             onGetToken = {
                 showConnectFailedHelpDialog = false
-                context.startActivity(MainActivity.intentForRoute(context, AppRoute.UPDATE_TOKEN))
+                onNavigateUpdateToken()
             },
             onBypass = {
                 showConnectFailedHelpDialog = false
-                context.startActivity(MainActivity.intentForRoute(context, AppRoute.BYPASS_METHODS))
+                onNavigateBypassMethods()
             },
             onDismiss = { showConnectFailedHelpDialog = false },
         )

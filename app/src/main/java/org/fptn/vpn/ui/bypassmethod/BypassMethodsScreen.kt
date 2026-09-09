@@ -57,12 +57,10 @@ import org.fptn.vpn.enums.ConnectionStrategy
 import org.fptn.vpn.enums.SniSpoofingMode
 import org.fptn.vpn.services.snichecker.SniCheckerService
 import org.fptn.vpn.services.snichecker.SniCheckerServiceState
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.LegacySpinner
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.Gray
 import org.fptn.vpn.ui.theme.Primary
 import org.fptn.vpn.ui.theme.White
@@ -78,6 +76,8 @@ private const val TAG = "BypassMethodsScreen"
  */
 @Composable
 fun BypassMethodsScreen(
+    onNavigateHome: () -> Unit,
+    onNavigateSettings: () -> Unit,
     viewModel: BypassMethodsViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -451,8 +451,8 @@ fun BypassMethodsScreen(
         BottomNavBar(
             isHomeScreen = false,
             isSettingsScreen = false,
-            onNavigateHome = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.HOME)) },
-            onNavigateSettings = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS)) },
+            onNavigateHome = onNavigateHome,
+            onNavigateSettings = onNavigateSettings,
             onShare = { showShareDialog = true },
             homeEnabled = !sniCheckingActive,
             settingsEnabled = !sniCheckingActive,

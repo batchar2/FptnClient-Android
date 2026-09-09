@@ -40,12 +40,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.HtmlLinkText
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.Gray
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.PermissionsUtils
@@ -56,14 +54,20 @@ private const val TAG = "SettingsScreen"
 /**
  * Compose port of the legacy `SettingsActivity` / `settings_layout.xml`. Reuses
  * [SettingsViewModel] unchanged. Every sub-screen it links to (Update Token, Bypass Methods,
- * Per-App VPN Mode, Experimental Settings, Logs, Backup, Home) is a Compose destination, so
- * those rows go through the same `MainActivity.intentForRoute` reverse bridge those screens use
- * to come back here.
+ * Per-App VPN Mode, Experimental Settings, Logs, Backup, Home) is a Compose destination in the
+ * same nav graph, so those rows navigate straight through the passed-in callbacks.
  */
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel = viewModel(),
     onLoggedOut: () -> Unit,
+    onNavigateHome: () -> Unit,
+    onNavigateUpdateToken: () -> Unit,
+    onNavigateBypassMethods: () -> Unit,
+    onNavigatePerAppVpnMode: () -> Unit,
+    onNavigateExperimentalSettings: () -> Unit,
+    onNavigateLogs: () -> Unit,
+    onNavigateBackup: () -> Unit,
+    viewModel: SettingsViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -137,7 +141,7 @@ fun SettingsScreen(
             SettingsNavRow(
                 icon = R.drawable.ic_baseline_update_24,
                 title = stringResource(R.string.update_token_button),
-                onClick = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.UPDATE_TOKEN)) },
+                onClick = onNavigateUpdateToken,
             ) {
                 HtmlLinkText(
                     html = stringResource(R.string.settings_token_info_html),
@@ -151,21 +155,21 @@ fun SettingsScreen(
                 icon = R.drawable.ic_logo_24,
                 title = stringResource(R.string.bypass_methods_title),
                 description = stringResource(R.string.bypass_methods_info),
-                onClick = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.BYPASS_METHODS)) },
+                onClick = onNavigateBypassMethods,
             )
 
             SettingsNavRow(
                 icon = R.drawable.ic_per_app_vpn_mode,
                 title = stringResource(R.string.per_app_vpn_settings_title),
                 description = stringResource(R.string.per_app_vpn_mode_info),
-                onClick = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.PER_APP_VPN_MODE)) },
+                onClick = onNavigatePerAppVpnMode,
             )
 
             SettingsNavRow(
                 icon = R.drawable.ic_experimental_features_24,
                 title = stringResource(R.string.experimental_features_label),
                 description = stringResource(R.string.experimental_features_info),
-                onClick = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.EXPERIMENTAL_SETTINGS)) },
+                onClick = onNavigateExperimentalSettings,
             )
 
             SettingsCard {
@@ -201,14 +205,14 @@ fun SettingsScreen(
                 icon = R.drawable.ic_logo_24,
                 title = stringResource(R.string.logs),
                 description = stringResource(R.string.view_and_copy_application_logs),
-                onClick = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.LOGS)) },
+                onClick = onNavigateLogs,
             )
 
             SettingsNavRow(
                 icon = R.drawable.cloud_back_up_24,
                 title = stringResource(R.string.backups_title),
                 description = stringResource(R.string.backups_info),
-                onClick = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.BACKUP)) },
+                onClick = onNavigateBackup,
             )
 
             SettingsCard {
@@ -250,7 +254,7 @@ fun SettingsScreen(
         BottomNavBar(
             isHomeScreen = false,
             isSettingsScreen = true,
-            onNavigateHome = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.HOME)) },
+            onNavigateHome = onNavigateHome,
             onNavigateSettings = {},
             onShare = { showShareDialog = true },
         )

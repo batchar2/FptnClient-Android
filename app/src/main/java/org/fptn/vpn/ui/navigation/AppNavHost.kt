@@ -22,12 +22,10 @@ import org.fptn.vpn.ui.updatetoken.UpdateTokenScreen
 /**
  * Route constants for the single-activity Compose navigation graph.
  *
- * Every screen in the app is now a Compose destination here. `MainActivity` is
- * `singleTop`, so most screen-to-screen navigation still goes through
- * `MainActivity.intentForRoute` (the "reverse bridge") rather than calling
- * `navController.navigate` directly — that keeps every entry point (a fresh launch, a
- * notification tap, a tile click, a screen already hosted here) going through the same
- * code path instead of assuming an existing `NavController` reference is safe to use.
+ * Every screen in the app is a Compose destination here, so screen-to-screen navigation goes
+ * straight through `navController.navigate` — there's no other activity in this app to bridge
+ * to. `MainActivity.intentForRoute` still exists solely for launch points that don't have a
+ * `NavController` to call, e.g. `SniCheckerService`'s notification tap `PendingIntent`.
  */
 object AppRoute {
     const val SPLASH = "splash"
@@ -85,42 +83,116 @@ fun AppNavHost(
             )
         }
         composable(AppRoute.HOME) {
-            HomeScreen()
+            HomeScreen(
+                onNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                },
+                onNavigateUpdateToken = {
+                    navController.navigate(AppRoute.UPDATE_TOKEN) { launchSingleTop = true }
+                },
+                onNavigateBypassMethods = {
+                    navController.navigate(AppRoute.BYPASS_METHODS) { launchSingleTop = true }
+                },
+            )
         }
         composable(AppRoute.UPDATE_TOKEN) {
-            // Only reachable today via the reverse bridge from SettingsScreen/HomeScreen
-            // (nothing in this graph links to it yet).
-            UpdateTokenScreen()
+            // Reachable from Settings/HomeScreen's nav rows.
+            UpdateTokenScreen(
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onDoneNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) {
+                        launchSingleTop = true
+                        popUpTo(AppRoute.UPDATE_TOKEN) { inclusive = true }
+                    }
+                },
+            )
         }
         composable(AppRoute.LOGS) {
-            // Only reachable today via the reverse bridge from SettingsScreen.
-            LogsScreen()
+            // Only reachable today from SettingsScreen's nav row.
+            LogsScreen(
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                },
+            )
         }
         composable(AppRoute.PER_APP_VPN_MODE) {
-            // Only reachable today via the reverse bridge from SettingsScreen.
-            PerAppVpnModeScreen()
+            // Only reachable today from SettingsScreen's nav row.
+            PerAppVpnModeScreen(
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                },
+            )
         }
         composable(AppRoute.BACKUP) {
-            // Only reachable today via the reverse bridge from SettingsScreen.
-            BackupSettingsScreen()
+            // Only reachable today from SettingsScreen's nav row.
+            BackupSettingsScreen(
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                },
+            )
         }
         composable(AppRoute.BYPASS_METHODS) {
-            // Reachable from Splash (first-run routing), the reverse bridge from
-            // SettingsScreen/HomeScreen, and SniCheckerService's notification tap intent.
-            BypassMethodsScreen()
+            // Reachable from Splash (first-run routing), Settings/HomeScreen's nav rows, and
+            // SniCheckerService's notification tap intent.
+            BypassMethodsScreen(
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                },
+            )
         }
         composable(AppRoute.EXPERIMENTAL_SETTINGS) {
-            // Only reachable today via the reverse bridge from SettingsScreen.
-            ExperimentalSettingsScreen()
+            // Only reachable today from SettingsScreen's nav row.
+            ExperimentalSettingsScreen(
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onNavigateSettings = {
+                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                },
+            )
         }
         composable(AppRoute.SETTINGS) {
-            // Reachable via the reverse bridge from every sub-screen's BottomNavBar, including
-            // HomeScreen's.
+            // Reachable from every sub-screen's BottomNavBar, including HomeScreen's.
             SettingsScreen(
                 onLoggedOut = {
                     navController.navigate(AppRoute.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onNavigateHome = {
+                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+                },
+                onNavigateUpdateToken = {
+                    navController.navigate(AppRoute.UPDATE_TOKEN) { launchSingleTop = true }
+                },
+                onNavigateBypassMethods = {
+                    navController.navigate(AppRoute.BYPASS_METHODS) { launchSingleTop = true }
+                },
+                onNavigatePerAppVpnMode = {
+                    navController.navigate(AppRoute.PER_APP_VPN_MODE) { launchSingleTop = true }
+                },
+                onNavigateExperimentalSettings = {
+                    navController.navigate(AppRoute.EXPERIMENTAL_SETTINGS) { launchSingleTop = true }
+                },
+                onNavigateLogs = {
+                    navController.navigate(AppRoute.LOGS) { launchSingleTop = true }
+                },
+                onNavigateBackup = {
+                    navController.navigate(AppRoute.BACKUP) { launchSingleTop = true }
                 },
             )
         }

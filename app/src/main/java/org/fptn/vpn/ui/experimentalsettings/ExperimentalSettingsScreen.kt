@@ -46,14 +46,12 @@ import org.fptn.vpn.core.common.Constants
 import org.fptn.vpn.enums.ConnectionState
 import org.fptn.vpn.services.tile.FptnTileService
 import org.fptn.vpn.services.vpn.FptnService
-import org.fptn.vpn.ui.MainActivity
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.LinkifiedText
 import org.fptn.vpn.ui.common.MultilineTextInputDialog
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.findActivity
 import org.fptn.vpn.ui.common.legacyDrawableBackground
-import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.SharedPrefUtils
 
@@ -68,7 +66,10 @@ private val FALLBACK_THRESHOLD_VALUES = intArrayOf(3, 6, 10, 15)
  * `remember` state instead of View fields.
  */
 @Composable
-fun ExperimentalSettingsScreen() {
+fun ExperimentalSettingsScreen(
+    onNavigateHome: () -> Unit,
+    onNavigateSettings: () -> Unit,
+) {
     val context = LocalContext.current
     var showShareDialog by remember { mutableStateOf(false) }
     var showDomainBlacklistDialog by remember { mutableStateOf(false) }
@@ -517,8 +518,8 @@ fun ExperimentalSettingsScreen() {
         BottomNavBar(
             isHomeScreen = false,
             isSettingsScreen = false,
-            onNavigateHome = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.HOME)) },
-            onNavigateSettings = { context.startActivity(MainActivity.intentForRoute(context, AppRoute.SETTINGS)) },
+            onNavigateHome = onNavigateHome,
+            onNavigateSettings = onNavigateSettings,
             onShare = { showShareDialog = true },
         )
     }
