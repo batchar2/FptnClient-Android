@@ -68,9 +68,11 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, 
 }
 
 /**
- * Configure base Kotlin options
+ * Configure base Kotlin options. Also used directly by plain Kotlin/JVM modules (no Android
+ * Gradle plugin, hence no [CommonExtension] to pin `compileOptions` on) so their `KotlinCompile`
+ * tasks target JVM 17 too, instead of silently taking whatever JDK Gradle happens to run on.
  */
-private fun Project.configureKotlin() {
+internal fun Project.configureKotlin() {
     // Use withType to workaround https://youtrack.jetbrains.com/issue/KT-55947
     tasks.withType<KotlinCompile>().configureEach {
         compilerOptions {

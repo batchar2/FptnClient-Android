@@ -18,8 +18,12 @@
  * Website: https://fptn.org
  */
 
+import org.fptn.vpn.gradle.extensions.configureKotlin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
 class KotlinLibraryConventionPlugin : Plugin<Project> {
@@ -29,6 +33,18 @@ class KotlinLibraryConventionPlugin : Plugin<Project> {
                 apply("kotlin")
                 apply("com.autonomousapps.dependency-analysis")
             }
+            // Pin the JVM target instead of letting it silently follow whatever JDK Gradle
+            // happens to run on — otherwise this module's class files can end up newer than
+            // what :app (pinned to Java 17) can read, e.g. "class file has wrong version".
+            // Both the Java toolchain (compileJava, even with no .java sources the `kotlin`
+            // plugin still applies the Java plugin) and the Kotlin compiler's own jvmTarget
+            // need pinning, or Gradle rejects the mismatch between the two.
+            extensions.configure<JavaPluginExtension> {
+                toolchain {
+                    languageVersion.set(JavaLanguageVersion.of(17))
+                }
+            }
+            configureKotlin()
             dependencies {
             }
         }
