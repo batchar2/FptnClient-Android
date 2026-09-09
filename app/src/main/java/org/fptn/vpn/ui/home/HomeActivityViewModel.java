@@ -55,6 +55,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import kotlin.Pair;
+import kotlin.Triple;
 import lombok.Getter;
 
 public class HomeActivityViewModel extends AndroidViewModel {
@@ -133,6 +135,14 @@ public class HomeActivityViewModel extends AndroidViewModel {
 
     // observers
     private final Observer<FptnServiceState> serviceStateObserver;
+
+    // Observers registered on the currently bound FptnService's LiveData by subscribeService();
+    // kept here so unsubscribe() can remove them instead of leaking a new set on every rebind.
+    private FptnService subscribedService;
+    private Observer<Triple<String, String, Long>> speedAndDurationObserver;
+    private Observer<Pair<Long, Long>> trafficBytesObserver;
+    private Observer<long[]> rawSpeedBpsObserver;
+    private Observer<FptnServiceState> serviceServiceStateObserver;
 
     // for pingers
     public static volatile List<ServerEntity> lastPingedServers = null;
@@ -325,31 +335,42 @@ public class HomeActivityViewModel extends AndroidViewModel {
         super.onCleared();
 
         serviceStateMutableLiveData.removeObserver(serviceStateObserver);
+        unsubscribe();
+        executorService.shutdown();
+        pingExecutorService.shutdown();
     }
 
     public void subscribeService(FptnService service) {
-        service.getSpeedAndDurationMutableLiveData().observeForever(speedAndDuration -> {
+        // Guard against leaking a duplicate set of observers if a new service connection comes
+        // in (e.g. rebind) before the previous one was unsubscribed.
+        unsubscribe();
+        subscribedService = service;
+
+        speedAndDurationObserver = speedAndDuration -> {
             if (speedAndDuration != null) {
                 downloadSpeedAsStringLiveData.postValue(speedAndDuration.getFirst());
                 uploadSpeedAsStringLiveData.postValue(speedAndDuration.getSecond());
                 timerTextLiveData.postValue(TimeUtils.getTime(speedAndDuration.getThird()));
             }
-        });
+        };
+        service.getSpeedAndDurationMutableLiveData().observeForever(speedAndDurationObserver);
 
-        service.getTrafficBytesLiveData().observeForever(traffic -> {
+        trafficBytesObserver = traffic -> {
             if (traffic != null) {
                 downloadTrafficLiveData.postValue(formatBytes(traffic.getFirst()));
                 uploadTrafficLiveData.postValue(formatBytes(traffic.getSecond()));
             }
-        });
+        };
+        service.getTrafficBytesLiveData().observeForever(trafficBytesObserver);
 
-        service.getRawSpeedBpsLiveData().observeForever(bps -> {
+        rawSpeedBpsObserver = bps -> {
             if (bps != null) {
                 speedSampleLiveData.postValue(bps);
             }
-        });
+        };
+        service.getRawSpeedBpsLiveData().observeForever(rawSpeedBpsObserver);
 
-        service.getServiceStateMutableLiveData().observeForever(serverState -> {
+        serviceServiceStateObserver = serverState -> {
             serviceStateMutableLiveData.postValue(serverState);
 
             Optional.ofNullable(serverState).map(FptnServiceState::getConnectionState)
@@ -360,11 +381,19 @@ public class HomeActivityViewModel extends AndroidViewModel {
                                 : service.getActionConnectServerInfo();
                         connectedServerInfoLiveData.postValue(info);
                     });
-        });
+        };
+        service.getServiceStateMutableLiveData().observeForever(serviceServiceStateObserver);
     }
 
     public void unsubscribe() {
-        // todo: check memory leaks and maybe remove observers
+        if (subscribedService == null) {
+            return;
+        }
+        subscribedService.getSpeedAndDurationMutableLiveData().removeObserver(speedAndDurationObserver);
+        subscribedService.getTrafficBytesLiveData().removeObserver(trafficBytesObserver);
+        subscribedService.getRawSpeedBpsLiveData().removeObserver(rawSpeedBpsObserver);
+        subscribedService.getServiceStateMutableLiveData().removeObserver(serviceServiceStateObserver);
+        subscribedService = null;
     }
 
     private static String formatBytes(long bytes) {

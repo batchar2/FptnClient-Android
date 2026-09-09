@@ -42,4 +42,10 @@ public class SettingsViewModel extends AndroidViewModel {
     public void deleteAllServers() {
         executorService.submit(() -> appDatabase.serverDAO().deleteAll());
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executorService.shutdown();
+    }
 }

@@ -65,4 +65,9 @@ public class UpdateTokenViewModel extends AndroidViewModel {
         });
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executorService.shutdown();
+    }
 }

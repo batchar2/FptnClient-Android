@@ -65,4 +65,10 @@ public class LoginActivityViewModel extends AndroidViewModel {
             return null;
         });
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executorService.shutdown();
+    }
 }

@@ -27,6 +27,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.elvishew.xlog.XLog;
 import com.google.common.util.concurrent.FutureCallback;
@@ -77,6 +78,16 @@ public class BypassMethodsViewModel extends AndroidViewModel {
 
     private final AppDatabase appDatabase = AppDatabase.getInstance(getApplication());
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    // Observers registered on the currently bound SniCheckerService's LiveData by
+    // subscribeService(); kept here so unsubscribe() can remove them instead of leaking a new
+    // set on every rebind.
+    private SniCheckerService subscribedService;
+    private Observer<SniCheckerServiceState> serviceServiceStateObserver;
+    private Observer<ServerEntity> selectedServerObserver;
+    private Observer<String> currentSniInfoObserver;
+    private Observer<Pair<Integer, Integer>> currentProgressObserver;
+    private Observer<String> foundedSniObserver;
 
     public BypassMethodsViewModel(@NonNull Application application) {
         super(application);
@@ -244,25 +255,53 @@ public class BypassMethodsViewModel extends AndroidViewModel {
     }
 
     public void subscribeService(SniCheckerService service) {
-        service.getServiceState().observeForever(state -> {
+        // Guard against leaking a duplicate set of observers if a new service connection comes
+        // in (e.g. rebind) before the previous one was unsubscribed.
+        unsubscribe();
+        subscribedService = service;
+
+        serviceServiceStateObserver = state -> {
             serviceState.postValue(state);
             if (state == SniCheckerServiceState.ACTIVE) {
                 bypassCensorshipMethodMutableLiveData.postValue(service.getBypassCensorshipMethod());
             }
-        });
-        service.getSelectedServer().observeForever(selectedServer::postValue);
-        service.getCurrentSniInfo().observeForever(currentCheckingSniInfo::postValue);
-        service.getCurrentProgress().observeForever(currentProgress::postValue);
+        };
+        service.getServiceState().observeForever(serviceServiceStateObserver);
 
-        service.getFoundedSniLiveData().observeForever(sni -> {
+        selectedServerObserver = selectedServer::postValue;
+        service.getSelectedServer().observeForever(selectedServerObserver);
+
+        currentSniInfoObserver = currentCheckingSniInfo::postValue;
+        service.getCurrentSniInfo().observeForever(currentSniInfoObserver);
+
+        currentProgressObserver = currentProgress::postValue;
+        service.getCurrentProgress().observeForever(currentProgressObserver);
+
+        foundedSniObserver = sni -> {
             if (sni != null) {
                 foundedSniEvent.postValue(sni);
             }
-        });
+        };
+        service.getFoundedSniLiveData().observeForever(foundedSniObserver);
     }
 
     public void unsubscribe() {
-        // todo: check memory leaks and maybe remove observers
+        if (subscribedService == null) {
+            return;
+        }
+        subscribedService.getServiceState().removeObserver(serviceServiceStateObserver);
+        subscribedService.getSelectedServer().removeObserver(selectedServerObserver);
+        subscribedService.getCurrentSniInfo().removeObserver(currentSniInfoObserver);
+        subscribedService.getCurrentProgress().removeObserver(currentProgressObserver);
+        subscribedService.getFoundedSniLiveData().removeObserver(foundedSniObserver);
+        subscribedService = null;
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        unsubscribe();
+        executorService.shutdown();
     }
 
     public void loadDefaultSni() throws PVNClientException {
