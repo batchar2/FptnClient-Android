@@ -21,12 +21,19 @@
 package org.fptn.vpn.ui.perappvpn
 
 import android.graphics.drawable.Drawable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class AppInfo(val packageName: String) {
     var label: String = ""
     var icon: Drawable? = null
-    var isAllowed: Boolean = false
-    var isDisallowed: Boolean = false
+
+    // Backed by Compose state (not a plain var) so toggling one app re-renders just its
+    // own row's Switch, without relying on the list being rebuilt with a new AppInfo identity.
+    var isAllowed: Boolean by mutableStateOf(false)
+    var isDisallowed: Boolean by mutableStateOf(false)
+
     var isSystemApp: Boolean = false
     var isForcedExcluded: Boolean = false
 }
