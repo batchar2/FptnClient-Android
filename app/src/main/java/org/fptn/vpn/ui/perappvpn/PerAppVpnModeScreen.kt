@@ -76,7 +76,7 @@ fun PerAppVpnModeScreen(
     val mode by viewModel.perAppVpnModeMutableLiveData.observeAsState(PerAppVpnMode.OFF)
     val apps by viewModel.appListMutableLiveData.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
-    var showSystemApps by remember { mutableStateOf(viewModel.isShowSystemApps()) }
+    var showSystemApps by remember { mutableStateOf(viewModel.showSystemApps) }
     var splitTunnelEnabled by remember { mutableStateOf(SharedPrefUtils.getSplitTunnelDomainsEnabled(context)) }
     var showSplitTunnelDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }

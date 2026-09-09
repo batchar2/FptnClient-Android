@@ -923,8 +923,7 @@ public class FptnService extends VpnService {
                             return appInfoEntity.isDisallowed();
                         }
                     }).map(
-                            appInfo -> AppInfo.builder()
-                                    .packageName(appInfo.getPackageName()).build()
+                            appInfo -> new AppInfo(appInfo.getPackageName())
                     ).collect(Collectors.toList());
             appInfos.addAll(packages);
         }

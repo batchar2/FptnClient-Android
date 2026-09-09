@@ -18,144 +18,97 @@
  * Website: https://fptn.org
  */
 
-package org.fptn.vpn.ui.perappvpn;
+package org.fptn.vpn.ui.perappvpn
 
-import android.app.Application;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
+import android.app.Application
+import android.content.pm.PackageManager
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.fptn.vpn.database.AppDatabase
+import org.fptn.vpn.database.entity.AppInfoEntity
+import org.fptn.vpn.enums.PerAppVpnMode
+import org.fptn.vpn.utils.AppExclusion
+import org.fptn.vpn.utils.SharedPrefUtils
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.MutableLiveData;
+class PerAppVpnModeViewModel(application: Application) : AndroidViewModel(application) {
 
-import org.fptn.vpn.database.AppDatabase;
-import org.fptn.vpn.database.dao.AppInfoDAO;
-import org.fptn.vpn.utils.AppExclusion;
-import org.fptn.vpn.database.entity.AppInfoEntity;
-import org.fptn.vpn.enums.PerAppVpnMode;
-import org.fptn.vpn.utils.SharedPrefUtils;
+    val perAppVpnModeMutableLiveData =
+        MutableLiveData(SharedPrefUtils.getPerAppVPNMode(application))
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+    val appListMutableLiveData = MutableLiveData<List<AppInfo>>(emptyList())
 
-public class PerAppVpnModeViewModel extends AndroidViewModel {
+    private val appDatabase = AppDatabase.getInstance(application)
 
-    private final MutableLiveData<PerAppVpnMode> perAppVpnModeMutableLiveData;
+    private var allLoadedApps: List<AppInfo> = emptyList()
 
-    private final MutableLiveData<List<AppInfo>> appListMutableLiveData;
+    var showSystemApps: Boolean = SharedPrefUtils.getShowSystemApps(application)
+        private set
 
-    private final AppDatabase appDatabase = AppDatabase.getInstance(getApplication());
-
-    private List<AppInfo> allLoadedApps = new ArrayList<>();
-
-    private boolean showSystemApps;
-
-    public PerAppVpnModeViewModel(@NonNull Application application) {
-        super(application);
-
-        showSystemApps = SharedPrefUtils.getShowSystemApps(application);
-        perAppVpnModeMutableLiveData = new MutableLiveData<>(SharedPrefUtils.getPerAppVPNMode(application));
-
-        appListMutableLiveData = new MutableLiveData<>(List.of());
+    fun setPerAppVpnMode(perAppVpnMode: PerAppVpnMode) {
+        perAppVpnModeMutableLiveData.postValue(perAppVpnMode)
+        SharedPrefUtils.savePerAppVPNMode(getApplication(), perAppVpnMode)
     }
 
-    // Written out explicitly (instead of Lombok's @Getter) because Kotlin's Java-interop
-    // stub generation runs before the Lombok annotation processor, so Kotlin/Compose call
-    // sites can't see a Lombok-generated getter here.
-    public MutableLiveData<PerAppVpnMode> getPerAppVpnModeMutableLiveData() {
-        return perAppVpnModeMutableLiveData;
+    fun setShowSystemApps(show: Boolean) {
+        showSystemApps = show
+        SharedPrefUtils.saveShowSystemApps(getApplication(), show)
+        appListMutableLiveData.postValue(allLoadedApps.filter { showSystemApps || !it.isSystemApp })
     }
 
-    public MutableLiveData<List<AppInfo>> getAppListMutableLiveData() {
-        return appListMutableLiveData;
+    fun loadInstalledApps(pm: PackageManager) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val savedAppsMap = appDatabase.appInfoDAO().getAll().associateBy(
+                keySelector = { it.packageName },
+                valueTransform = { entity ->
+                    AppInfo(entity.packageName).apply {
+                        isAllowed = entity.isAllowed
+                        isDisallowed = entity.isDisallowed
+                    }
+                },
+            )
+
+            val application = getApplication<Application>()
+            val thisAppPackageName = application.packageName
+            val exclusion = AppExclusion(application)
+            val packages = application.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+
+            val apps = packages
+                .filterNot { it.packageName.equals(thisAppPackageName, ignoreCase = true) }
+                .map { appInfo ->
+                    (savedAppsMap[appInfo.packageName] ?: AppInfo(appInfo.packageName)).apply {
+                        icon = appInfo.loadIcon(pm)
+                        label = appInfo.loadLabel(pm).toString()
+                        isSystemApp = pm.getLaunchIntentForPackage(appInfo.packageName) == null
+                        isForcedExcluded = exclusion.isExcluded(appInfo.packageName)
+                    }
+                }
+                .sortedWith { a, b -> a.label.compareTo(b.label, ignoreCase = true) }
+
+            allLoadedApps = apps
+            appListMutableLiveData.postValue(apps.filter { showSystemApps || !it.isSystemApp })
+        }
     }
 
-    public boolean isShowSystemApps() {
-        return showSystemApps;
-    }
-
-    public void setPerAppVpnMode(PerAppVpnMode perAppVpnMode) {
-        perAppVpnModeMutableLiveData.postValue(perAppVpnMode);
-        SharedPrefUtils.savePerAppVPNMode(getApplication(), perAppVpnMode);
-    }
-
-    public void setShowSystemApps(boolean show) {
-        showSystemApps = show;
-        SharedPrefUtils.saveShowSystemApps(getApplication(), show);
-        List<AppInfo> filtered = allLoadedApps.stream()
-                .filter(app -> showSystemApps || !app.isSystemApp())
-                .collect(Collectors.toList());
-        appListMutableLiveData.postValue(filtered);
-    }
-
-    public void loadInstalledApps(PackageManager pm) {
-        new Thread(() -> {
-            List<AppInfoEntity> savedApps = appDatabase.appInfoDAO().getAll();
-
-            Map<String, AppInfo> savedAppsMap = new HashMap<>();
-            for (AppInfoEntity entity : savedApps) {
-                AppInfo appInfo = AppInfo.builder()
-                        .packageName(entity.getPackageName())
-                        .allowed(entity.isAllowed())
-                        .disallowed(entity.isDisallowed())
-                        .build();
-                savedAppsMap.put(entity.getPackageName(), appInfo);
-            }
-
-            List<AppInfo> apps = new ArrayList<>();
-            List<ApplicationInfo> packages = getApplication().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
-
-            String thisAppPackageName = getApplication().getPackageName();
-            AppExclusion exclusion = new AppExclusion(getApplication());
-
-            for (ApplicationInfo appInfo : packages) {
-                if (thisAppPackageName.equalsIgnoreCase(appInfo.packageName)) continue;
-
-                AppInfo app = savedAppsMap.getOrDefault(appInfo.packageName, AppInfo.builder().packageName(appInfo.packageName).build());
-                app.setIcon(appInfo.loadIcon(pm));
-                app.setLabel(appInfo.loadLabel(pm).toString());
-                app.setSystemApp(pm.getLaunchIntentForPackage(appInfo.packageName) == null);
-                app.setForcedExcluded(exclusion.isExcluded(appInfo.packageName));
-
-                apps.add(app);
-            }
-
-            Collections.sort(apps, (a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
-            allLoadedApps = apps;
-            List<AppInfo> filtered = apps.stream()
-                    .filter(app -> showSystemApps || !app.isSystemApp())
-                    .collect(Collectors.toList());
-            appListMutableLiveData.postValue(filtered);
-        }).start();
-    }
-
-    public void saveSelectedApps() {
-        PerAppVpnMode perAppVPNMode = perAppVpnModeMutableLiveData.getValue();
+    fun saveSelectedApps() {
+        val perAppVpnMode = perAppVpnModeMutableLiveData.value
         // save app list only if selected mode
-        if (perAppVPNMode == PerAppVpnMode.EXCEPT_DISALLOWED
-                || perAppVPNMode == PerAppVpnMode.ONLY_ALLOWED) {
+        if (perAppVpnMode == PerAppVpnMode.EXCEPT_DISALLOWED || perAppVpnMode == PerAppVpnMode.ONLY_ALLOWED) {
             // use the full list: appListMutableLiveData is filtered by showSystemApps,
             // saving it would drop rules for hidden system apps
-            List<AppInfo> appInfoList = allLoadedApps;
-            new Thread(() -> {
-                if (appInfoList != null && !appInfoList.isEmpty()) {
-                    List<AppInfoEntity> entities = appInfoList.stream()
-                            .map(app -> AppInfoEntity.builder()
-                                    .packageName(app.getPackageName())
-                                    .allowed(app.isAllowed())
-                                    .disallowed(app.isDisallowed())
-                                    .build()
-                            )
-                            .collect(Collectors.toList());
-                    AppInfoDAO appInfoDAO = appDatabase.appInfoDAO();
-                    appInfoDAO.deleteAll(); // delete all previous records
-                    appInfoDAO.insertAll(entities);
+            val appInfoList = allLoadedApps
+            viewModelScope.launch(Dispatchers.IO) {
+                if (appInfoList.isNotEmpty()) {
+                    val entities = appInfoList.map {
+                        AppInfoEntity.of(it.packageName, it.isAllowed, it.isDisallowed)
+                    }
+                    val appInfoDAO = appDatabase.appInfoDAO()
+                    appInfoDAO.deleteAll() // delete all previous records
+                    appInfoDAO.insertAll(entities)
                 }
-            }).start();
+            }
         }
     }
 }

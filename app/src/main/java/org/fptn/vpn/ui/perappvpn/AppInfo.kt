@@ -18,58 +18,15 @@
  * Website: https://fptn.org
  */
 
-package org.fptn.vpn.ui.perappvpn;
+package org.fptn.vpn.ui.perappvpn
 
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Drawable
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
-@Builder
-public class AppInfo {
-    private String label;
-    private String packageName;
-    private Drawable icon;
-    private boolean allowed;
-    private boolean disallowed;
-    private boolean systemApp;
-    private boolean forcedExcluded;
-
-    // Written out explicitly (instead of relying on Lombok's @Data) for the subset of
-    // accessors the Compose screen needs: Kotlin's Java-interop stub generation runs before
-    // the Lombok annotation processor, so Kotlin call sites can't see Lombok-generated members.
-    public String getLabel() {
-        return label;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public Drawable getIcon() {
-        return icon;
-    }
-
-    public boolean isAllowed() {
-        return allowed;
-    }
-
-    public void setAllowed(boolean allowed) {
-        this.allowed = allowed;
-    }
-
-    public boolean isDisallowed() {
-        return disallowed;
-    }
-
-    public void setDisallowed(boolean disallowed) {
-        this.disallowed = disallowed;
-    }
-
-    public boolean isForcedExcluded() {
-        return forcedExcluded;
-    }
+class AppInfo(val packageName: String) {
+    var label: String = ""
+    var icon: Drawable? = null
+    var isAllowed: Boolean = false
+    var isDisallowed: Boolean = false
+    var isSystemApp: Boolean = false
+    var isForcedExcluded: Boolean = false
 }
