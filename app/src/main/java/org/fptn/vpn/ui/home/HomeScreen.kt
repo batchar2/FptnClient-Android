@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.net.VpnService
@@ -31,6 +32,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -48,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -86,6 +90,11 @@ private const val CONNECT_FAILURES_BEFORE_HELP = 2
 // Matches home_layout.xml's `app:layout_constraintVertical_bias="0.38"` on the connect button,
 // which is constant — it does not vary by screen height.
 private const val CONNECT_BUTTON_VERTICAL_BIAS = 0.38f
+
+// In landscape the available height is much smaller, so the same bias would leave no room for
+// the status text / server dropdown / traffic card below the button — pin the button near the
+// top instead.
+private const val CONNECT_BUTTON_VERTICAL_BIAS_LANDSCAPE = 0f
 
 /**
  * Compose port of the legacy `HomeActivity` / `home_layout.xml`. Reuses [HomeActivityViewModel]
@@ -410,6 +419,8 @@ fun HomeScreen(
                 val availableHeight = maxHeight
                 val buttonSize = dimensionResource(R.dimen.toggle_button_size)
                 val density = LocalDensity.current
+                val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+                val verticalBias = if (isLandscape) CONNECT_BUTTON_VERTICAL_BIAS_LANDSCAPE else CONNECT_BUTTON_VERTICAL_BIAS
                 // Always composed (never conditionally removed) so it reserves the same layout
                 // space whether shown or not — otherwise the button below would jump down by the
                 // timer's height the moment it appears on connect. The legacy ConstraintLayout
@@ -418,12 +429,14 @@ fun HomeScreen(
                 // height is subtracted from the spacer below instead, so the button still lands
                 // at the same bias-determined position either way.
                 var timerHeight by remember { mutableStateOf(0.dp) }
-                val spacerHeight = ((availableHeight - buttonSize) * CONNECT_BUTTON_VERTICAL_BIAS - timerHeight)
+                val spacerHeight = ((availableHeight - buttonSize) * verticalBias - timerHeight)
                     .coerceAtLeast(0.dp)
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     Spacer(modifier = Modifier.height(spacerHeight))
 
