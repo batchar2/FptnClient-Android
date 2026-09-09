@@ -18,57 +18,30 @@
  * Website: https://fptn.org
  */
 
-package org.fptn.vpn.ui.login;
+package org.fptn.vpn.ui.login
 
-import android.app.Application;
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.fptn.vpn.database.AppDatabase
+import org.fptn.vpn.utils.SharedPrefUtils
+import org.fptn.vpn.utils.token.TokenUtils
+import org.fptn.vpn.vpnclient.exception.PVNClientException
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.MutableLiveData;
+class LoginActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
+    val errorTextLiveData = MutableLiveData("")
 
-import org.fptn.vpn.database.AppDatabase;
-import org.fptn.vpn.database.entity.ServerEntity;
-import org.fptn.vpn.utils.SharedPrefUtils;
-import org.fptn.vpn.utils.token.TokenUtils;
-import org.fptn.vpn.vpnclient.exception.PVNClientException;
+    private val appDatabase = AppDatabase.getInstance(application)
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-public class LoginActivityViewModel extends AndroidViewModel {
-
-    private final MutableLiveData<String> errorTextLiveData = new MutableLiveData<>("");
-
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final AppDatabase appDatabase = AppDatabase.getInstance(getApplication());
-
-    public LoginActivityViewModel(@NonNull Application application) {
-        super(application);
-    }
-
-    // Written out explicitly (instead of Lombok's @Getter) because Kotlin's Java-interop
-    // stub generation runs before the Lombok annotation processor, so Kotlin/Compose call
-    // sites can't see a Lombok-generated getter here.
-    public MutableLiveData<String> getErrorTextLiveData() {
-        return errorTextLiveData;
-    }
-
-    public ListenableFuture<Void> parseAndSaveToken(String token) throws PVNClientException {
-        List<ServerEntity> serverEntities = TokenUtils.parseToken(token);
-        return MoreExecutors.listeningDecorator(executorService).submit(() -> {
-            appDatabase.serverDAO().deleteAndInsert(serverEntities);
-            SharedPrefUtils.saveTokenUpdatedDate(getApplication(), System.currentTimeMillis());
-            return null;
-        });
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        executorService.shutdown();
+    @Throws(PVNClientException::class)
+    suspend fun parseAndSaveToken(token: String) {
+        val serverEntities = TokenUtils.parseToken(token)
+        withContext(Dispatchers.IO) {
+            appDatabase.serverDAO().deleteAndInsert(serverEntities)
+            SharedPrefUtils.saveTokenUpdatedDate(getApplication(), System.currentTimeMillis())
+        }
     }
 }

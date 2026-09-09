@@ -18,34 +18,22 @@
  * Website: https://fptn.org
  */
 
-package org.fptn.vpn.ui.settings;
+package org.fptn.vpn.ui.settings
 
-import android.app.Application;
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.fptn.vpn.database.AppDatabase
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
-import org.fptn.vpn.database.AppDatabase;
+    private val appDatabase = AppDatabase.getInstance(application)
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-public class SettingsViewModel extends AndroidViewModel {
-
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final AppDatabase appDatabase = AppDatabase.getInstance(getApplication());
-
-    public SettingsViewModel(@NonNull Application application) {
-        super(application);
-    }
-
-    public void deleteAllServers() {
-        executorService.submit(() -> appDatabase.serverDAO().deleteAll());
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        executorService.shutdown();
+    fun deleteAllServers() {
+        viewModelScope.launch(Dispatchers.IO) {
+            appDatabase.serverDAO().deleteAll()
+        }
     }
 }

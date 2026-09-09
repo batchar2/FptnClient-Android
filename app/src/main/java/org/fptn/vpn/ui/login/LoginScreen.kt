@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,9 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elvishew.xlog.XLog
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import androidx.core.content.ContextCompat
+import kotlinx.coroutines.launch
 import org.fptn.vpn.R
 import org.fptn.vpn.ui.common.HtmlLinkText
 import org.fptn.vpn.ui.common.LegacyPillButton
@@ -69,6 +68,7 @@ fun LoginScreen(
     viewModel: LoginActivityViewModel = viewModel(),
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val errorText by viewModel.errorTextLiveData.observeAsState("")
     var tokenText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
@@ -93,27 +93,15 @@ fun LoginScreen(
     }
 
     fun onLogin() {
-        try {
-            val updateResult = viewModel.parseAndSaveToken(tokenText.text)
-            Futures.addCallback(
-                updateResult,
-                object : FutureCallback<Void?> {
-                    override fun onSuccess(result: Void?) {
-                        onLoginSuccess()
-                    }
-
-                    override fun onFailure(t: Throwable) {
-                        XLog.tag(TAG).e("Login failed: %s", t.message)
-                        Toast.makeText(context, t.message.orEmpty(), Toast.LENGTH_SHORT).show()
-                        viewModel.errorTextLiveData.postValue(t.message)
-                    }
-                },
-                ContextCompat.getMainExecutor(context),
-            )
-        } catch (e: Exception) {
-            XLog.tag(TAG).e("Token parsing failed at login: %s", e.message)
-            Toast.makeText(context, R.string.token_saving_failed, Toast.LENGTH_SHORT).show()
-            viewModel.errorTextLiveData.postValue(context.getString(R.string.token_saving_failed))
+        coroutineScope.launch {
+            try {
+                viewModel.parseAndSaveToken(tokenText.text)
+                onLoginSuccess()
+            } catch (e: Exception) {
+                XLog.tag(TAG).e("Login failed: %s", e.message)
+                Toast.makeText(context, e.message.orEmpty(), Toast.LENGTH_SHORT).show()
+                viewModel.errorTextLiveData.postValue(e.message)
+            }
         }
     }
 
