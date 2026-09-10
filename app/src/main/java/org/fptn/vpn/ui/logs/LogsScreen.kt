@@ -1,13 +1,10 @@
 package org.fptn.vpn.ui.logs
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,9 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -29,8 +28,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.platform.TextToolbar
+import androidx.compose.ui.platform.TextToolbarStatus
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -148,35 +151,43 @@ fun LogsScreen(
                 if (state.lines.isEmpty()) {
                     CenteredMessage(centeredModifier) { PlaceholderText(stringResource(R.string.logs_error_empty_file)) }
                 } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .padding(horizontal = 2.dp)
-                            .background(Color(0xFF1A1A1A))
-                            .clickable { copyLogs(context, state.lines.joinToString("\n")) },
-                    ) {
-                        if (state.hasMoreBefore) {
-                            item(key = "loading_older") {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    if (state.loadingOlder) {
-                                        CircularProgressIndicator(color = White, modifier = Modifier.size(16.dp))
+                    val defaultToolbar = LocalTextToolbar.current
+                    val toastingToolbar = remember(defaultToolbar) {
+                        ToastOnCopyTextToolbar(defaultToolbar) {
+                            Toast.makeText(context, R.string.logs_copied, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    CompositionLocalProvider(LocalTextToolbar provides toastingToolbar) {
+                        SelectionContainer(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(horizontal = 2.dp)
+                                .background(Color(0xFF1A1A1A)),
+                        ) {
+                            LazyColumn(state = listState) {
+                                if (state.hasMoreBefore) {
+                                    item(key = "loading_older") {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            if (state.loadingOlder) {
+                                                CircularProgressIndicator(color = White, modifier = Modifier.size(16.dp))
+                                            }
+                                        }
                                     }
                                 }
+                                items(state.lines) { line ->
+                                    Text(
+                                        text = line,
+                                        color = White,
+                                        fontSize = 10.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 1.dp),
+                                    )
+                                }
                             }
-                        }
-                        items(state.lines) { line ->
-                            Text(
-                                text = line,
-                                color = White,
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace,
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 1.dp),
-                            )
                         }
                     }
                 }
@@ -207,6 +218,40 @@ fun LogsScreen(
 
 private data class PrependAnchor(val indexBefore: Int, val offsetBefore: Int, val lineCountBefore: Int)
 
+/**
+ * Delegates to the platform [TextToolbar] so text selection/copy keeps its normal behavior,
+ * but fires [onCopy] after the selected text is actually copied to the clipboard.
+ */
+private class ToastOnCopyTextToolbar(
+    private val delegate: TextToolbar,
+    private val onCopy: () -> Unit,
+) : TextToolbar {
+    override val status: TextToolbarStatus get() = delegate.status
+
+    override fun showMenu(
+        rect: Rect,
+        onCopyRequested: (() -> Unit)?,
+        onPasteRequested: (() -> Unit)?,
+        onCutRequested: (() -> Unit)?,
+        onSelectAllRequested: (() -> Unit)?,
+    ) {
+        delegate.showMenu(
+            rect = rect,
+            onCopyRequested = onCopyRequested?.let {
+                {
+                    it()
+                    onCopy()
+                }
+            },
+            onPasteRequested = onPasteRequested,
+            onCutRequested = onCutRequested,
+            onSelectAllRequested = onSelectAllRequested,
+        )
+    }
+
+    override fun hide() = delegate.hide()
+}
+
 @Composable
 private fun CenteredMessage(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(
@@ -222,12 +267,6 @@ private fun CenteredMessage(modifier: Modifier = Modifier, content: @Composable 
 @Composable
 private fun PlaceholderText(text: String) {
     Text(text = text, color = White, fontSize = 13.sp)
-}
-
-private fun copyLogs(context: Context, text: String) {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    clipboard.setPrimaryClip(ClipData.newPlainText("logs", text))
-    Toast.makeText(context, R.string.logs_copied, Toast.LENGTH_SHORT).show()
 }
 
 private fun sendLogFile(context: Context, file: File?) {
