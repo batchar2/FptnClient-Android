@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
@@ -32,6 +34,7 @@ import java.io.InputStreamReader
 import java.util.Locale
 
 private const val TAG = "SniDialogs"
+private const val MIN_SNI_SUGGESTION_LENGTH = 3
 
 /**
  * The two dialogs `BypassMethodsScreen` uses to manage SNI values: picking a server to
@@ -90,7 +93,11 @@ fun EditSniDialog(
     var text by remember { mutableStateOf(initialSni) }
     var expanded by remember { mutableStateOf(false) }
     val filteredSuggestions = remember(text, suggestions) {
-        if (text.isEmpty()) emptyList() else suggestions.filter { it.contains(text, ignoreCase = true) }.take(20)
+        if (text.length < MIN_SNI_SUGGESTION_LENGTH) {
+            emptyList()
+        } else {
+            suggestions.filter { it.contains(text, ignoreCase = true) }.take(5)
+        }
     }
 
     AlertDialog(
@@ -110,6 +117,8 @@ fun EditSniDialog(
                 DropdownMenu(
                     expanded = expanded && filteredSuggestions.isNotEmpty(),
                     onDismissRequest = { expanded = false },
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier.heightIn(max = 250.dp),
                 ) {
                     filteredSuggestions.forEach { suggestion ->
                         DropdownMenuItem(
