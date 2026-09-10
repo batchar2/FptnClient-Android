@@ -29,18 +29,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.fptn.vpn.utils.SharedPrefUtils;
+import org.fptn.vpn.utils.XLogInitializer;
 
-import com.elvishew.xlog.LogConfiguration;
-import com.elvishew.xlog.LogLevel;
 import com.elvishew.xlog.XLog;
-import com.elvishew.xlog.flattener.PatternFlattener;
-import com.elvishew.xlog.printer.AndroidPrinter;
-import com.elvishew.xlog.printer.file.FilePrinter;
-import com.elvishew.xlog.printer.file.backup.FileSizeBackupStrategy2;
-import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy;
-import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator;
-
-import java.io.File;
 
 public class App extends Application {
     @Override
@@ -85,27 +76,7 @@ public class App extends Application {
     }
 
     private void initXLog() {
-        File logDir = new File(getFilesDir(), "logs2");
-        if (!logDir.exists()) {
-            logDir.mkdirs();
-        }
-        String logPath = logDir.getAbsolutePath() + File.separator;
-
-        PatternFlattener flattener = new PatternFlattener("{d yyyy-MM-dd HH:mm:ss}|{l}|{t}|{m}");
-
-        LogConfiguration config = new LogConfiguration.Builder()
-                .logLevel(LogLevel.INFO)
-                .tag("FPTN")
-                .build();
-
-        FilePrinter filePrinter = new FilePrinter.Builder(logPath)
-                .fileNameGenerator(new DateFileNameGenerator())
-                .backupStrategy(new FileSizeBackupStrategy2(512 * 1024, 10))
-                .cleanStrategy(new FileLastModifiedCleanStrategy(60 * 60 * 1000L))
-                .flattener(flattener)
-                .build();
-        XLog.init(config, filePrinter, new AndroidPrinter());
-
-        XLog.i("XLog initialized successfully");
+        XLogInitializer.init(this);
+        XLog.i("XLog initialized successfully [level=%s]", SharedPrefUtils.getLogLevel(this));
     }
 }

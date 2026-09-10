@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -40,14 +42,17 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
+import org.fptn.vpn.enums.AppLogLevel
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.HtmlLinkText
+import org.fptn.vpn.ui.common.LegacySpinner
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
 import org.fptn.vpn.ui.theme.Gray
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.PermissionsUtils
 import org.fptn.vpn.utils.SharedPrefUtils
+import org.fptn.vpn.utils.XLogInitializer
 
 private const val TAG = "SettingsScreen"
 
@@ -74,12 +79,14 @@ fun SettingsScreen(
 
     var showShareDialog by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
+    var showClearLogsConfirm by remember { mutableStateOf(false) }
     var sponsorsExpanded by remember { mutableStateOf(false) }
     var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
     var showBackgroundDataDialog by remember { mutableStateOf(false) }
 
     var batteryOptimizationGranted by remember { mutableStateOf(PermissionsUtils.checkBatteryOptimizations(context)) }
     var backgroundDataGranted by remember { mutableStateOf(PermissionsUtils.checkBackgroundDataTransferRestrictions(context)) }
+    var logLevel by remember { mutableStateOf(SharedPrefUtils.getLogLevel(context)) }
 
     val appVersion = remember {
         try {
@@ -206,7 +213,43 @@ fun SettingsScreen(
                 title = stringResource(R.string.logs),
                 description = stringResource(R.string.view_and_copy_application_logs),
                 onClick = onNavigateLogs,
-            )
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.log_level_title),
+                            color = White,
+                            fontSize = 14.sp,
+                            modifier = Modifier.weight(1f),
+                        )
+                        LegacySpinner(
+                            items = AppLogLevel.entries,
+                            selected = logLevel,
+                            label = { logLevelLabel(it) },
+                            onSelect = {
+                                logLevel = it
+                                SharedPrefUtils.saveLogLevel(context, it)
+                                XLogInitializer.init(context)
+                                XLog.tag(TAG).i("Log level changed [level=%s]", it)
+                            },
+                            width = 110.dp,
+                            maxVisibleItems = 3,
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.clear_logs_button),
+                        color = Gray,
+                        fontSize = 13.sp,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .clickable { showClearLogsConfirm = true },
+                    )
+                }
+            }
 
             SettingsNavRow(
                 icon = R.drawable.cloud_back_up_24,
@@ -318,6 +361,24 @@ fun SettingsScreen(
                     showBackgroundDataDialog = false
                     XLog.tag(TAG).w("Background data transfer permission denied by user")
                 }) { Text(stringResource(R.string.deny)) }
+            },
+        )
+    }
+
+    if (showClearLogsConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearLogsConfirm = false },
+            title = { Text(stringResource(R.string.dialog_clear_logs_title)) },
+            text = { Text(stringResource(R.string.dialog_clear_logs_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showClearLogsConfirm = false
+                    XLogInitializer.clearLogs(context)
+                    Toast.makeText(context, R.string.logs_cleared, Toast.LENGTH_SHORT).show()
+                }) { Text(stringResource(R.string.yes)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearLogsConfirm = false }) { Text(stringResource(R.string.no)) }
             },
         )
     }
@@ -433,4 +494,14 @@ private fun PermissionRow(icon: Int, label: String, granted: Boolean, onRequest:
             onCheckedChange = { if (!granted) onRequest() },
         )
     }
+}
+
+@Composable
+private fun logLevelLabel(level: AppLogLevel): String = when (level) {
+    AppLogLevel.VERBOSE -> stringResource(R.string.log_level_verbose)
+    AppLogLevel.DEBUG -> stringResource(R.string.log_level_debug)
+    AppLogLevel.INFO -> stringResource(R.string.log_level_info)
+    AppLogLevel.WARN -> stringResource(R.string.log_level_warn)
+    AppLogLevel.ERROR -> stringResource(R.string.log_level_error)
+    AppLogLevel.NONE -> stringResource(R.string.log_level_none)
 }

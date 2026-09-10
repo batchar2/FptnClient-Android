@@ -27,6 +27,7 @@ import com.elvishew.xlog.XLog;
 
 import org.fptn.vpn.R;
 import org.fptn.vpn.core.common.Constants;
+import org.fptn.vpn.enums.AppLogLevel;
 import org.fptn.vpn.enums.BypassCensorshipMethod;
 import org.fptn.vpn.enums.ConnectionStrategy;
 import org.fptn.vpn.enums.PerAppVpnMode;
@@ -481,6 +482,24 @@ public class SharedPrefUtils {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.ALLOW_LANDSCAPE_PREF_KEY, allow).apply();
         XLog.d(TAG, "Saved " + Constants.ALLOW_LANDSCAPE_PREF_KEY + " = " + allow);
+    }
+
+    /* Log level */
+    public static AppLogLevel getLogLevel(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        String levelName = sharedPreferences.getString(Constants.LOG_LEVEL_PREF_KEY, null);
+        for (AppLogLevel value : AppLogLevel.values()) {
+            if (Objects.equals(levelName, value.name())) {
+                return value;
+            }
+        }
+        return AppLogLevel.INFO;
+    }
+
+    public static void saveLogLevel(Context context, AppLogLevel level) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString(Constants.LOG_LEVEL_PREF_KEY, level.name()).apply();
+        XLog.d(TAG, "Saved " + Constants.LOG_LEVEL_PREF_KEY + " = " + level);
     }
 
 }

@@ -26,10 +26,14 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.fptn.vpn.R
 import org.fptn.vpn.ui.theme.Primary
+
+private val DROPDOWN_ITEM_HEIGHT = 48.dp
+private val DROPDOWN_VERTICAL_PADDING = 16.dp
 
 /**
  * A generic single-select dropdown styled like the legacy `CustomSpinner`
@@ -41,8 +45,12 @@ import org.fptn.vpn.ui.theme.Primary
  * while open, the popup gets an explicit light [DropdownMenu.containerColor] since
  * [FptnTheme][org.fptn.vpn.ui.theme.FptnTheme] forces a dark Material3 scheme app-wide, the menu
  * is widened to the anchor's own measured width instead of Material3's default
- * widest-row sizing, and its height is capped so it scrolls instead of flipping above the anchor
- * when there isn't room below.
+ * widest-row sizing, and its height is capped (to roughly [maxVisibleItems] rows) so it scrolls
+ * instead of flipping above the anchor when there isn't room below.
+ *
+ * By default the anchor fills the available width; pass [width] to size it to a fixed width
+ * instead — e.g. when placed inline next to a label, where filling the row would leave the
+ * control looking mostly empty.
  */
 @Composable
 fun <T> LegacySpinner(
@@ -52,12 +60,14 @@ fun <T> LegacySpinner(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    width: Dp? = null,
+    maxVisibleItems: Int = 5,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var anchorWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    Box(modifier = if (width != null) modifier.width(width) else modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -86,7 +96,7 @@ fun <T> LegacySpinner(
             onDismissRequest = { expanded = false },
             modifier = Modifier
                 .width(with(density) { anchorWidthPx.toDp() })
-                .heightIn(max = 220.dp),
+                .heightIn(max = DROPDOWN_ITEM_HEIGHT * maxVisibleItems + DROPDOWN_VERTICAL_PADDING),
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.White,
         ) {
