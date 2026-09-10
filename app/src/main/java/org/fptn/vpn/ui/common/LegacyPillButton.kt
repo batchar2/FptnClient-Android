@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,12 +32,14 @@ fun LegacyPillButton(
     modifier: Modifier = Modifier,
     bold: Boolean = false,
     contentPadding: Dp = 8.dp,
+    enabled: Boolean = true,
 ) {
     BasicText(
         text = text,
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
+            .alpha(if (enabled) 1f else 0.5f)
             .legacyDrawableBackground(backgroundDrawable)
             .padding(contentPadding),
         style = TextStyle(

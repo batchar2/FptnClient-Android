@@ -292,6 +292,10 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="logs_empty">گزارشی برای کپی وجود ندارد</string>
     <string name="view_and_copy_application_logs">مشاهده گزارش‌های عملکرد برنامه</string>
     <string name="send_log_file">ارسال فایل گزارش</string>
+    <string name="logs_error_no_directory">پوشه گزارش‌ها وجود ندارد.</string>
+    <string name="logs_error_no_files">فایل گزارشی وجود ندارد.</string>
+    <string name="logs_error_empty_file">فایل گزارش خالی است.</string>
+    <string name="logs_error_read_failed">خطا در خواندن گزارش: %1$s</string>
 
     <string name="search_apps_hint">جستجوی برنامه‌ها…</string>
     <string name="show_system_apps_label">برنامه‌های سیستمی</string>
