@@ -137,6 +137,7 @@ fun HomeScreen(
     val speedSample by viewModel.speedSampleLiveData.observeAsState(null)
 
     var selectedServer by remember { mutableStateOf(ServerEntity.AUTO) }
+    var serverSelectionInitialized by remember { mutableStateOf(false) }
     // Sticky "are we showing the connected layout" flag: flips on CONNECTED/DISCONNECTED/BLOCKED,
     // left untouched on transitional states (CONNECTING, RECONNECTING, ...) — mirrors the legacy
     // observer's `switch` with a no-op `default`, so e.g. a silent RECONNECTING episode keeps
@@ -309,17 +310,23 @@ fun HomeScreen(
             ConnectionState.DISCONNECTED, ConnectionState.BLOCKED -> showConnectedUi = false
             else -> {}
         }
-        // Re-pick the default server only on the edge into DISCONNECTED, not on every ping
-        // refresh while already disconnected — otherwise a user's manual dropdown pick would
-        // keep getting reset every 5 minutes as ping results stream in.
-        if (connectionState == ConnectionState.DISCONNECTED && previousConnectionState != ConnectionState.DISCONNECTED) {
-            if (serverEntities.isNotEmpty()) {
-                selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
-                    serverEntities[0]
-                } else {
-                    serverEntities.firstOrNull { it.isSelected } ?: serverEntities[0]
-                }
+    }
+
+    // Re-pick the default server only on the edge into DISCONNECTED, not on every ping
+    // refresh while already disconnected — otherwise a user's manual dropdown pick would
+    // keep getting reset every 5 minutes as ping results stream in. Also keyed on
+    // serverEntities so the very first load (which lands after INITIAL's DISCONNECTED
+    // state is already composed) still applies the saved/AUTO selection once it arrives.
+    LaunchedEffect(connectionState, serverEntities) {
+        val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
+            previousConnectionState != ConnectionState.DISCONNECTED
+        if (serverEntities.isNotEmpty() && (enteringDisconnected || !serverSelectionInitialized)) {
+            selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
+                serverEntities[0]
+            } else {
+                serverEntities.firstOrNull { it.isSelected } ?: serverEntities[0]
             }
+            serverSelectionInitialized = true
         }
         previousConnectionState = connectionState
     }
