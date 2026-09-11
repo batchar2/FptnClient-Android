@@ -235,7 +235,7 @@ fun SettingsScreen(
                                 XLogInitializer.init(context)
                                 XLog.tag(TAG).i("Log level changed [level=%s]", it)
                             },
-                            width = 110.dp,
+                            width = 200.dp,
                             maxVisibleItems = 3,
                         )
                     }

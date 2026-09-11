@@ -162,7 +162,7 @@ fun LogsScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
-                                .padding(horizontal = 2.dp)
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .background(Color(0xFF1A1A1A)),
                         ) {
                             LazyColumn(state = listState) {
