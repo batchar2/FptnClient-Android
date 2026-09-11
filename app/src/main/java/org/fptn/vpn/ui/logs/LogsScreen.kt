@@ -7,11 +7,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -117,7 +121,11 @@ fun LogsScreen(
         modifier = Modifier
             .fillMaxSize()
             .legacyDrawableBackground(R.drawable.application_background)
-            .safeDrawingPadding(),
+            // Excludes the bottom side deliberately: BottomNavBar consumes the navigation-bar
+            // inset itself so its background reaches the real screen edge instead of floating
+            // above it with the screen background showing through underneath (see
+            // BottomNavBar's window insets listener).
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
     ) {
         Image(
             painter = painterResource(R.drawable.ic_logo_24),

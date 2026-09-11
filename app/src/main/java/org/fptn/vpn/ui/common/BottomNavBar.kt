@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.fptn.vpn.R
 
@@ -46,6 +48,16 @@ fun BottomNavBar(
         factory = { context ->
             BottomNavigationView(context).apply {
                 inflateMenu(R.menu.bottom_nav_bar_menu)
+                // The bar's own background must reach the real bottom edge of the screen
+                // (behind the gesture nav bar) rather than floating above it, so consume the
+                // navigation-bar inset here as bottom padding instead of letting an ancestor
+                // Composable's `safeDrawingPadding` push the whole bar upward and expose the
+                // screen background underneath.
+                ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
+                    val navBarInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                    view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, navBarInset)
+                    insets
+                }
             }
         },
         update = { view ->

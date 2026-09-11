@@ -13,11 +13,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -190,7 +194,11 @@ fun ExperimentalSettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .legacyDrawableBackground(R.drawable.application_background)
-            .safeDrawingPadding(),
+            // Excludes the bottom side deliberately: BottomNavBar consumes the navigation-bar
+            // inset itself so its background reaches the real screen edge instead of floating
+            // above it with the screen background showing through underneath (see
+            // BottomNavBar's window insets listener).
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
     ) {
         Column(
             modifier = Modifier
