@@ -126,7 +126,7 @@ public class WebSocketClientWrapper {
         if (cachedAccessToken == null) {
             cachedAccessToken = getAccessToken();
         } else {
-            XLog.d(getTag(), "Re-using cached access token (skipping login)");
+            XLog.tag(getTag()).d("Re-using cached access token (skipping login)");
         }
 
         nativeWebSocketClient = new NativeWebSocketClientImpl(
@@ -146,18 +146,18 @@ public class WebSocketClientWrapper {
                 connectionStrategy
         );
 
-        XLog.d(getTag(), "WebSocket start dispatched [thread=" + Thread.currentThread().getId() + "]");
+        XLog.tag(getTag()).d("WebSocket start dispatched [thread=" + Thread.currentThread().getId() + "]");
         nativeWebSocketClient.start();
     }
 
     public synchronized void stopWebSocket() {
-        XLog.d(getTag(), "stopWebSocket called [thread=" + Thread.currentThread().getId() + "]");
+        XLog.tag(getTag()).d("stopWebSocket called [thread=" + Thread.currentThread().getId() + "]");
         if (nativeWebSocketClient != null) {
             if (nativeWebSocketClient.isStarted()) {
-                XLog.i(getTag(), "Stopping active WebSocket [thread=" + Thread.currentThread().getId() + "]");
+                XLog.tag(getTag()).i("Stopping active WebSocket [thread=" + Thread.currentThread().getId() + "]");
                 nativeWebSocketClient.stop();
             }
-            XLog.i(getTag(), "Releasing WebSocket resources [thread=" + Thread.currentThread().getId() + "]");
+            XLog.tag(getTag()).i("Releasing WebSocket resources [thread=" + Thread.currentThread().getId() + "]");
             nativeWebSocketClient.release();
             nativeWebSocketClient = null;
         }
@@ -223,7 +223,7 @@ public class WebSocketClientWrapper {
 
     public DnsServers getDnsServers() throws PVNClientException {
         if (cachedDnsServers != null) {
-            XLog.d(getTag(), "Re-using cached DNS servers (skipping /api/v1/dns request)");
+            XLog.tag(getTag()).d("Re-using cached DNS servers (skipping /api/v1/dns request)");
             return cachedDnsServers;
         }
         for (int attempt = 1; attempt <= MAX_API_ATTEMPTS; attempt++) {

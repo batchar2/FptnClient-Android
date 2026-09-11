@@ -83,6 +83,7 @@ import org.fptn.vpn.ui.theme.Yellow
 import org.fptn.vpn.utils.PermissionsUtils
 import org.fptn.vpn.utils.SharedPrefUtils
 import org.fptn.vpn.vpnclient.exception.ErrorCode
+import androidx.core.net.toUri
 
 private const val TOKEN_MAX_AGE_MS = 14L * 24 * 60 * 60 * 1000
 private const val TOKEN_STALE_AGE_MS = 3L * 24 * 60 * 60 * 1000
@@ -164,7 +165,7 @@ fun HomeScreen(
 
     val needsBackgroundSetup = !notificationsGranted || !batteryGranted
     val showPermissionWarning = connectionState == ConnectionState.CONNECTED && needsBackgroundSetup
-    val activeState = connectionState.isActiveState()
+    val activeState = connectionState.isActiveState
 
     val vpnPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -220,7 +221,7 @@ fun HomeScreen(
                 return
             }
             proceedToVpnConnect()
-        } else if (connectionState.isActiveState()) {
+        } else if (connectionState.isActiveState) {
             FptnService.startToDisconnect(context)
         }
     }
@@ -255,6 +256,7 @@ fun HomeScreen(
                         }
                     }.also { FptnService.bindService(context, it) }
                 }
+
                 Lifecycle.Event.ON_STOP -> {
                     connection?.let {
                         try {
@@ -265,15 +267,18 @@ fun HomeScreen(
                     }
                     connection = null
                 }
+
                 Lifecycle.Event.ON_RESUME -> {
                     isResumed = true
                     notificationsGranted = PermissionsUtils.checkNotificationEnabled(context)
                     batteryGranted = PermissionsUtils.checkBatteryOptimizations(context)
                     showTrafficChart = SharedPrefUtils.getShowTrafficChart(context)
                 }
+
                 Lifecycle.Event.ON_PAUSE -> {
                     isResumed = false
                 }
+
                 else -> {}
             }
         }
@@ -312,7 +317,7 @@ fun HomeScreen(
                 selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
                     serverEntities[0]
                 } else {
-                    serverEntities.firstOrNull { it.isSelected() } ?: serverEntities[0]
+                    serverEntities.firstOrNull { it.isSelected } ?: serverEntities[0]
                 }
             }
         }
@@ -330,9 +335,15 @@ fun HomeScreen(
                     duration = SnackbarDuration.Long,
                 )
                 if (result == SnackbarResult.ActionPerformed) {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(context.getString(R.string.telegram_bot_link))))
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            context.getString(R.string.telegram_bot_link).toUri()
+                        )
+                    )
                 }
             }
+
             connectionState == ConnectionState.DISCONNECTED && ErrorCode.isServerUnreachable(exception.errorCode) -> {
                 if (SharedPrefUtils.getConnectFailedHelpEnabled(context) &&
                     SharedPrefUtils.getConnectFailuresInRow(context) >= CONNECT_FAILURES_BEFORE_HELP
@@ -340,7 +351,7 @@ fun HomeScreen(
                     SharedPrefUtils.saveConnectFailuresInRow(context, 0)
                     if (!showConnectFailedHelpDialog) {
                         connectFailedTokenStale = System.currentTimeMillis() -
-                            SharedPrefUtils.getTokenUpdatedDate(context) > TOKEN_STALE_AGE_MS
+                          SharedPrefUtils.getTokenUpdatedDate(context) > TOKEN_STALE_AGE_MS
                         showConnectFailedHelpDialog = true
                     }
                 }
@@ -364,8 +375,10 @@ fun HomeScreen(
                     when (resultCode) {
                         StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED ->
                             Toast.makeText(context, R.string.tile_already_added, Toast.LENGTH_SHORT).show()
+
                         StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED ->
                             Toast.makeText(context, R.string.tile_added_successfully, Toast.LENGTH_SHORT).show()
+
                         else -> {}
                     }
                 }
@@ -421,7 +434,8 @@ fun HomeScreen(
                 val buttonSize = dimensionResource(R.dimen.toggle_button_size)
                 val density = LocalDensity.current
                 val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-                val verticalBias = if (isLandscape) CONNECT_BUTTON_VERTICAL_BIAS_LANDSCAPE else CONNECT_BUTTON_VERTICAL_BIAS
+                val verticalBias =
+                    if (isLandscape) CONNECT_BUTTON_VERTICAL_BIAS_LANDSCAPE else CONNECT_BUTTON_VERTICAL_BIAS
                 // Always composed (never conditionally removed) so it reserves the same layout
                 // space whether shown or not — otherwise the button below would jump down by the
                 // timer's height the moment it appears on connect. The legacy ConstraintLayout
@@ -474,7 +488,11 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(bottom = 6.dp),
                         ) {
-                            Text(text = stringResource(R.string.server_label), color = White, modifier = Modifier.padding(end = 5.dp))
+                            Text(
+                                text = stringResource(R.string.server_label),
+                                color = White,
+                                modifier = Modifier.padding(end = 5.dp)
+                            )
                             Text(text = connectedServerInfo.orEmpty(), color = White, maxLines = 2)
                         }
                     } else {
