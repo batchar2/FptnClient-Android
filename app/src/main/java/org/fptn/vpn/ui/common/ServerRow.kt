@@ -23,44 +23,43 @@ import org.fptn.vpn.ui.theme.Primary
 import org.fptn.vpn.utils.CountryFlags
 
 /**
- * Compose port of `ServerEntityAdapter`'s row (`home_list_recycler_server_item.xml`): the
- * "Auto" pseudo-server gets a centered logo + name with no ping/flag/censored row, a real
- * server gets a flag emoji, name, an optional censored icon, and a ping row (colored emoji +
- * "Nms", "---  ---  ---" for unreachable, or nothing if not yet pinged).
+ * Compose port of `ServerEntityAdapter`'s row (`home_list_recycler_server_item.xml`): a real
+ * server gets a flag emoji, name, an optional censored icon, and (once pinged) a ping line below
+ * (colored emoji + "Nms", "---  ---  ---" for unreachable) — two lines tall. The "Auto"
+ * pseudo-server has no second line, so its logo and label are enlarged instead, making its single
+ * line match a pinged real server's total two-line height rather than leaving dead space below.
  */
 @Composable
 fun ServerRow(server: ServerEntity, modifier: Modifier = Modifier) {
-    if (server.IsAuto()) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 3.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ic_logo),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(Primary),
-                modifier = Modifier.size(32.dp),
-            )
-            Text(
-                text = server.name,
-                color = Primary,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(start = 5.dp),
-            )
-        }
-        return
-    }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 3.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val flag = CountryFlags.getCountryFlagByCountryCode(server.countryCode)
+            if (server.IsAuto()) {
+                Box(modifier = Modifier.size(width = 40.dp, height = 62.dp), contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_logo),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(Primary),
+                        modifier = Modifier.size(40.dp),
+                    )
+                }
+                Text(
+                    text = server.name,
+                    color = Primary,
+                    fontSize = 22.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 5.dp),
+                )
+                return@Row
+            }
             Box(modifier = Modifier.size(width = 32.dp, height = 38.dp), contentAlignment = Alignment.Center) {
+                val flag = CountryFlags.getCountryFlagByCountryCode(server.countryCode)
                 if (!flag.isNullOrEmpty()) {
                     Text(text = flag, fontSize = 20.sp, textAlign = TextAlign.Center)
                 }
@@ -81,12 +80,12 @@ fun ServerRow(server: ServerEntity, modifier: Modifier = Modifier) {
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(Primary),
                     modifier = Modifier
-                        .padding(start = 4.dp)
-                        .size(24.dp),
+                        .padding(start = 4.dp, end = 20.dp)
+                        .size(40.dp),
                 )
             }
         }
-        val ping = server.pingMs
+        val ping = if (server.IsAuto()) 0L else server.pingMs
         if (ping != 0L) {
             Row(modifier = Modifier.padding(start = 38.dp)) {
                 if (ping > 0) {
