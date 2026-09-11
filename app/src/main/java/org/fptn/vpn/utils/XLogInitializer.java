@@ -29,11 +29,15 @@ import com.elvishew.xlog.printer.AndroidPrinter;
 import com.elvishew.xlog.printer.file.FilePrinter;
 import com.elvishew.xlog.printer.file.backup.FileSizeBackupStrategy2;
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy;
-import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator;
+import com.elvishew.xlog.printer.file.naming.FileNameGenerator;
 
 import org.fptn.vpn.enums.AppLogLevel;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Builds the {@code XLog} configuration from the log level saved in {@link SharedPrefUtils}.
@@ -60,12 +64,33 @@ public final class XLogInitializer {
                 .build();
 
         FilePrinter filePrinter = new FilePrinter.Builder(logPath)
-                .fileNameGenerator(new DateFileNameGenerator())
+                .fileNameGenerator(new DateLogFileNameGenerator())
                 .backupStrategy(new FileSizeBackupStrategy2(512 * 1024, 10))
                 .cleanStrategy(new FileLastModifiedCleanStrategy(60 * 60 * 1000L))
                 .flattener(flattener)
                 .build();
         XLog.init(config, filePrinter, new AndroidPrinter());
+    }
+
+    /**
+     * Same naming scheme as XLog's {@code DateFileNameGenerator} (one file per calendar day),
+     * but with a {@code .log} extension so shared/exported files aren't extension-less.
+     */
+    private static final class DateLogFileNameGenerator implements FileNameGenerator {
+
+        private final ThreadLocal<SimpleDateFormat> localDateFormat = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd", Locale.US));
+
+        @Override
+        public boolean isFileNameChangeable() {
+            return true;
+        }
+
+        @Override
+        public String generateFileName(int logLevel, long timestamp) {
+            SimpleDateFormat sdf = localDateFormat.get();
+            sdf.setTimeZone(TimeZone.getDefault());
+            return sdf.format(new Date(timestamp)) + ".log";
+        }
     }
 
     /**
