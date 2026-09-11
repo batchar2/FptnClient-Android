@@ -55,6 +55,9 @@ import org.fptn.vpn.ui.theme.Hint
 import org.fptn.vpn.ui.theme.Primary
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.ui.theme.Yellow
+import org.fptn.vpn.utils.ResourcesUtils.getStringResourceByName
+import org.fptn.vpn.vpnclient.exception.ErrorCode
+import org.fptn.vpn.vpnclient.exception.PVNClientException
 
 private const val TAG = "LoginScreen"
 private val TOKEN_CLIPBOARD_PREFIXES = listOf("fptn:", "fptnb:")
@@ -100,8 +103,13 @@ fun LoginScreen(
                 onLoginSuccess()
             } catch (e: Exception) {
                 XLog.tag(TAG).e("Login failed: %s", e.message)
-                Toast.makeText(context, e.message.orEmpty(), Toast.LENGTH_SHORT).show()
-                viewModel.errorTextLiveData.postValue(e.message)
+                val localizedMessage = if (e is PVNClientException && e.errorCode != ErrorCode.UNKNOWN_ERROR) {
+                    getStringResourceByName(context, e.errorCode.value) ?: e.message.orEmpty()
+                } else {
+                    e.message.orEmpty()
+                }
+                Toast.makeText(context, localizedMessage, Toast.LENGTH_SHORT).show()
+                viewModel.errorTextLiveData.postValue(localizedMessage)
             }
         }
     }
