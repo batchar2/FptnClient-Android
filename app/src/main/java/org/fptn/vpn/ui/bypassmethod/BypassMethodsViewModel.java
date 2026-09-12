@@ -199,8 +199,8 @@ public class BypassMethodsViewModel extends AndroidViewModel {
 
     public ListenableFuture<List<ServerEntity>> getAllServers() {
         List<ServerEntity> cached = HomeActivityViewModel.lastPingedServers;
-        if (cached != null && !cached.isEmpty()) {
-            return Futures.immediateFuture(cached);
+        if (cached != null && cached.size() > 1) {
+            return Futures.immediateFuture(cached.subList(1, cached.size()));
         }
         return appDatabase.serverDAO().getServerListAsync(false);
     }
