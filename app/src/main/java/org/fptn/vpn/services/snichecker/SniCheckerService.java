@@ -44,7 +44,9 @@ import org.fptn.vpn.database.AppDatabase;
 import org.fptn.vpn.database.entity.ServerEntity;
 import org.fptn.vpn.database.entity.SniEntity;
 import org.fptn.vpn.enums.BypassCensorshipMethod;
+import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.SniSpoofingMode;
+import org.fptn.vpn.services.tile.FptnTileService;
 import org.fptn.vpn.ui.MainActivity;
 import org.fptn.vpn.ui.navigation.AppRoute;
 import org.fptn.vpn.utils.NotificationUtils;
@@ -82,6 +84,11 @@ public class SniCheckerService extends Service {
         return staticServiceState.getValue();
     }
 
+    /** Non-Lombok accessor so Kotlin (Compose) code can observe the static service state LiveData. */
+    public static MutableLiveData<SniCheckerServiceState> getStaticServiceStateLiveData() {
+        return staticServiceState;
+    }
+
     @Getter
     private final MutableLiveData<SniCheckerServiceState> serviceState = new MutableLiveData<>(SniCheckerServiceState.INACTIVE);
 
@@ -114,9 +121,6 @@ public class SniCheckerService extends Service {
     private final AppDatabase appDatabase = AppDatabase.getInstance(getApplication());
 
     private PowerManager.WakeLock wakeLock;
-
-    // todo:
-    //  4) not allow run vpn if sni checking in progress.
 
     /* Just in case we need to bind! */
     public static void bindService(Context context, ServiceConnection connection) {
@@ -165,6 +169,11 @@ public class SniCheckerService extends Service {
                                                   ServerEntity serverEntity,
                                                   boolean resetChecked,
                                                   BypassCensorshipMethod bypassCensorshipMethodMutableLiveData) {
+        ConnectionState vpnState = FptnTileService.getServiceStateMutableLiveData().getValue();
+        if (vpnState != null && vpnState.isActiveState()) {
+            XLog.tag(TAG).w("Refusing to start SNI check — VPN is active");
+            return;
+        }
         Intent intent = new Intent(context, SniCheckerService.class);
         intent.setAction(ACTION_START);
         intent.putExtra(RESET_CHECKED_EXTRA, resetChecked);

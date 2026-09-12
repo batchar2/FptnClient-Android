@@ -74,6 +74,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
 import org.fptn.vpn.enums.ConnectionState
+import org.fptn.vpn.services.snichecker.SniCheckerService
+import org.fptn.vpn.services.snichecker.SniCheckerServiceState
 import org.fptn.vpn.services.tile.FptnTileService
 import org.fptn.vpn.services.vpn.FptnService
 import org.fptn.vpn.services.vpn.FptnServiceState
@@ -219,6 +221,11 @@ fun HomeScreen(
 
     fun onToggleConnectClick() {
         if (connectionState == ConnectionState.DISCONNECTED) {
+            if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+                Toast.makeText(context, R.string.cannot_connect_sni_check_active, Toast.LENGTH_SHORT).show()
+                onNavigateBypassMethods()
+                return
+            }
             if (needsBackgroundSetup) {
                 connectAfterBackgroundSetup = true
                 visitedPin = false

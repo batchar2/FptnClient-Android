@@ -70,6 +70,8 @@ import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.NetworkType;
 import org.fptn.vpn.enums.PerAppVpnMode;
 import org.fptn.vpn.enums.SniSpoofingMode;
+import org.fptn.vpn.services.snichecker.SniCheckerService;
+import org.fptn.vpn.services.snichecker.SniCheckerServiceState;
 import org.fptn.vpn.services.tile.FptnTileService;
 import org.fptn.vpn.services.websocket.DnsServers;
 import org.fptn.vpn.utils.NetworkUtils;
@@ -334,6 +336,10 @@ public class FptnService extends VpnService {
 
     /* Static methods to start/stop service */
     public synchronized static void startToConnect(Context context, ServerEntity serverEntity) {
+        if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+            XLog.tag(TAG).w("Refusing to connect — SNI check is in progress");
+            return;
+        }
         Intent intent = new Intent(context, FptnService.class);
         intent.setAction(ACTION_CONNECT);
         if (serverEntity != null) {
@@ -343,6 +349,10 @@ public class FptnService extends VpnService {
     }
 
     public synchronized static void startToConnect(Context context) {
+        if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+            XLog.tag(TAG).w("Refusing to connect — SNI check is in progress");
+            return;
+        }
         Intent intent = new Intent(context, FptnService.class);
         intent.setAction(ACTION_CONNECT);
         // Now it method called only from FptnTileService
@@ -356,6 +366,10 @@ public class FptnService extends VpnService {
 
     @androidx.annotation.RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     public synchronized static void startToConnectFromTile(android.service.quicksettings.TileService tileService) {
+        if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+            XLog.tag(TAG).w("Refusing to connect — SNI check is in progress");
+            return;
+        }
         Intent intent = new Intent(tileService, FptnService.class);
         intent.setAction(ACTION_CONNECT);
         intent.putExtra(SELECTED_SERVER, START_FROM_TILE_AUTO);

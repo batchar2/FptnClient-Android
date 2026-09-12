@@ -62,6 +62,7 @@ import org.fptn.vpn.enums.ConnectionStrategy
 import org.fptn.vpn.enums.SniSpoofingMode
 import org.fptn.vpn.services.snichecker.SniCheckerService
 import org.fptn.vpn.services.snichecker.SniCheckerServiceState
+import org.fptn.vpn.services.tile.FptnTileService
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.LegacySpinner
 import org.fptn.vpn.ui.common.ShareDialog
@@ -168,6 +169,11 @@ fun BypassMethodsScreen(
 
     fun onAutoSelectClicked() {
         if (viewModel.serviceState.value == SniCheckerServiceState.INACTIVE) {
+            if (FptnTileService.getServiceStateMutableLiveData().value?.isActiveState == true) {
+                Toast.makeText(context, R.string.cannot_start_sni_check_vpn_active, Toast.LENGTH_SHORT).show()
+                onNavigateHome()
+                return
+            }
             Futures.addCallback(
                 viewModel.getAllServers(),
                 object : FutureCallback<List<ServerEntity>> {

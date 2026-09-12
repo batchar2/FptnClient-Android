@@ -50,6 +50,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     </string>
     <string name="vpn_permission_warning">برای عملکرد FPTN، دسترسی‌های لازم مورد نیاز است!</string>
 
+    <string name="cannot_connect_sni_check_active">اتصال ممکن نیست: جستجوی SNI در حال انجام است</string>
+    <string name="cannot_start_sni_check_vpn_active">شروع جستجوی SNI ممکن نیست: VPN متصل است</string>
+
     <string name="connecting">در حال اتصال...</string>
     <string name="reconnection">در حال اتصال مجدد...</string>
     <string name="connected">متصل است</string>

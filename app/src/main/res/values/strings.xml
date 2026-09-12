@@ -67,6 +67,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
 
     <string name="vpn_permission_warning">For running FptnVPN need permissions!</string>
 
+    <string name="cannot_connect_sni_check_active">Cannot connect: SNI search is in progress</string>
+    <string name="cannot_start_sni_check_vpn_active">Cannot start SNI search: VPN is connected</string>
+
 
     <string name="dialog_logout_title">Confirm Action</string>
     <string name="dialog_logout_message">Are you sure you want to logout?</string>

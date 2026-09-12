@@ -3,10 +3,17 @@ package org.fptn.vpn.ui.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.fptn.vpn.enums.ConnectionState
+import org.fptn.vpn.services.snichecker.SniCheckerService
+import org.fptn.vpn.services.snichecker.SniCheckerServiceState
+import org.fptn.vpn.services.tile.FptnTileService
 import org.fptn.vpn.ui.backup.BackupSettingsScreen
 import org.fptn.vpn.ui.bypassmethod.BypassMethodsScreen
 import org.fptn.vpn.ui.experimentalsettings.ExperimentalSettingsScreen
@@ -45,6 +52,26 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     startRoute: String = AppRoute.SPLASH,
 ) {
+    // The VPN and the SNI search are mutually exclusive background jobs (enforced in
+    // FptnService/SniCheckerService's static start methods) — whichever one is actually
+    // running owns the screen, no matter how it was started (in-app button, Quick Settings
+    // tile, or a notification tap). These observers key on the static LiveData both services
+    // already expose, so a state flip anywhere jumps the user to the matching screen even if
+    // they're currently elsewhere in the app.
+    val vpnState by FptnTileService.getServiceStateMutableLiveData().observeAsState(ConnectionState.DISCONNECTED)
+    val sniState by SniCheckerService.getStaticServiceStateLiveData().observeAsState(SniCheckerServiceState.INACTIVE)
+
+    LaunchedEffect(vpnState.isActiveState) {
+        if (vpnState.isActiveState) {
+            navController.navigate(AppRoute.HOME) { launchSingleTop = true }
+        }
+    }
+    LaunchedEffect(sniState == SniCheckerServiceState.ACTIVE) {
+        if (sniState == SniCheckerServiceState.ACTIVE) {
+            navController.navigate(AppRoute.BYPASS_METHODS) { launchSingleTop = true }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startRoute,
