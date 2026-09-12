@@ -3,4 +3,7 @@
     <cache-path
         name="backups"
         path="backups/" />
+    <files-path
+        name="logs"
+        path="logs2/" />
 </paths>

@@ -37,10 +37,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class TokenUtils {
+public final class TokenUtils {
     private static final String TAG = TokenUtils.class.getSimpleName();
 
     private static final ObjectMapper OBJECT_MAPPER;
@@ -50,7 +47,10 @@ public class TokenUtils {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public List<ServerEntity> parseToken(String token) throws PVNClientException {
+    private TokenUtils() {
+    }
+
+    public static List<ServerEntity> parseToken(String token) throws PVNClientException {
         List<ServerEntity> serverDtoList = new ArrayList<>();
 
         // removes all whitespaces and non-visible characters (e.g., tab, \n) and prefixes fptn://  fptn: fptnb:
@@ -102,7 +102,7 @@ public class TokenUtils {
         return serverDtoList;
     }
 
-    private ServerEntity createServerEntity(ServerFromToken server, String username, String password, boolean censured) {
+    private static ServerEntity createServerEntity(ServerFromToken server, String username, String password, boolean censured) {
         String countryCode = Optional.ofNullable(server.getCountryCode())
                 .orElse(CountryFlags.getCountryCodeFromHostName(server.getName()));
 

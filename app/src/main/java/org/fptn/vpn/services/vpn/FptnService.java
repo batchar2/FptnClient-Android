@@ -61,7 +61,6 @@ import com.elvishew.xlog.XLog;
 
 import org.fptn.vpn.R;
 import org.fptn.vpn.network.DomainBlocker;
-import org.fptn.vpn.network.Splitter;
 import org.fptn.vpn.core.common.Constants;
 import org.fptn.vpn.database.AppDatabase;
 import org.fptn.vpn.database.entity.ServerEntity;
@@ -71,16 +70,18 @@ import org.fptn.vpn.enums.ConnectionState;
 import org.fptn.vpn.enums.NetworkType;
 import org.fptn.vpn.enums.PerAppVpnMode;
 import org.fptn.vpn.enums.SniSpoofingMode;
+import org.fptn.vpn.services.snichecker.SniCheckerService;
+import org.fptn.vpn.services.snichecker.SniCheckerServiceState;
 import org.fptn.vpn.services.tile.FptnTileService;
 import org.fptn.vpn.services.websocket.DnsServers;
 import org.fptn.vpn.utils.NetworkUtils;
 import org.fptn.vpn.utils.NotificationUtils;
 import org.fptn.vpn.utils.RemoteExclusionListSync;
 import org.fptn.vpn.utils.SharedPrefUtils;
-import org.fptn.vpn.views.perappvpn.AppInfo;
+import org.fptn.vpn.ui.perappvpn.AppInfo;
 import org.fptn.vpn.services.speedtest.SpeedTestResult;
 import org.fptn.vpn.services.speedtest.SpeedTestUtils;
-import org.fptn.vpn.views.splash.SplashActivity;
+import org.fptn.vpn.ui.MainActivity;
 import org.fptn.vpn.vpnclient.exception.ErrorCode;
 import org.fptn.vpn.vpnclient.exception.PVNClientException;
 
@@ -335,6 +336,10 @@ public class FptnService extends VpnService {
 
     /* Static methods to start/stop service */
     public synchronized static void startToConnect(Context context, ServerEntity serverEntity) {
+        if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+            XLog.tag(TAG).w("Refusing to connect — SNI check is in progress");
+            return;
+        }
         Intent intent = new Intent(context, FptnService.class);
         intent.setAction(ACTION_CONNECT);
         if (serverEntity != null) {
@@ -344,6 +349,10 @@ public class FptnService extends VpnService {
     }
 
     public synchronized static void startToConnect(Context context) {
+        if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+            XLog.tag(TAG).w("Refusing to connect — SNI check is in progress");
+            return;
+        }
         Intent intent = new Intent(context, FptnService.class);
         intent.setAction(ACTION_CONNECT);
         // Now it method called only from FptnTileService
@@ -357,6 +366,10 @@ public class FptnService extends VpnService {
 
     @androidx.annotation.RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     public synchronized static void startToConnectFromTile(android.service.quicksettings.TileService tileService) {
+        if (SniCheckerService.getStaticState() == SniCheckerServiceState.ACTIVE) {
+            XLog.tag(TAG).w("Refusing to connect — SNI check is in progress");
+            return;
+        }
         Intent intent = new Intent(tileService, FptnService.class);
         intent.setAction(ACTION_CONNECT);
         intent.putExtra(SELECTED_SERVER, START_FROM_TILE_AUTO);
@@ -382,7 +395,7 @@ public class FptnService extends VpnService {
 
         // pending intent for open MainActivity on tap
         launchMainActivityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, SplashActivity.class),
+                new Intent(this, MainActivity.class),
                 PendingIntent.FLAG_IMMUTABLE);
 
         // pending intent for disconnect button in connected notification
@@ -924,8 +937,7 @@ public class FptnService extends VpnService {
                             return appInfoEntity.isDisallowed();
                         }
                     }).map(
-                            appInfo -> AppInfo.builder()
-                                    .packageName(appInfo.getPackageName()).build()
+                            appInfo -> new AppInfo(appInfo.getPackageName())
                     ).collect(Collectors.toList());
             appInfos.addAll(packages);
         }

@@ -50,6 +50,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     </string>
     <string name="vpn_permission_warning">برای عملکرد FPTN، دسترسی‌های لازم مورد نیاز است!</string>
 
+    <string name="cannot_connect_sni_check_active">اتصال ممکن نیست: جستجوی SNI در حال انجام است</string>
+    <string name="cannot_start_sni_check_vpn_active">شروع جستجوی SNI ممکن نیست: VPN متصل است</string>
+
     <string name="connecting">در حال اتصال...</string>
     <string name="reconnection">در حال اتصال مجدد...</string>
     <string name="connected">متصل است</string>
@@ -291,6 +294,22 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="logs_copied">گزارش‌ها در کلیپ‌بورد کپی شد</string>
     <string name="logs_empty">گزارشی برای کپی وجود ندارد</string>
     <string name="view_and_copy_application_logs">مشاهده گزارش‌های عملکرد برنامه</string>
+    <string name="send_log_file">ارسال فایل گزارش</string>
+    <string name="logs_error_no_directory">پوشه گزارش‌ها وجود ندارد.</string>
+    <string name="logs_error_no_files">فایل گزارشی وجود ندارد.</string>
+    <string name="logs_error_empty_file">فایل گزارش خالی است.</string>
+    <string name="logs_error_read_failed">خطا در خواندن گزارش: %1$s</string>
+    <string name="clear_logs_button">پاک کردن گزارش‌ها</string>
+    <string name="dialog_clear_logs_title">پاک کردن گزارش‌ها</string>
+    <string name="dialog_clear_logs_message">همه فایل‌های گزارش ذخیره‌شده حذف خواهند شد. ادامه می‌دهید؟</string>
+    <string name="logs_cleared">گزارش‌ها پاک شدند</string>
+    <string name="log_level_title">سطح گزارش‌گیری</string>
+    <string name="log_level_verbose">کامل</string>
+    <string name="log_level_debug">اشکال‌زدایی</string>
+    <string name="log_level_info">اطلاعات</string>
+    <string name="log_level_warn">هشدار</string>
+    <string name="log_level_error">خطا</string>
+    <string name="log_level_none">غیرفعال</string>
 
     <string name="search_apps_hint">جستجوی برنامه‌ها…</string>
     <string name="show_system_apps_label">برنامه‌های سیستمی</string>

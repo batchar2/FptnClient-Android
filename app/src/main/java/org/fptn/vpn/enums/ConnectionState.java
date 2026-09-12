@@ -23,7 +23,6 @@ package org.fptn.vpn.enums;
 import java.util.Set;
 
 public enum ConnectionState {
-    SEARCH_SNI,
     DISCONNECTED,
     CONNECTING,
     CONNECTED,
@@ -35,7 +34,6 @@ public enum ConnectionState {
             CONNECTING,
             CONNECTED,
             RECONNECTING,
-            SEARCH_SNI,
             WAITING_FOR_NETWORK,
             BLOCKED
     );

@@ -23,8 +23,11 @@ package org.fptn.vpn.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.elvishew.xlog.XLog;
+
 import org.fptn.vpn.R;
 import org.fptn.vpn.core.common.Constants;
+import org.fptn.vpn.enums.AppLogLevel;
 import org.fptn.vpn.enums.BypassCensorshipMethod;
 import org.fptn.vpn.enums.ConnectionStrategy;
 import org.fptn.vpn.enums.PerAppVpnMode;
@@ -35,6 +38,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public class SharedPrefUtils {
+    private static final String TAG = SharedPrefUtils.class.getSimpleName();
+
     /* SNI */
     public static String getSniHostname(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
@@ -45,6 +50,7 @@ public class SharedPrefUtils {
         if (newSni != null && !newSni.isBlank()) {
             SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
             sharedPreferences.edit().putString(Constants.CURRENT_SNI_SHARED_PREF_KEY, newSni).apply();
+            XLog.tag(TAG).d("Saved " + Constants.CURRENT_SNI_SHARED_PREF_KEY + " = " + newSni);
         }
     }
 
@@ -57,6 +63,7 @@ public class SharedPrefUtils {
     public static void saveNotificationChannelVersion(Context context, String channelVersionTag, int version) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putInt(channelVersionTag, version).apply();
+        XLog.tag(TAG).d("Saved " + channelVersionTag + " = " + version);
     }
 
     public static boolean isBatteryOptimizationRequested(Context context) {
@@ -67,6 +74,7 @@ public class SharedPrefUtils {
     public static void saveBatteryOptimizationRequested(Context context, boolean requested) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.BATTERY_OPTIMIZATION_REQUESTED_SHARED_PREF_KEY, requested).apply();
+        XLog.tag(TAG).d("Saved " + Constants.BATTERY_OPTIMIZATION_REQUESTED_SHARED_PREF_KEY + " = " + requested);
     }
 
     // Xiaomi "lock in Security" can't be read back from the OS, so we remember once the user has
@@ -79,6 +87,7 @@ public class SharedPrefUtils {
     public static void saveXiaomiPinDone(Context context, boolean done) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.XIAOMI_PIN_DONE_SHARED_PREF_KEY, done).apply();
+        XLog.tag(TAG).d("Saved " + Constants.XIAOMI_PIN_DONE_SHARED_PREF_KEY + " = " + done);
     }
 
     /* QUICK SETTINGS TILE */
@@ -90,6 +99,7 @@ public class SharedPrefUtils {
     public static void saveQuickSettingsTileRequested(Context context, boolean added) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.QUICK_SETTINGS_TILE_REQUESTED_SHARED_PREF_KEY, added).apply();
+        XLog.tag(TAG).d("Saved " + Constants.QUICK_SETTINGS_TILE_REQUESTED_SHARED_PREF_KEY + " = " + added);
     }
 
     /* EXPERIMENTAL FEATURES */
@@ -101,6 +111,7 @@ public class SharedPrefUtils {
     public static void saveReconnectOnChangeNetworkTypeEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.RECONNECT_ON_CHANGE_NETWORK_TYPE_ENABLED_SHARED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.RECONNECT_ON_CHANGE_NETWORK_TYPE_ENABLED_SHARED_PREF_KEY + " = " + enabled);
     }
 
     public static boolean getReconnectOnChangeIPEnabled(Context context) {
@@ -111,6 +122,7 @@ public class SharedPrefUtils {
     public static void saveReconnectOnChangeIPEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.RECONNECT_ON_CHANGE_IP_ENABLED_SHARED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.RECONNECT_ON_CHANGE_IP_ENABLED_SHARED_PREF_KEY + " = " + enabled);
     }
 
     public static int getReconnectAttemptsCount(Context context) {
@@ -121,6 +133,7 @@ public class SharedPrefUtils {
     public static void saveReconnectAttemptsCount(Context context, int count) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putInt(Constants.RECONNECT_ATTEMPTS_COUNT_SHARED_PREF_KEY, count).apply();
+        XLog.tag(TAG).d("Saved " + Constants.RECONNECT_ATTEMPTS_COUNT_SHARED_PREF_KEY + " = " + count);
     }
 
 
@@ -132,6 +145,7 @@ public class SharedPrefUtils {
     public static void saveDelayBetweenReconnect(Context context, int delayInSeconds) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putInt(Constants.RECONNECT_DELAY_BETWEEN_SHARED_PREF_KEY, delayInSeconds).apply();
+        XLog.tag(TAG).d("Saved " + Constants.RECONNECT_DELAY_BETWEEN_SHARED_PREF_KEY + " = " + delayInSeconds);
     }
 
     public static boolean getResetSelectedServerEnabled(Context context) {
@@ -142,6 +156,7 @@ public class SharedPrefUtils {
     public static void saveResetSelectedServerEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.RESET_SELECTED_SERVER_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.RESET_SELECTED_SERVER_PREF_KEY + " = " + enabled);
     }
 
     public static boolean getResetSelectedServerOnExceptionEnabled(Context context) {
@@ -152,6 +167,7 @@ public class SharedPrefUtils {
     public static void saveResetSelectedServerOnExceptionEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.RESET_SELECTED_SERVER_ON_EXCEPTION_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.RESET_SELECTED_SERVER_ON_EXCEPTION_PREF_KEY + " = " + enabled);
     }
 
     public static boolean getAutoFallbackEnabled(Context context) {
@@ -162,6 +178,7 @@ public class SharedPrefUtils {
     public static void saveAutoFallbackEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.AUTO_FALLBACK_ENABLED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.AUTO_FALLBACK_ENABLED_PREF_KEY + " = " + enabled);
     }
 
     public static int getAutoFallbackThreshold(Context context) {
@@ -172,6 +189,7 @@ public class SharedPrefUtils {
     public static void saveAutoFallbackThreshold(Context context, int count) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putInt(Constants.AUTO_FALLBACK_THRESHOLD_PREF_KEY, count).apply();
+        XLog.tag(TAG).d("Saved " + Constants.AUTO_FALLBACK_THRESHOLD_PREF_KEY + " = " + count);
     }
 
     public static BypassCensorshipMethod getBypassCensorshipMethod(Context context) {
@@ -188,6 +206,7 @@ public class SharedPrefUtils {
     public static void saveBypassCensorshipMethod(Context context, BypassCensorshipMethod method) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.BYPASS_CENSORSHIP_METHOD_SHARED_PREF_KEY, method.toString()).apply();
+        XLog.tag(TAG).d("Saved " + Constants.BYPASS_CENSORSHIP_METHOD_SHARED_PREF_KEY + " = " + method);
     }
 
 
@@ -205,6 +224,7 @@ public class SharedPrefUtils {
     public static void saveSniSpoofingMode(Context context, SniSpoofingMode mode) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.SNI_SPOOFING_MODE_SHARED_PREF_KEY, mode.toString()).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SNI_SPOOFING_MODE_SHARED_PREF_KEY + " = " + mode);
     }
 
     public static ConnectionStrategy getConnectionStrategy(Context context) {
@@ -221,6 +241,7 @@ public class SharedPrefUtils {
     public static void saveConnectionStrategy(Context context, ConnectionStrategy strategy) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.CONNECTION_STRATEGY_SHARED_PREF_KEY, strategy.toString()).apply();
+        XLog.tag(TAG).d("Saved " + Constants.CONNECTION_STRATEGY_SHARED_PREF_KEY + " = " + strategy);
     }
 
     /* Per-app VPN settings */
@@ -238,6 +259,7 @@ public class SharedPrefUtils {
     public static void savePerAppVPNMode(Context context, PerAppVpnMode perAppVPNMode) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.PER_APP_VPN_MODE_SHARED_PREF_KEY, perAppVPNMode.toString()).apply();
+        XLog.tag(TAG).d("Saved " + Constants.PER_APP_VPN_MODE_SHARED_PREF_KEY + " = " + perAppVPNMode);
     }
 
     public static boolean getShowSystemApps(Context context) {
@@ -248,6 +270,7 @@ public class SharedPrefUtils {
     public static void saveShowSystemApps(Context context, boolean show) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.SHOW_SYSTEM_APPS_SHARED_PREF_KEY, show).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SHOW_SYSTEM_APPS_SHARED_PREF_KEY + " = " + show);
     }
 
     /* Ad blocking */
@@ -259,6 +282,7 @@ public class SharedPrefUtils {
     public static void saveAdBlockEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.AD_BLOCK_ENABLED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.AD_BLOCK_ENABLED_PREF_KEY + " = " + enabled);
     }
 
     /* Domain blacklist */
@@ -270,6 +294,7 @@ public class SharedPrefUtils {
     public static void saveDomainBlacklistEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.DOMAIN_BLACKLIST_ENABLED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.DOMAIN_BLACKLIST_ENABLED_PREF_KEY + " = " + enabled);
     }
 
     public static String getDomainBlacklistDomains(Context context) {
@@ -280,6 +305,7 @@ public class SharedPrefUtils {
     public static void saveDomainBlacklistDomains(Context context, String domains) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.DOMAIN_BLACKLIST_DOMAINS_PREF_KEY, domains).apply();
+        XLog.tag(TAG).d("Saved " + Constants.DOMAIN_BLACKLIST_DOMAINS_PREF_KEY + " = " + domains);
     }
 
     /* Token freshness reminder */
@@ -289,6 +315,7 @@ public class SharedPrefUtils {
         if (value == 0L) {
             value = System.currentTimeMillis();
             sharedPreferences.edit().putLong(Constants.TOKEN_UPDATED_DATE_PREF_KEY, value).apply();
+            XLog.tag(TAG).d("Saved " + Constants.TOKEN_UPDATED_DATE_PREF_KEY + " = " + value);
         }
         return value;
     }
@@ -296,6 +323,7 @@ public class SharedPrefUtils {
     public static void saveTokenUpdatedDate(Context context, long millis) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putLong(Constants.TOKEN_UPDATED_DATE_PREF_KEY, millis).apply();
+        XLog.tag(TAG).d("Saved " + Constants.TOKEN_UPDATED_DATE_PREF_KEY + " = " + millis);
     }
 
     /* Help dialog after failed connections */
@@ -307,6 +335,7 @@ public class SharedPrefUtils {
     public static void saveConnectFailedHelpEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.CONNECT_FAILED_HELP_ENABLED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.CONNECT_FAILED_HELP_ENABLED_PREF_KEY + " = " + enabled);
     }
 
     public static int getConnectFailuresInRow(Context context) {
@@ -317,6 +346,7 @@ public class SharedPrefUtils {
     public static void saveConnectFailuresInRow(Context context, int count) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putInt(Constants.CONNECT_FAILURES_IN_ROW_PREF_KEY, count).apply();
+        XLog.tag(TAG).d("Saved " + Constants.CONNECT_FAILURES_IN_ROW_PREF_KEY + " = " + count);
     }
 
     /* Remote exclusion lists (synced from GitHub, see RemoteExclusionListSync) */
@@ -328,6 +358,7 @@ public class SharedPrefUtils {
     public static void saveRemoteExcludedApps(Context context, Set<String> packages) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putStringSet(Constants.REMOTE_EXCLUDED_APPS_PREF_KEY, packages).apply();
+        XLog.tag(TAG).d("Saved " + Constants.REMOTE_EXCLUDED_APPS_PREF_KEY + " = " + packages);
     }
 
     public static long getRemoteListsLastSyncDate(Context context) {
@@ -338,6 +369,7 @@ public class SharedPrefUtils {
     public static void saveRemoteListsLastSyncDate(Context context, long millis) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putLong(Constants.REMOTE_LISTS_LAST_SYNC_DATE_PREF_KEY, millis).apply();
+        XLog.tag(TAG).d("Saved " + Constants.REMOTE_LISTS_LAST_SYNC_DATE_PREF_KEY + " = " + millis);
     }
 
     /* Custom DNS */
@@ -349,6 +381,7 @@ public class SharedPrefUtils {
     public static void saveCustomDnsEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.CUSTOM_DNS_ENABLED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.CUSTOM_DNS_ENABLED_PREF_KEY + " = " + enabled);
     }
 
     public static String getCustomDnsIpv4(Context context) {
@@ -359,6 +392,7 @@ public class SharedPrefUtils {
     public static void saveCustomDnsIpv4(Context context, String ipv4) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.CUSTOM_DNS_IPV4_PREF_KEY, ipv4).apply();
+        XLog.tag(TAG).d("Saved " + Constants.CUSTOM_DNS_IPV4_PREF_KEY + " = " + ipv4);
     }
 
     /* Speed in notification */
@@ -370,6 +404,7 @@ public class SharedPrefUtils {
     public static void saveShowSpeedInNotification(Context context, boolean show) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.SHOW_SPEED_IN_NOTIFICATION_PREF_KEY, show).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SHOW_SPEED_IN_NOTIFICATION_PREF_KEY + " = " + show);
     }
 
     /* Traffic in notification */
@@ -381,6 +416,7 @@ public class SharedPrefUtils {
     public static void saveShowTrafficInNotification(Context context, boolean show) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.SHOW_TRAFFIC_IN_NOTIFICATION_PREF_KEY, show).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SHOW_TRAFFIC_IN_NOTIFICATION_PREF_KEY + " = " + show);
     }
 
     /* Split tunneling for domains */
@@ -392,6 +428,7 @@ public class SharedPrefUtils {
     public static void saveSplitTunnelDomainsEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.SPLIT_TUNNEL_DOMAINS_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SPLIT_TUNNEL_DOMAINS_PREF_KEY + " = " + enabled);
     }
 
     public static String getSplitTunnelDomainsDefault(Context context) {
@@ -407,6 +444,7 @@ public class SharedPrefUtils {
     public static void saveSplitTunnelDomains(Context context, String domains) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putString(Constants.SPLIT_TUNNEL_DOMAINS_LIST_PREF_KEY, domains).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SPLIT_TUNNEL_DOMAINS_LIST_PREF_KEY + " = " + domains);
     }
 
     /* Traffic chart on home screen */
@@ -418,6 +456,7 @@ public class SharedPrefUtils {
     public static void saveShowTrafficChart(Context context, boolean show) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.SHOW_TRAFFIC_CHART_PREF_KEY, show).apply();
+        XLog.tag(TAG).d("Saved " + Constants.SHOW_TRAFFIC_CHART_PREF_KEY + " = " + show);
     }
 
     /* Kill-switch */
@@ -429,6 +468,7 @@ public class SharedPrefUtils {
     public static void saveKillSwitchEnabled(Context context, boolean enabled) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.KILL_SWITCH_ENABLED_PREF_KEY, enabled).apply();
+        XLog.tag(TAG).d("Saved " + Constants.KILL_SWITCH_ENABLED_PREF_KEY + " = " + enabled);
     }
 
     /* Landscape orientation. Default is device-dependent: true on tablets (sw600dp), false on phones. */
@@ -441,6 +481,25 @@ public class SharedPrefUtils {
     public static void saveAllowLandscape(Context context, boolean allow) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(Constants.ALLOW_LANDSCAPE_PREF_KEY, allow).apply();
+        XLog.tag(TAG).d("Saved " + Constants.ALLOW_LANDSCAPE_PREF_KEY + " = " + allow);
+    }
+
+    /* Log level */
+    public static AppLogLevel getLogLevel(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        String levelName = sharedPreferences.getString(Constants.LOG_LEVEL_PREF_KEY, null);
+        for (AppLogLevel value : AppLogLevel.values()) {
+            if (Objects.equals(levelName, value.name())) {
+                return value;
+            }
+        }
+        return AppLogLevel.INFO;
+    }
+
+    public static void saveLogLevel(Context context, AppLogLevel level) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString(Constants.LOG_LEVEL_PREF_KEY, level.name()).apply();
+        XLog.tag(TAG).d("Saved " + Constants.LOG_LEVEL_PREF_KEY + " = " + level);
     }
 
 }

@@ -46,4 +46,23 @@ public class AppInfoEntity {
 
     @ColumnInfo(name = "disallowed")
     private boolean disallowed;
+
+    // Written out explicitly (instead of relying on Lombok's @Data/@Builder) for the subset of
+    // accessors Kotlin call sites need: Kotlin's Java-interop stub generation runs before the
+    // Lombok annotation processor, so Kotlin can't see Lombok-generated members.
+    public static AppInfoEntity of(String packageName, boolean allowed, boolean disallowed) {
+        return new AppInfoEntity(packageName, allowed, disallowed);
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public boolean isAllowed() {
+        return allowed;
+    }
+
+    public boolean isDisallowed() {
+        return disallowed;
+    }
 }
