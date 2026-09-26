@@ -25,6 +25,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.fptn.vpn.auth.AccountAuthException
+import org.fptn.vpn.auth.AccountRepository
 import org.fptn.vpn.database.AppDatabase
 import org.fptn.vpn.utils.SharedPrefUtils
 import org.fptn.vpn.utils.token.TokenUtils
@@ -35,6 +37,14 @@ class UpdateTokenViewModel(application: Application) : AndroidViewModel(applicat
     val errorTextLiveData = MutableLiveData("")
 
     private val appDatabase = AppDatabase.getInstance(application)
+
+    private val accountRepository = AccountRepository(application)
+
+    /** Email of the signed-in account, or `null` (token-only login, or foss build). */
+    val accountEmail: String? get() = accountRepository.currentEmail
+
+    @Throws(AccountAuthException::class, PVNClientException::class)
+    suspend fun refreshFromAccount() = accountRepository.refreshServers()
 
     @Throws(PVNClientException::class)
     suspend fun parseAndSaveToken(token: String) {

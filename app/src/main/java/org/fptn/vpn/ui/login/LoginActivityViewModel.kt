@@ -25,6 +25,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.fptn.vpn.auth.AccountAuthException
+import org.fptn.vpn.auth.AccountRepository
 import org.fptn.vpn.database.AppDatabase
 import org.fptn.vpn.utils.SharedPrefUtils
 import org.fptn.vpn.utils.token.TokenUtils
@@ -35,6 +37,21 @@ class LoginActivityViewModel(application: Application) : AndroidViewModel(applic
     val errorTextLiveData = MutableLiveData("")
 
     private val appDatabase = AppDatabase.getInstance(application)
+
+    private val accountRepository = AccountRepository(application)
+
+    /** `false` in the foss flavor (or without Firebase): only token login is offered then. */
+    val isAccountLoginAvailable: Boolean get() = accountRepository.isAvailable
+
+    @Throws(AccountAuthException::class, PVNClientException::class)
+    suspend fun signInWithEmail(email: String, password: String) =
+        accountRepository.signInAndLoadServers(email.trim(), password)
+
+    @Throws(AccountAuthException::class)
+    suspend fun signUp(email: String, password: String) = accountRepository.signUp(email.trim(), password)
+
+    @Throws(AccountAuthException::class)
+    suspend fun sendPasswordReset(email: String) = accountRepository.sendPasswordReset(email.trim())
 
     @Throws(PVNClientException::class)
     suspend fun parseAndSaveToken(token: String) {

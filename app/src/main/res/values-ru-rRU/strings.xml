@@ -348,4 +348,32 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="connection_strategy_rolling">Скользящий туннель</string>
     <string name="connection_strategy_dual">Двойной скользящий туннель</string>
     <string name="connection_strategy_triple">Тройной скользящий туннель</string>
+
+    <!-- Email/password account login -->
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Пароль</string>
+    <string name="password_confirm_hint">Повторите пароль</string>
+    <string name="sign_up_button">Зарегистрироваться</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="create_account">Создать аккаунт</string>
+    <string name="have_account_sign_in">Уже есть аккаунт? Войти</string>
+    <string name="login_with_token">Войти по токену</string>
+    <string name="login_with_email">Войти по email</string>
+    <string name="email_and_password_required">Введите email и пароль</string>
+    <string name="email_required">Введите email</string>
+    <string name="passwords_do_not_match">Пароли не совпадают</string>
+    <string name="sign_up_success">Аккаунт создан. Серверы станут доступны после их назначения вашему аккаунту — затем войдите.</string>
+    <string name="password_reset_sent">Если аккаунт с этим email существует, на него отправлена ссылка для сброса пароля.</string>
+    <string name="signed_in_as">Вы вошли как %1$s</string>
+    <string name="update_from_account_button">Обновить из аккаунта</string>
+    <string name="auth_error_not_available">Вход по аккаунту недоступен в этой сборке. Войдите по токену.</string>
+    <string name="auth_error_not_signed_in">Вы не вошли в аккаунт.</string>
+    <string name="auth_error_invalid_email">Некорректный email.</string>
+    <string name="auth_error_invalid_credentials">Неверный email или пароль.</string>
+    <string name="auth_error_email_in_use">Аккаунт с таким email уже существует.</string>
+    <string name="auth_error_weak_password">Слишком простой пароль: используйте не менее 6 символов.</string>
+    <string name="auth_error_too_many_requests">Слишком много попыток. Попробуйте позже.</string>
+    <string name="auth_error_network">Не удалось связаться с сервером аккаунтов. Проверьте соединение или войдите по токену.</string>
+    <string name="auth_error_no_token">Этому аккаунту ещё не назначены серверы.</string>
+    <string name="auth_error_unknown">Ошибка аккаунта. Попробуйте позже или войдите по токену.</string>
 </resources>

@@ -21,6 +21,7 @@ import com.elvishew.xlog.XLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.fptn.vpn.R
+import org.fptn.vpn.auth.AccountRepository
 import org.fptn.vpn.database.AppDatabase
 import org.fptn.vpn.services.snichecker.SniCheckerService
 import org.fptn.vpn.services.snichecker.SniCheckerServiceState
@@ -53,6 +54,10 @@ fun SplashScreen(
         val route = when {
             (serverCount ?: 0) > 0 -> if (sniActive) SplashRoute.BypassMethods else SplashRoute.Home
             else -> SplashRoute.Login
+        }
+        if ((serverCount ?: 0) > 0) {
+            // Signed in with an account: quietly pull a fresh token; stored servers keep working if it fails.
+            AccountRepository(context).refreshServersInBackground()
         }
         XLog.tag("Splash").i("Routing to %s [servers=%d, sniActive=%b]", route, serverCount ?: 0, sniActive)
         if (!routed) {

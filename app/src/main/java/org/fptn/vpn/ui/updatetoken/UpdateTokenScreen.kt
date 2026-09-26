@@ -56,6 +56,7 @@ import org.fptn.vpn.ui.common.HtmlLinkText
 import org.fptn.vpn.ui.common.LegacyPillButton
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.legacyDrawableBackground
+import org.fptn.vpn.ui.login.loginErrorMessage
 import org.fptn.vpn.ui.theme.Black
 import org.fptn.vpn.ui.theme.Hint
 import org.fptn.vpn.ui.theme.Primary
@@ -104,6 +105,28 @@ fun UpdateTokenScreen(
 
     fun onCancel() = onDoneNavigateSettings()
 
+    val accountEmail = remember { viewModel.accountEmail }
+    var refreshing by remember { mutableStateOf(false) }
+
+    fun onRefreshFromAccount() {
+        if (refreshing) return
+        refreshing = true
+        coroutineScope.launch {
+            try {
+                viewModel.refreshFromAccount()
+                Toast.makeText(context, R.string.token_was_updated, Toast.LENGTH_SHORT).show()
+                onDoneNavigateSettings()
+            } catch (e: Exception) {
+                XLog.tag(TAG).e("Token refresh from account failed: %s", e.message)
+                val message = loginErrorMessage(context, e)
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                viewModel.errorTextLiveData.postValue(message)
+            } finally {
+                refreshing = false
+            }
+        }
+    }
+
     fun onSave() {
         coroutineScope.launch {
             try {
@@ -149,6 +172,23 @@ fun UpdateTokenScreen(
                     .padding(top = 30.dp)
                     .size(80.dp),
             )
+
+            if (accountEmail != null) {
+                Text(
+                    text = stringResource(R.string.signed_in_as, accountEmail),
+                    color = White,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(top = 32.dp),
+                )
+                LegacyPillButton(
+                    text = stringResource(R.string.update_from_account_button),
+                    backgroundDrawable = R.drawable.round_back_secondary_100,
+                    textColor = Primary,
+                    onClick = ::onRefreshFromAccount,
+                    enabled = !refreshing,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+            }
 
             HtmlLinkText(
                 html = stringResource(R.string.settings_token_info_html),

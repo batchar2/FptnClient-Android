@@ -156,7 +156,10 @@ dependencies {
     // Firebase only in the `gms` flavor (AAB). The `foss` flavor (APK) has none of it.
     "gmsImplementation"(platform(libs.firebase.bom))
     "gmsImplementation"(libs.firebase.analytics)
+    // Email/password accounts; the account's server token lives in Firestore (users/{uid}.token).
+    "gmsImplementation"(libs.firebase.auth)
     "gmsImplementation"(libs.firebase.crashlytics.ndk)
+    "gmsImplementation"(libs.firebase.firestore)
     implementation(project(":core:common"))
     implementation(project(":vpnclient"))
     implementation(libs.androidx.activity)

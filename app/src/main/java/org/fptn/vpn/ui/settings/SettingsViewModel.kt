@@ -25,13 +25,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.fptn.vpn.auth.AccountRepository
 import org.fptn.vpn.database.AppDatabase
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val appDatabase = AppDatabase.getInstance(application)
 
+    private val accountRepository = AccountRepository(application)
+
     fun deleteAllServers() {
+        accountRepository.signOut()
         viewModelScope.launch(Dispatchers.IO) {
             appDatabase.serverDAO().deleteAll()
         }

@@ -438,4 +438,32 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="connection_strategy_rolling">Rolling tunnel</string>
     <string name="connection_strategy_dual">Dual rolling tunnel</string>
     <string name="connection_strategy_triple">Triple rolling tunnel</string>
+
+    <!-- Email/password account login -->
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="password_confirm_hint">Repeat password</string>
+    <string name="sign_up_button">Sign up</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="create_account">Create an account</string>
+    <string name="have_account_sign_in">Already have an account? Log in</string>
+    <string name="login_with_token">Log in with a token</string>
+    <string name="login_with_email">Log in with email</string>
+    <string name="email_and_password_required">Enter your email and password</string>
+    <string name="email_required">Enter your email</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="sign_up_success">Account created. Servers will become available once they are assigned to your account — then log in.</string>
+    <string name="password_reset_sent">If an account with this email exists, a password reset link has been sent to it.</string>
+    <string name="signed_in_as">Signed in as %1$s</string>
+    <string name="update_from_account_button">Update from account</string>
+    <string name="auth_error_not_available">Account login is not available in this build. Log in with a token.</string>
+    <string name="auth_error_not_signed_in">You are not signed in to an account.</string>
+    <string name="auth_error_invalid_email">Invalid email address.</string>
+    <string name="auth_error_invalid_credentials">Wrong email or password.</string>
+    <string name="auth_error_email_in_use">An account with this email already exists.</string>
+    <string name="auth_error_weak_password">Password is too weak: use at least 6 characters.</string>
+    <string name="auth_error_too_many_requests">Too many attempts. Please try again later.</string>
+    <string name="auth_error_network">Could not reach the account server. Check your connection or log in with a token.</string>
+    <string name="auth_error_no_token">No servers are assigned to this account yet.</string>
+    <string name="auth_error_unknown">Account error. Please try again later or log in with a token.</string>
 </resources>

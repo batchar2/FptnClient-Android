@@ -1,0 +1,13 @@
+rules_version = '2';
+
+// users/{uid}.token holds the FPTN server token (fptn:/fptnb:) for that account.
+// Clients may only read their own document; the token is written by the backend
+// (Admin SDK / Cloud Functions bypass these rules), never by the app.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

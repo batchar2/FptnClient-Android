@@ -350,4 +350,32 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="connection_strategy_dual">تونل چرخشی دوگانه</string>
     <string name="connection_strategy_triple">تونل چرخشی سه‌گانه</string>
     <string name="settings_per_app_russian_notice"><![CDATA[به منظور امنیت و کارکرد پایدار سرویس، برنامه‌های جاسوس شناخته‌شده همیشه خارج از VPN کار می‌کنند و نمی‌توانند به تونل بازگردانده شوند. فهرست کامل <a href="https://github.com/fptn-project/FptnClient-Android/blob/develop/app/src/main/res/values/always_excluded_apps.xml">برنامه‌های حذف‌شده</a> و <a href="https://github.com/fptn-project/FptnClient-Android/blob/develop/app/src/main/res/values/split_tunnel_domains.xml">دامنه‌های آن‌ها</a> در GitHub در دسترس است.]]></string>
+
+    <!-- Email/password account login -->
+    <string name="email_hint">ایمیل</string>
+    <string name="password_hint">رمز عبور</string>
+    <string name="password_confirm_hint">تکرار رمز عبور</string>
+    <string name="sign_up_button">ثبت‌نام</string>
+    <string name="forgot_password">رمز عبور را فراموش کرده‌اید؟</string>
+    <string name="create_account">ایجاد حساب</string>
+    <string name="have_account_sign_in">حساب دارید؟ ورود</string>
+    <string name="login_with_token">ورود با توکن</string>
+    <string name="login_with_email">ورود با ایمیل</string>
+    <string name="email_and_password_required">ایمیل و رمز عبور را وارد کنید</string>
+    <string name="email_required">ایمیل را وارد کنید</string>
+    <string name="passwords_do_not_match">رمزهای عبور یکسان نیستند</string>
+    <string name="sign_up_success">حساب ایجاد شد. پس از اختصاص سرورها به حساب شما، وارد شوید.</string>
+    <string name="password_reset_sent">اگر حسابی با این ایمیل وجود داشته باشد، لینک بازنشانی رمز عبور به آن ارسال شد.</string>
+    <string name="signed_in_as">وارد شده با %1$s</string>
+    <string name="update_from_account_button">به‌روزرسانی از حساب</string>
+    <string name="auth_error_not_available">ورود با حساب در این نسخه در دسترس نیست. با توکن وارد شوید.</string>
+    <string name="auth_error_not_signed_in">وارد حساب نشده‌اید.</string>
+    <string name="auth_error_invalid_email">آدرس ایمیل نامعتبر است.</string>
+    <string name="auth_error_invalid_credentials">ایمیل یا رمز عبور اشتباه است.</string>
+    <string name="auth_error_email_in_use">حسابی با این ایمیل از قبل وجود دارد.</string>
+    <string name="auth_error_weak_password">رمز عبور ضعیف است: حداقل ۶ کاراکتر استفاده کنید.</string>
+    <string name="auth_error_too_many_requests">تلاش‌های زیاد. لطفاً بعداً دوباره امتحان کنید.</string>
+    <string name="auth_error_network">اتصال به سرور حساب ممکن نشد. اتصال را بررسی کنید یا با توکن وارد شوید.</string>
+    <string name="auth_error_no_token">هنوز سروری به این حساب اختصاص داده نشده است.</string>
+    <string name="auth_error_unknown">خطای حساب. بعداً دوباره امتحان کنید یا با توکن وارد شوید.</string>
 </resources>
