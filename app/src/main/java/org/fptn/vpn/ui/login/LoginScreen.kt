@@ -3,6 +3,7 @@ package org.fptn.vpn.ui.login
 import android.content.ClipboardManager
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -18,9 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +37,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -41,10 +46,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,6 +64,7 @@ import org.fptn.vpn.ui.common.legacyDrawableBackground
 import org.fptn.vpn.ui.theme.Black
 import org.fptn.vpn.ui.theme.Hint
 import org.fptn.vpn.ui.theme.Primary
+import org.fptn.vpn.ui.theme.Secondary
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.ui.theme.Yellow
 
@@ -224,9 +232,13 @@ fun LoginScreen(
                         switchMode(LoginMode.EMAIL_SIGN_UP)
                     }
                 }
-                LoginLink(stringResource(R.string.login_with_token), enabled = !busy) {
-                    switchMode(LoginMode.TOKEN)
-                }
+                OrDivider(modifier = Modifier.padding(top = 24.dp))
+                OutlinedPillButton(
+                    text = stringResource(R.string.login_with_token),
+                    enabled = !busy,
+                    onClick = { switchMode(LoginMode.TOKEN) },
+                    modifier = Modifier.padding(top = 16.dp),
+                )
             }
 
             LoginMode.TOKEN -> {
@@ -263,9 +275,13 @@ fun LoginScreen(
                 )
 
                 if (accountLoginAvailable) {
-                    LoginLink(stringResource(R.string.login_with_email), enabled = !busy) {
-                        switchMode(LoginMode.EMAIL_SIGN_IN)
-                    }
+                    OrDivider(modifier = Modifier.padding(top = 24.dp))
+                    OutlinedPillButton(
+                        text = stringResource(R.string.login_with_email),
+                        enabled = !busy,
+                        onClick = { switchMode(LoginMode.EMAIL_SIGN_IN) },
+                        modifier = Modifier.padding(top = 16.dp),
+                    )
                 }
             }
         }
@@ -313,13 +329,53 @@ private fun LoginTextField(
 private fun LoginLink(text: String, enabled: Boolean, onClick: () -> Unit) {
     Text(
         text = text,
-        color = White,
-        fontSize = 15.sp,
+        color = Secondary,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.SemiBold,
         modifier = Modifier
             .padding(top = 12.dp)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(4.dp),
     )
+}
+
+/** Secondary action (switch to another login method): outlined, so it doesn't compete with the filled Login pill. */
+@Composable
+private fun OutlinedPillButton(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(100.dp)
+    Text(
+        text = text,
+        color = White,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.SemiBold,
+        textAlign = TextAlign.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+            .clip(shape)
+            .border(1.5.dp, Secondary, shape)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(8.dp),
+    )
+}
+
+@Composable
+private fun OrDivider(modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        HorizontalDivider(modifier = Modifier.weight(1f), color = Hint)
+        Text(
+            text = stringResource(R.string.login_or),
+            color = Hint,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(horizontal = 12.dp),
+        )
+        HorizontalDivider(modifier = Modifier.weight(1f), color = Hint)
+    }
 }
 
 @Composable
