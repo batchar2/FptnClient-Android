@@ -298,7 +298,7 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="domain_blacklist_enable_link">the list</string>
     <string name="domain_blacklist_hint">example.com</string>
     <string name="domain_blacklist_advanced_enable">Block entire TLDs and IDNs (advanced)</string>
-    <string name="domain_blacklist_advanced_description">Allows you to block entire domain zones (e.g., .cn or .ir) and domains in any language. Enable this only if you understand what you're doing. Otherwise, you may accidentally block websites you need, and apps will stop working.</string>
+    <string name="domain_blacklist_advanced_description" formatted="false">Allows you to block entire domain zones (e.g., .cn or .ir) and domains in any language. Enable this only if you understand what you're doing. Otherwise, you may accidentally block websites you need, and apps will stop working.</string>
 
     <string name="speed_notification_title">Notification:</string>
     <string name="speed_notification_enable">Connection speed in status bar</string>
