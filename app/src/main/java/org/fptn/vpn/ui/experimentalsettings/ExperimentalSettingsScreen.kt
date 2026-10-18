@@ -89,6 +89,7 @@ fun ExperimentalSettingsScreen(
     var allowLandscape by remember { mutableStateOf(SharedPrefUtils.getAllowLandscape(context)) }
     var adBlockEnabled by remember { mutableStateOf(SharedPrefUtils.getAdBlockEnabled(context)) }
     var domainBlacklistEnabled by remember { mutableStateOf(SharedPrefUtils.getDomainBlacklistEnabled(context)) }
+    var domainBlacklistAdvancedEnabled by remember { mutableStateOf(SharedPrefUtils.getDomainBlacklistAdvancedModeEnabled(context)) }
     var reconnectOnChangeNetworkType by remember { mutableStateOf(SharedPrefUtils.getReconnectOnChangeNetworkTypeEnabled(context)) }
     var reconnectOnChangeIp by remember { mutableStateOf(SharedPrefUtils.getReconnectOnChangeIPEnabled(context)) }
     var attemptsCountProgress by remember { mutableFloatStateOf(initialAttemptsCountProgress(context)) }
@@ -110,6 +111,7 @@ fun ExperimentalSettingsScreen(
         showTrafficChart = true
         adBlockEnabled = true
         domainBlacklistEnabled = true
+        domainBlacklistAdvancedEnabled = false
         reconnectOnChangeNetworkType = true
         reconnectOnChangeIp = true
         attemptsCountProgress = 2f
@@ -129,6 +131,7 @@ fun ExperimentalSettingsScreen(
         SharedPrefUtils.saveAdBlockEnabled(context, true)
         SharedPrefUtils.saveDomainBlacklistEnabled(context, true)
         SharedPrefUtils.saveDomainBlacklistDomains(context, Constants.DOMAIN_BLACKLIST_DEFAULT)
+        SharedPrefUtils.saveDomainBlacklistAdvancedModeEnabled(context, false)
         SharedPrefUtils.saveReconnectOnChangeNetworkTypeEnabled(context, true)
         SharedPrefUtils.saveReconnectOnChangeIPEnabled(context, true)
         SharedPrefUtils.saveReconnectAttemptsCount(context, ATTEMPTS_COUNT_VALUES[2])
@@ -278,6 +281,16 @@ fun ExperimentalSettingsScreen(
                         },
                     )
                 }
+
+                SwitchRow(
+                    text = stringResource(R.string.domain_blacklist_advanced_enable),
+                    checked = domainBlacklistAdvancedEnabled,
+                    onCheckedChange = {
+                        domainBlacklistAdvancedEnabled = it
+                        SharedPrefUtils.saveDomainBlacklistAdvancedModeEnabled(context, it)
+                    },
+                )
+                CardDescription(stringResource(R.string.domain_blacklist_advanced_description))
             }
 
             ExperimentalCard {
