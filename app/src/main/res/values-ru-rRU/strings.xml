@@ -201,7 +201,7 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="domain_blacklist_enable_link">из списка</string>
     <string name="domain_blacklist_hint">example.com</string>
     <string name="domain_blacklist_advanced_enable">Блокировать целые зоны и IDN (экспертный)</string>
-    <string name="domain_blacklist_advanced_description">Позволяет блокировать целые доменные зоны (например, .cn или .ir) и домены на любом языке. Включайте только если понимаете, что делаете — можно случайно заблокировать нужные сайты и приложения перестанут работать.</string>
+    <string name="domain_blacklist_advanced_description">Позволяет блокировать целые доменные зоны (например, .cn или .ir) и домены на любом языке. Включайте только если понимаете, что делаете. Иначе можно случайно заблокировать нужные сайты, и приложения перестанут работать.</string>
 
     <string name="custom_dns_title">Пользовательский DNS:</string>
     <string name="custom_dns_description">Использовать пользовательский DNS.</string>

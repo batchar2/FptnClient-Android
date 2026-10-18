@@ -202,7 +202,7 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="domain_blacklist_enable_link">فهرست</string>
     <string name="domain_blacklist_hint">example.com</string>
     <string name="domain_blacklist_advanced_enable">مسدود کردن پسوندهای کامل دامنه و دامنه‌های بین‌المللی (IDN) (پیشرفته)</string>
-    <string name="domain_blacklist_advanced_description">امکان مسدود کردن پسوندهای کامل دامنه (مانند ‎.cn یا ‎.ir) و دامنه‌ها به هر زبانی را فراهم می‌کند. این گزینه را فقط در صورتی فعال کنید که از کاری که انجام می‌دهید آگاه هستید؛ ممکن است به‌طور تصادفی وب‌سایت‌های موردنیاز را مسدود کنید و باعث از کار افتادن برنامه‌ها شوید.</string>
+    <string name="domain_blacklist_advanced_description">امکان مسدود کردن پسوندهای کامل دامنه (مانند ‎.cn یا ‎.ir) و دامنه‌ها به هر زبانی را فراهم می‌کند. این گزینه را فقط زمانی فعال کنید که بدانید چه کاری انجام می‌دهید. در غیر این صورت، ممکن است به‌طور تصادفی وب‌سایت‌های موردنیاز را مسدود کنید و برنامه‌ها از کار بیفتند.</string>
 
     <string name="custom_dns_title">DNS سفارشی:</string>
     <string name="custom_dns_description">استفاده از DNS سفارشی.</string>
