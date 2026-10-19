@@ -231,7 +231,7 @@ fun PerAppVpnModeScreen(
                     text = stringResource(R.string.split_tunnel_advanced_description),
                     color = White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp).padding(vertical = 4.dp)
                 )
             }
 
