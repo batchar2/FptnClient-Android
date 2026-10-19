@@ -197,9 +197,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="split_tunnel_enable_link">فهرست</string>
 
     <string name="domain_blacklist_title">لیست سیاه دامنه‌ها:</string>
-    <string name="domain_blacklist_description">اتصال به دامنه‌های فهرست‌شده و زیردامنه‌های آن‌ها را مسدود می‌کند. هر دامنه در یک خط. ممکن است نیازمند خاموش کردن DNS خصوصی (DoH) در تنظیمات سیستم باشد — در غیر این صورت درخواست‌های DNS از فیلتر عبور می‌کنند.</string>
+    <string name="domain_blacklist_description">اتصال به دامنه‌های فهرست‌شده و زیردامنه‌های آن‌ها را مسدود می‌کند. هر دامنه در یک خط. ممکن است نیازمند خاموش کردن DNS خصوصی (DoH) در تنظیمات سیستم باشد — در غیر این صورت درخواست‌های DNS از فیلتر عبور می‌کنند. با فعال کردن حالت پیشرفته، همچنین می‌توانید پسوندهای کامل دامنه را مسدود کنید.</string>
+    <string name="domain_blacklist_list_link">فهرست دامنه‌ها</string>
     <string name="domain_blacklist_enable">مسدودسازی دامنه‌های فهرست</string>
-    <string name="domain_blacklist_enable_link">فهرست</string>
     <string name="domain_blacklist_hint">example.com</string>
     <string name="domain_blacklist_advanced_enable">مسدود کردن پسوندهای کامل دامنه و IDN (پیشرفته)</string>
     <string name="domain_blacklist_advanced_description">امکان مسدود کردن پسوندهای کامل دامنه (مانند .cn یا .ir) و دامنه‌ها به هر زبانی را فراهم می‌کند. این گزینه را فقط زمانی فعال کنید که بدانید چه کاری انجام می‌دهید. در غیر این صورت، ممکن است به‌طور تصادفی وب‌سایت‌های موردنیاز را مسدود کنید و برنامه‌ها از کار بیفتند.</string>
