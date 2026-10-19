@@ -193,7 +193,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
 
     <string name="split_tunnel_title">Раздельный туннель:</string>
     <string name="split_tunnel_enable">Включить раздельное туннелирование для доменов из списка</string>
-    <string name="split_tunnel_enable_link">списка</string>
+    <string name="split_tunnel_list_link">Список доменов</string>
+    <string name="split_tunnel_advanced_enable">Использовать зоны и IDN (экспертный)</string>
+    <string name="split_tunnel_advanced_description">Позволяет выносить за пределы туннеля целые доменные зоны (например, .ru) и домены на любом языке. Включайте только при необходимости.</string>
 
     <string name="domain_blacklist_title">Черный список доменов:</string>
     <string name="domain_blacklist_description">Блокирует подключения к указанным доменам и их поддоменам. Один домен на строку. Может потребовать отключения приватного DNS (DoH) в системных настройках — иначе DNS-запросы обходят фильтрацию. В экспертном режиме также можно блокировать целые доменные зоны.</string>

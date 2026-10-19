@@ -63,6 +63,8 @@ import org.fptn.vpn.ui.theme.Gray
 import org.fptn.vpn.ui.theme.TealAccent
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.SharedPrefUtils
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 
 private const val TAG = "PerAppVpnModeScreen"
 
@@ -83,6 +85,7 @@ fun PerAppVpnModeScreen(
     var searchQuery by remember { mutableStateOf("") }
     var showSystemApps by remember { mutableStateOf(viewModel.showSystemApps) }
     var splitTunnelEnabled by remember { mutableStateOf(SharedPrefUtils.getSplitTunnelDomainsEnabled(context)) }
+    var splitTunnelAdvancedEnabled by remember { mutableStateOf(SharedPrefUtils.getSplitTunnelDomainsAdvancedModeEnabled(context)) }
     var showSplitTunnelDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
     // Bumped after mutating an AppInfo in place (it's a plain mutable Java object shared with
@@ -162,28 +165,73 @@ fun PerAppVpnModeScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 4.dp, start = 4.dp),
                 )
+
+                Text(
+                    text = stringResource(R.string.split_tunnel_list_link),
+                    color = White.copy(alpha = 0.8f),
+                    fontSize = 14.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, bottom = 8.dp)
+                        .clickable { showSplitTunnelDialog = true }
+                )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    LinkifiedText(
+                    Text(
                         text = stringResource(R.string.split_tunnel_enable),
-                        linkText = stringResource(R.string.split_tunnel_enable_link),
-                        onLinkClick = { showSplitTunnelDialog = true },
                         color = White,
                         fontSize = 14.sp,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f)
                     )
                     Switch(
                         checked = splitTunnelEnabled,
                         onCheckedChange = {
                             splitTunnelEnabled = it
                             SharedPrefUtils.saveSplitTunnelDomainsEnabled(context, it)
+                            
+                            if (!it) {
+                                splitTunnelAdvancedEnabled = false
+                                SharedPrefUtils.saveSplitTunnelDomainsAdvancedModeEnabled(context, false)
+                            }
                         },
                     )
                 }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.split_tunnel_advanced_enable),
+                        color = if (splitTunnelEnabled) White else White.copy(alpha = 0.5f),
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = splitTunnelAdvancedEnabled,
+                        enabled = splitTunnelEnabled,
+                        onCheckedChange = {
+                            splitTunnelAdvancedEnabled = it
+                            SharedPrefUtils.saveSplitTunnelDomainsAdvancedModeEnabled(context, it)
+                        },
+                    )
+                }
+
+                Text(
+                    text = stringResource(R.string.split_tunnel_advanced_description),
+                    color = White.copy(alpha = 0.7f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp, end = 12.dp)
+                )
             }
 
             // Per-app VPN method card

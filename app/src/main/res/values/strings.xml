@@ -290,7 +290,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
 
     <string name="split_tunnel_title">Split Tunneling:</string>
     <string name="split_tunnel_enable">Enable split tunneling for domains from the list</string>
-    <string name="split_tunnel_enable_link">the list</string>
+    <string name="split_tunnel_list_link">Domain list</string>
+    <string name="split_tunnel_advanced_enable">Use TLDs and IDNs (advanced)</string>
+    <string name="split_tunnel_advanced_description">Allows bypassing entire domain zones (e.g., .ru) and domains in any language. Enable only if necessary.</string>
 
     <string name="domain_blacklist_title">Domain Blacklist:</string>
     <string name="domain_blacklist_description">Blocks connections to the listed domains and their subdomains. One domain per line. May require turning off Private DNS (DoH) in system settings — otherwise DNS queries bypass filtering. With advanced mode enabled, you can also block entire domain zones.</string>

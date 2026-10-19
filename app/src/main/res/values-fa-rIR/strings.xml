@@ -194,7 +194,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
 
     <string name="split_tunnel_title">تونل تفکیک‌شده:</string>
     <string name="split_tunnel_enable">فعال‌سازی تونل تفکیک‌شده برای دامنه‌های فهرست</string>
-    <string name="split_tunnel_enable_link">فهرست</string>
+    <string name="split_tunnel_list_link">فهرست دامنه‌ها</string>
+    <string name="split_tunnel_advanced_enable">استفاده از پسوندهای کامل دامنه و IDN (پیشرفته)</string>
+    <string name="split_tunnel_advanced_description">امکان خروج از تونل برای پسوندهای کامل دامنه (مانند .ru) و دامنه‌ها به هر زبانی را فراهم می‌کند. فقط در صورت نیاز فعال کنید.</string>
 
     <string name="domain_blacklist_title">لیست سیاه دامنه‌ها:</string>
     <string name="domain_blacklist_description">اتصال به دامنه‌های فهرست‌شده و زیردامنه‌های آن‌ها را مسدود می‌کند. هر دامنه در یک خط. ممکن است نیازمند خاموش کردن DNS خصوصی (DoH) در تنظیمات سیستم باشد — در غیر این صورت درخواست‌های DNS از فیلتر عبور می‌کنند. با فعال کردن حالت پیشرفته، همچنین می‌توانید پسوندهای کامل دامنه را مسدود کنید.</string>

@@ -161,6 +161,9 @@ public class DomainBlocker {
             }
             d = d.substring(d.indexOf('.') + 1);
         }
+        if (rules.contains(d)) {
+            return true;
+        }
         return false;
     }
 
