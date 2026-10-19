@@ -175,7 +175,8 @@ fun PerAppVpnModeScreen(
                     textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, bottom = 8.dp)
+                        .padding(horizontal = 12.dp)
+                        .padding(bottom = 8.dp)
                         .clickable { showSplitTunnelDialog = true }
                 )
 
