@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
+import androidx.compose.runtime.key
 
 /**
  * A dropdown of servers rendered with [ServerRow], styled like the legacy `CustomSpinner`.
@@ -70,13 +71,15 @@ fun ServerDropdown(
             containerColor = Color.White,
         ) {
             servers.forEach { server ->
-                DropdownMenuItem(
-                    text = { ServerRow(server = server) },
-                    onClick = {
-                        onSelect(server)
-                        expanded = false
-                    },
-                )
+                key(server.host + server.port + server.pingMs) {
+                    DropdownMenuItem(
+                        text = { ServerRow(server = server) },
+                        onClick = {
+                            onSelect(server)
+                            expanded = false
+                        },
+                    )
+                }
             }
         }
     }
