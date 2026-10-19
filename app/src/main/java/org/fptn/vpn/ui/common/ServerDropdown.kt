@@ -71,7 +71,7 @@ fun ServerDropdown(
             containerColor = Color.White,
         ) {
             servers.forEach { server ->
-                key("${server.getHost()}_${server.getPort()}_${server.pingMs}") {
+                key("${server.id}_${server.pingMs}") {
                     DropdownMenuItem(
                         text = { ServerRow(server = server) },
                         onClick = {
