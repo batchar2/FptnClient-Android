@@ -65,6 +65,7 @@ import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.SharedPrefUtils
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.clickable
 
 private const val TAG = "PerAppVpnModeScreen"
 
@@ -230,7 +231,7 @@ fun PerAppVpnModeScreen(
                     text = stringResource(R.string.split_tunnel_advanced_description),
                     color = White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp, end = 12.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                 )
             }
 
