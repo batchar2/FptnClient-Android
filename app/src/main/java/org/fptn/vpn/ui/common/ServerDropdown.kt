@@ -59,7 +59,9 @@ fun ServerDropdown(
                 )
                 .clickable(enabled = enabled) { expanded = true },
         ) {
-            ServerRow(server = selected, pingValue = selected.pingMs)
+            val selectedPing = servers.firstOrNull { it.id == selected.id }?.pingMs
+                ?: selected.pingMs
+            ServerRow(server = selected, pingValue = selectedPing)
         }
         DropdownMenu(
             expanded = expanded,
