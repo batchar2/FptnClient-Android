@@ -269,8 +269,8 @@ public class HomeActivityViewModel extends AndroidViewModel {
                         }
 
                         // Update the UI with new ping values
-                        lastPingedServers = servers;
-                        serverDtoListLiveData.postValue(servers);
+                        lastPingedServers = new ArrayList<>(servers);
+                        serverDtoListLiveData.postValue(new ArrayList<>(servers));
 
                         // Wait before take nest batch
                         try {
