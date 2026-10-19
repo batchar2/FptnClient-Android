@@ -31,21 +31,24 @@
         ]]>
     </string>
     <string name="share_title">اشتراک‌گذاری از طریق</string>
-    <string name="share_message">FPTN یک VPN غیرانتفاعی است؛ پروژه‌ای داوطلبانه برای دور زدن سانسور.
+    <string name="share_message">FPTN یک VPN غیرتجاری و یک پروژه داوطلبانه برای دور زدن سانسور است.
 https://play.google.com/store/apps/details?id=org.fptn.vpn
     </string>
     <string name="info_message_html">
         <![CDATA[
-        FPTN یک فناوری VPN است که کاملاً از صفر توسعه داده شده و شامل پروتکل اختصاصی، سرور و کلاینت‌های چندسکویی می‌شود. این یک پروژه غیرانتفاعی با متن‌باز است که توسط داوطلبان توسعه داده می‌شود و برای دور زدن سانسور طراحی شده است.
+        FPTN یک فناوری VPN کاملاً سفارشی است که از صفر توسعه یافته است، از جمله پروتکل اصلی، پیاده‌سازی سرور و کلاینت‌های چندپلتفرمی. این یک پروژه غیرتجاری و متن‌باز است که توسط داوطلبان توسعه یافته و برای دور زدن سانسور طراحی شده است.
         <br/>
         <br/>
-        وب‌سایت ما: =<a href="https://storage.googleapis.com/fptn.org/index.html"></a>
+        <a href="https://storage.googleapis.com/fptn.org/index.html">وب‌سایت</a> ما
         <br/>
-        گروه ما در تلگرام <a href="https://t.me/fptn_project">@fptn_project</a>
+        جوامع ما:<br/>
+        - <a href="https://t.me/fpnt_project_global">جامعه انگلیسی‌زبان</a><br/>
+        - <a href="https://t.me/fptn_project">جامعه روسی‌زبان</a><br/>
+        - <a href="https://t.me/fptn_project_iran">جامعه فارسی‌زبان</a>
         <br/>
-        اپلیکیشن در <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
+        برنامه در <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
         <br/>
-        می‌توانید از ما حمایت کنید در <a href="https://boosty.to/fptn/donate">Boosty</a>
+        شما می‌توانید از ما در <a href="https://boosty.to/fptn/donate">Boosty</a> حمایت کنید
         ]]>
     </string>
     <string name="vpn_permission_warning">برای عملکرد FPTN، دسترسی‌های لازم مورد نیاز است!</string>
