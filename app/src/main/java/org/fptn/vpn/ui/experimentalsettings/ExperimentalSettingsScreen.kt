@@ -269,7 +269,7 @@ fun ExperimentalSettingsScreen(
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, bottom = 8.dp)
+                        .padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
                         .clickable { showDomainBlacklistDialog = true }
                 )
 
@@ -592,15 +592,24 @@ private fun CardDescription(text: String) {
 }
 
 @Composable
-private fun SwitchRow(text: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun SwitchRow(text: String, checked: Boolean, enabled: Boolean = true, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = text, color = White, fontSize = 14.sp, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Text(
+            text = text, 
+            color = if (enabled) White else White.copy(alpha = 0.5f),
+            fontSize = 14.sp, 
+            modifier = Modifier.weight(1f)
+        )
+        Switch(
+            checked = checked, 
+            enabled = enabled,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
 
