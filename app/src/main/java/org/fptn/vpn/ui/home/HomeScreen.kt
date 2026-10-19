@@ -50,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -132,7 +133,16 @@ fun HomeScreen(
 
     val serviceState by viewModel.serviceStateMutableLiveData.observeAsState(FptnServiceState.INITIAL)
     val connectionState = serviceState.connectionState
-    val serverEntities by viewModel.serverDtoListLiveData.observeAsState(emptyList())
+    val serverEntities = remember { androidx.compose.runtime.mutableStateListOf<ServerEntity>() }
+
+    LaunchedEffect(Unit) {
+        viewModel.serverDtoListLiveData.observeForever { list ->
+            serverEntities.clear()
+            if (list != null) {
+                serverEntities.addAll(list)
+            }
+        }
+    }
     val timerText by viewModel.timerTextLiveData.observeAsState(stringResource(R.string.zero_time))
     val downloadSpeed by viewModel.downloadSpeedAsStringLiveData.observeAsState(stringResource(R.string.zero_speed))
     val uploadSpeed by viewModel.uploadSpeedAsStringLiveData.observeAsState(stringResource(R.string.zero_speed))
