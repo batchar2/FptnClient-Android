@@ -59,7 +59,7 @@ fun ServerDropdown(
                 )
                 .clickable(enabled = enabled) { expanded = true },
         ) {
-            ServerRow(server = selected)
+            ServerRow(server = selected, pingValue = selected.pingMs)
         }
         DropdownMenu(
             expanded = expanded,
@@ -71,9 +71,9 @@ fun ServerDropdown(
             containerColor = Color.White,
         ) {
             servers.forEach { server ->
-                key("${server.id}_${server.pingMs}") {
+                key(server.id, server.pingMs) {
                     DropdownMenuItem(
-                        text = { ServerRow(server = server) },
+                        text = { ServerRow(server = server, pingValue = server.pingMs) },
                         onClick = {
                             onSelect(server)
                             expanded = false
@@ -83,4 +83,3 @@ fun ServerDropdown(
             }
         }
     }
-}

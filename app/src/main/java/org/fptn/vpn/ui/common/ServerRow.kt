@@ -30,7 +30,7 @@ import org.fptn.vpn.utils.CountryFlags
  * line match a pinged real server's total two-line height rather than leaving dead space below.
  */
 @Composable
-fun ServerRow(server: ServerEntity, modifier: Modifier = Modifier) {
+fun ServerRow(server: ServerEntity, pingValue: Long, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -85,7 +85,7 @@ fun ServerRow(server: ServerEntity, modifier: Modifier = Modifier) {
                 )
             }
         }
-        val ping = if (server.IsAuto()) 0L else server.pingMs
+        val ping = if (server.IsAuto()) 0L else pingValue
         if (ping != 0L) {
             Row(modifier = Modifier.padding(start = 38.dp)) {
                 if (ping > 0) {
