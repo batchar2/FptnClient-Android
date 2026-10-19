@@ -1223,6 +1223,10 @@ public class FptnService extends VpnService {
     }
 
     private void disconnect(PVNClientException exception, String disconnectReasonKey) {
+        final boolean hadSession = activeConnection.get() != null
+                || sessionEstablished
+                || restoringSession;
+        
         // Cancel any pending restore work so a scheduled retry can't resurrect a torn-down session.
         restoringSession = false;
         restoreRetryCount.set(0);
@@ -1290,8 +1294,9 @@ public class FptnService extends VpnService {
         unregisterNetworkWaitCallback();
         unregisterNetworkCallback();
 
-        if (SharedPrefUtils.getResetSelectedServerEnabled(this)
-                || (SharedPrefUtils.getResetSelectedServerOnExceptionEnabled(this) && exception != null)) {
+        if (hadSession
+                && (SharedPrefUtils.getResetSelectedServerEnabled(this)
+                || (SharedPrefUtils.getResetSelectedServerOnExceptionEnabled(this) && exception != null))) {
             executorService.submit(() -> {
                 try {
                     resetSelectedServer();

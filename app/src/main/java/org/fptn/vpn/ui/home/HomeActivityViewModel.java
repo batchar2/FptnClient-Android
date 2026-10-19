@@ -315,6 +315,17 @@ public class HomeActivityViewModel extends AndroidViewModel {
         });
     }
 
+        public void saveSelectedServerToDatabase(int serverId) {
+        executorService.submit(() -> {
+            try {
+                appDatabase.serverDAO().setSelected(serverId);
+                XLog.tag(TAG).d("Saved selected server to database [id=%d]", serverId);
+            } catch (Exception e) {
+                XLog.tag(TAG).e("Failed to save selected server: %s", e.getMessage());
+            }
+        });
+    }
+
     private void handlePVNClientException(PVNClientException exception) {
         ErrorCode errorCode = exception.errorCode;
         if (errorCode != ErrorCode.UNKNOWN_ERROR) {

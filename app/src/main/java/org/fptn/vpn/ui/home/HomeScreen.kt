@@ -531,7 +531,10 @@ fun HomeScreen(
                         ServerDropdown(
                             servers = serverEntities,
                             selected = selectedServer,
-                            onSelect = { selectedServer = it },
+                            onSelect = { server ->
+                                selectedServer = server
+                                viewModel.saveSelectedServerToDatabase(server.id)
+                            },
                             enabled = !activeState,
                             modifier = Modifier
                                 .fillMaxWidth()
