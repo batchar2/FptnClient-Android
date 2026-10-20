@@ -333,17 +333,17 @@ fun HomeScreen(
         }
     }
 
-    // Server re-selection is permitted ONLY in the DISCONNECTED state. 
-    // During the CONNECTING/CONNECTED states, we do not alter the user's selection;
-    // otherwise, the server might replace the list while a connection is in progress.
+    // Initial selection is permitted in any state (the screen might have been recreated
+    // during the connection process) — we take the server marked as selected in the database.
+    // Subsequent re-selection is allowed only upon actually entering the DISCONNECTED state.
     LaunchedEffect(connectionState, serverEntities.size) {
-        if (connectionState != ConnectionState.DISCONNECTED) {
-            previousConnectionState = connectionState
-            return@LaunchedEffect
-        }
-        val enteringDisconnected = previousConnectionState != ConnectionState.DISCONNECTED
-        if (serverEntities.isNotEmpty() && (enteringDisconnected || !serverSelectionInitialized)) {
-            selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
+        val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
+            previousConnectionState != ConnectionState.DISCONNECTED
+        val isInitialSelection = !serverSelectionInitialized
+        if (serverEntities.isNotEmpty() && (enteringDisconnected || isInitialSelection)) {
+            selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context) &&
+                connectionState == ConnectionState.DISCONNECTED
+            ) {
                 serverEntities[0]
             } else {
                 serverEntities.firstOrNull { it.isSelected } ?: serverEntities[0]
