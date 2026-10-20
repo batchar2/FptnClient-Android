@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
 import androidx.compose.runtime.key
+import androidx.compose.runtime.LaunchedEffect
 
 /**
  * A dropdown of servers rendered with [ServerRow], styled like the legacy `CustomSpinner`.
@@ -46,6 +47,15 @@ fun ServerDropdown(
     enabled: Boolean = true,
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    // If a connection process has begun (enabled = false), close the menu immediately
+    // so that its exit animation doesn't render on top of the new screen state
+    LaunchedEffect(enabled) {
+        if (!enabled) {
+            expanded = false
+        }
+    }
+
     var anchorWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 

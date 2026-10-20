@@ -333,14 +333,15 @@ fun HomeScreen(
         }
     }
 
-    // Re-pick the default server only on the edge into DISCONNECTED, not on every ping
-    // refresh while already disconnected — otherwise a user's manual dropdown pick would
-    // keep getting reset every 5 minutes as ping results stream in. Also keyed on
-    // serverEntities so the very first load (which lands after INITIAL's DISCONNECTED
-    // state is already composed) still applies the saved/AUTO selection once it arrives.
-    LaunchedEffect(connectionState, serverEntities) {
-        val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
-            previousConnectionState != ConnectionState.DISCONNECTED
+    // Server re-selection is permitted ONLY in the DISCONNECTED state. 
+    // During the CONNECTING/CONNECTED states, we do not alter the user's selection;
+    // otherwise, the server might replace the list while a connection is in progress.
+    LaunchedEffect(connectionState, serverEntities.size) {
+        if (connectionState != ConnectionState.DISCONNECTED) {
+            previousConnectionState = connectionState
+            return@LaunchedEffect
+        }
+        val enteringDisconnected = previousConnectionState != ConnectionState.DISCONNECTED
         if (serverEntities.isNotEmpty() && (enteringDisconnected || !serverSelectionInitialized)) {
             selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
                 serverEntities[0]
