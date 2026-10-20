@@ -30,8 +30,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Полностью отключаем все анимации окна
-        window.setWindowAnimations(android.R.style.Animation_None)
+        // Полностью отключаем все анимации окна на уровне WindowManager
+        window.attributes.windowAnimations = 0
         
         super.onCreate(savedInstanceState)
         overridePendingTransition(0, 0)

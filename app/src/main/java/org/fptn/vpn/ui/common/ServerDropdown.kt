@@ -50,12 +50,11 @@ fun ServerDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     // Если началось подключение (enabled = false) — мгновенно закрываем меню
-    // БЕЗ анимации, чтобы не было наложения
     LaunchedEffect(enabled) {
         if (!enabled) {
             expanded = false
-            // Ждём чуть-чуть, чтобы меню успело закрыться до смены раскладки
-            kotlinx.coroutines.delay(100)
+            // Небольшая задержка, чтобы меню успело исчезнуть до смены раскладки
+            kotlinx.coroutines.delay(100) 
         }
     }
 
@@ -84,11 +83,6 @@ fun ServerDropdown(
                 .heightIn(max = 220.dp),
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.White,
-            // Отключаем анимацию появления/исчезновения
-            properties = DropdownMenuProperties(
-                enterTransition = null,
-                exitTransition = null
-            ),
         ) {
             servers.forEach { server ->
                 key(server.id, server.pingMs) {
