@@ -1299,21 +1299,21 @@ public class FptnService extends VpnService {
                 || (SharedPrefUtils.getResetSelectedServerOnExceptionEnabled(this) && exception != null));
 
         if (needResetServer) {
-            // First, we reset the server in the database and SharedPreferences, and ONLY THEN
-            // we inform the UI about the disconnection. Otherwise, the UI has time to read the old data
-            // and revert to the previous server (thread race).
             executorService.submit(() -> {
                 try {
                     resetSelectedServer();
+                    // Очищаем ID последнего выбранного сервера
                     SharedPrefUtils.saveLastSelectedServerId(FptnService.this, Constants.SELECTED_SERVER_ID_AUTO);
+                    
+                    // ✅ ДОПОЛНИТЕЛЬНО: Очищаем флаг "выбранности" в базе
+                    // Это гарантирует, что ни у одного сервера не останется isSelected=true
+                    appDatabase.serverDAO().resetSelected();
+                    
                 } catch (ExecutionException | InterruptedException e) {
                     XLog.tag(TAG).e("Failed to reset selected server: %s", e.getMessage());
                 }
                 setConnectionState(finalState, exception, disconnectReason);
             });
-        } else {
-            //send to UI activity that state is disconnected.
-            setConnectionState(finalState, exception, disconnectReason);
         }
 
         if (!killSwitchHold) {
