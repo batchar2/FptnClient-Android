@@ -154,7 +154,6 @@ fun HomeScreen(
     val speedSample by viewModel.speedSampleLiveData.observeAsState(null)
 
     var selectedServer by remember { mutableStateOf(ServerEntity.AUTO) }
-    var selectedServerId by remember { mutableIntStateOf(ServerEntity.AUTO.id) }
     var serverSelectionInitialized by remember { mutableStateOf(false) }
     // Sticky "are we showing the connected layout" flag: flips on CONNECTED/DISCONNECTED/BLOCKED,
     // left untouched on transitional states (CONNECTING, RECONNECTING, ...) — mirrors the legacy
@@ -209,6 +208,7 @@ fun HomeScreen(
     }
 
     fun connectVpn() {
+        SharedPrefUtils.saveLastSelectedServerId(context, selectedServer.id)
         val intent = VpnService.prepare(context)
         if (intent != null) {
             vpnPermissionLauncher.launch(intent)
@@ -336,26 +336,27 @@ fun HomeScreen(
     }
 
     // Initial selection is permitted in any state (the screen might have been recreated
-    // during the connection process) — we retrieve the server using the saved ID.
-    // Subsequent re-selection is allowed only upon actually entering the DISCONNECTED state.
+    // during the connection process). We retrieve the ID from SharedPreferences —
+    // it persists across recreations, unlike 'remember' state or stale 'isSelected'
+    // flags held in memory.
     LaunchedEffect(connectionState, serverEntities.size) {
         val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
             previousConnectionState != ConnectionState.DISCONNECTED
         val isInitialSelection = !serverSelectionInitialized
         if (serverEntities.isNotEmpty() && (enteringDisconnected || isInitialSelection)) {
-            selectedServer = if (isInitialSelection && selectedServerId != ServerEntity.AUTO.id) {
-                // Initial selection: look for a server using the saved ID
-                serverEntities.firstOrNull { it.id == selectedServerId }
-                    ?: serverEntities.firstOrNull { it.isSelected }
-                    ?: serverEntities[0]
-            } else if (SharedPrefUtils.getResetSelectedServerEnabled(context) &&
-                connectionState == ConnectionState.DISCONNECTED
-            ) {
-                serverEntities[0]
-            } else {
-                serverEntities.firstOrNull { it.isSelected } ?: serverEntities[0]
+            val lastId = SharedPrefUtils.getLastSelectedServerId(context)
+            selectedServer = when {
+                enteringDisconnected && SharedPrefUtils.getResetSelectedServerEnabled(context) ->
+                    serverEntities[0]
+                enteringDisconnected ->
+                    serverEntities.firstOrNull { it.isSelected }
+                        ?: serverEntities.firstOrNull { it.id == lastId }
+                        ?: serverEntities[0]
+                else ->
+                    serverEntities.firstOrNull { it.id == lastId }
+                        ?: serverEntities.firstOrNull { it.isSelected }
+                        ?: serverEntities[0]
             }
-            selectedServerId = selectedServer.id
             serverSelectionInitialized = true
         }
         previousConnectionState = connectionState
@@ -542,7 +543,7 @@ fun HomeScreen(
                             selected = selectedServer,
                             onSelect = { server ->
                                 selectedServer = server
-                                selectedServerId = server.id
+                                SharedPrefUtils.saveLastSelectedServerId(context, server.id)
                                 viewModel.saveSelectedServerToDatabase(server.id)
                             },
                             enabled = !activeState,
