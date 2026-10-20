@@ -154,6 +154,7 @@ fun HomeScreen(
     val speedSample by viewModel.speedSampleLiveData.observeAsState(null)
 
     var selectedServer by remember { mutableStateOf(ServerEntity.AUTO) }
+    var pendingReselect by remember { mutableStateOf(false) }
     var serverSelectionInitialized by remember { mutableStateOf(false) }
     // Sticky "are we showing the connected layout" flag: flips on CONNECTED/DISCONNECTED/BLOCKED,
     // left untouched on transitional states (CONNECTING, RECONNECTING, ...) — mirrors the legacy
@@ -335,31 +336,30 @@ fun HomeScreen(
         }
     }
 
-    // Initial selection is permitted in any state (the screen might have been recreated
-    // during the connection process). We retrieve the ID from SharedPreferences —
-    // it persists across recreations, unlike 'remember' state or stale 'isSelected'
-    // flags held in memory.
-    LaunchedEffect(connectionState, serverEntities.size) {
-        val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
+    // We note that when entering DISCONNECTED, the server needs to be reselected,
+    // but the reselection itself is done later — when the fresh list from the database arrives.
+    LaunchedEffect(connectionState) {
+        if (connectionState == ConnectionState.DISCONNECTED &&
             previousConnectionState != ConnectionState.DISCONNECTED
-        val isInitialSelection = !serverSelectionInitialized
-        if (serverEntities.isNotEmpty() && (enteringDisconnected || isInitialSelection)) {
-            val lastId = SharedPrefUtils.getLastSelectedServerId(context)
-            selectedServer = when {
-                enteringDisconnected && SharedPrefUtils.getResetSelectedServerEnabled(context) ->
-                    serverEntities[0]
-                enteringDisconnected ->
-                    serverEntities.firstOrNull { it.isSelected }
-                        ?: serverEntities.firstOrNull { it.id == lastId }
-                        ?: serverEntities[0]
-                else ->
-                    serverEntities.firstOrNull { it.id == lastId }
-                        ?: serverEntities.firstOrNull { it.isSelected }
-                        ?: serverEntities[0]
-            }
-            serverSelectionInitialized = true
+        ) {
+            pendingReselect = true
         }
         previousConnectionState = connectionState
+    }
+
+    // Rechecking is triggered on the first list update AFTER the service is disabled:
+    // by this point, the service has already reset the database and SharedPreferences.
+    LaunchedEffect(serverEntities, pendingReselect) {
+        if (!pendingReselect || serverEntities.isEmpty()) return@LaunchedEffect
+        pendingReselect = false
+        selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
+            serverEntities[0]
+        } else {
+            val lastId = SharedPrefUtils.getLastSelectedServerId(context)
+            serverEntities.firstOrNull { it.isSelected }
+                ?: serverEntities.firstOrNull { it.id == lastId }
+                ?: serverEntities[0]
+        }
     }
 
     LaunchedEffect(serviceState) {
@@ -543,6 +543,7 @@ fun HomeScreen(
                             selected = selectedServer,
                             onSelect = { server ->
                                 selectedServer = server
+                                pendingReselect = false
                                 SharedPrefUtils.saveLastSelectedServerId(context, server.id)
                                 viewModel.saveSelectedServerToDatabase(server.id)
                             },
