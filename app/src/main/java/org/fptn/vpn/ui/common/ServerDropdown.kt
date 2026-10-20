@@ -23,6 +23,7 @@ import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
 import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 
 /**
  * A dropdown of servers rendered with [ServerRow], styled like the legacy `CustomSpinner`.
@@ -48,11 +49,13 @@ fun ServerDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // If a connection process has begun (enabled = false), close the menu immediately
-    // so that its exit animation doesn't render on top of the new screen state
+    // Если началось подключение (enabled = false) — мгновенно закрываем меню
+    // БЕЗ анимации, чтобы не было наложения
     LaunchedEffect(enabled) {
         if (!enabled) {
             expanded = false
+            // Ждём чуть-чуть, чтобы меню успело закрыться до смены раскладки
+            kotlinx.coroutines.delay(100)
         }
     }
 
@@ -81,6 +84,11 @@ fun ServerDropdown(
                 .heightIn(max = 220.dp),
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.White,
+            // Отключаем анимацию появления/исчезновения
+            properties = DropdownMenuProperties(
+                enterTransition = null,
+                exitTransition = null
+            ),
         ) {
             servers.forEach { server ->
                 key(server.id, server.pingMs) {

@@ -339,41 +339,46 @@ fun HomeScreen(
         }
     }
 
-    // Universal server selection effect:
-    // 1. Initial selection — when the list arrives for the first time (the screen is recreated / the app is launched)
-    // 2. Reselection — when the service disconnects and a FRESH list arrives from the database
-    LaunchedEffect(connectionState, serverListVersion) {
+    // Универсальный эффект выбора сервера:
+    // 1. Первичный выбор — когда список пришёл впервые (экран пересоздан/приложение запущено)
+    // 2. Перевыбор — когда сервис отключился и пришёл СВЕЖИЙ список из базы
+    LaunchedEffect(connectionState, serverEntities.size, serverEntities.map { it.isSelected }.hashCode()) {
         val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
             previousConnectionState != ConnectionState.DISCONNECTED
         val isInitialSelection = !serverSelectionInitialized && serverEntities.isNotEmpty()
 
         if (enteringDisconnected) {
-            // The in-memory list is still OLD — just mark it and wait for the database update
+            // Список в памяти ещё СТАРЫЙ — только помечаем и ждём обновления из базы
             pendingReselect = true
             previousConnectionState = connectionState
             return@LaunchedEffect
         }
 
         if (isInitialSelection) {
-            // Initial selection: use the server from SharedPreferences without touching the Reset flag
+            // Первичный выбор: берём сервер из SharedPreferences, не трогаем флаг Reset
             val lastId = SharedPrefUtils.getLastSelectedServerId(context)
             selectedServer = serverEntities.firstOrNull { it.id == lastId }
                 ?: serverEntities.firstOrNull { it.isSelected }
                 ?: serverEntities[0]
             serverSelectionInitialized = true
         } else if (pendingReselect && serverEntities.isNotEmpty()) {
-            // Reselection after disconnection — use the fresh list
+            // Перевыбор после отключения — уже по свежему списку
             pendingReselect = false
             val lastId = SharedPrefUtils.getLastSelectedServerId(context)
+            
+            // Проверяем, сбросил ли сервис выбор (ни у кого нет isSelected=true)
+            val anySelected = serverEntities.any { it.isSelected }
+            
             selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
+                // Пользователь хочет сброс на Auto после ЛЮБОГО отключения
                 serverEntities[0]
-            } else if (lastId == ServerEntity.AUTO.id) {
-                // The service reset the selection due to an error (or the user selected Auto) —
-                // do not trust stale isSelected flags; select Auto immediately
+            } else if (!anySelected && lastId == ServerEntity.AUTO.id) {
+                // Сервис сбросил выбор из-за ошибки + в SharedPreferences Auto
                 serverEntities[0]
             } else {
-                serverEntities.firstOrNull { it.isSelected }
-                    ?: serverEntities.firstOrNull { it.id == lastId }
+                // Берём последний выбранный пользователем
+                serverEntities.firstOrNull { it.id == lastId }
+                    ?: serverEntities.firstOrNull { it.isSelected }
                     ?: serverEntities[0]
             }
         }
