@@ -153,6 +153,7 @@ fun HomeScreen(
     val speedSample by viewModel.speedSampleLiveData.observeAsState(null)
 
     var selectedServer by remember { mutableStateOf(ServerEntity.AUTO) }
+    var selectedServerId by remember { mutableIntStateOf(ServerEntity.AUTO.id) }
     var serverSelectionInitialized by remember { mutableStateOf(false) }
     // Sticky "are we showing the connected layout" flag: flips on CONNECTED/DISCONNECTED/BLOCKED,
     // left untouched on transitional states (CONNECTING, RECONNECTING, ...) — mirrors the legacy
@@ -334,20 +335,26 @@ fun HomeScreen(
     }
 
     // Initial selection is permitted in any state (the screen might have been recreated
-    // during the connection process) — we take the server marked as selected in the database.
+    // during the connection process) — we retrieve the server using the saved ID.
     // Subsequent re-selection is allowed only upon actually entering the DISCONNECTED state.
     LaunchedEffect(connectionState, serverEntities.size) {
         val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
             previousConnectionState != ConnectionState.DISCONNECTED
         val isInitialSelection = !serverSelectionInitialized
         if (serverEntities.isNotEmpty() && (enteringDisconnected || isInitialSelection)) {
-            selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context) &&
+            selectedServer = if (isInitialSelection && selectedServerId != ServerEntity.AUTO.id) {
+                // Initial selection: look for a server using the saved ID
+                serverEntities.firstOrNull { it.id == selectedServerId }
+                    ?: serverEntities.firstOrNull { it.isSelected }
+                    ?: serverEntities[0]
+            } else if (SharedPrefUtils.getResetSelectedServerEnabled(context) &&
                 connectionState == ConnectionState.DISCONNECTED
             ) {
                 serverEntities[0]
             } else {
                 serverEntities.firstOrNull { it.isSelected } ?: serverEntities[0]
             }
+            selectedServerId = selectedServer.id
             serverSelectionInitialized = true
         }
         previousConnectionState = connectionState
@@ -534,9 +541,7 @@ fun HomeScreen(
                             selected = selectedServer,
                             onSelect = { server ->
                                 selectedServer = server
-                                // Synchronize the 'selected' flag in the in-memory list
-                                // so that the recreated screen doesn't pull in the old server
-                                serverEntities.forEach { s -> s.selected = (s.id == server.id) }
+                                selectedServerId = server.id
                                 viewModel.saveSelectedServerToDatabase(server.id)
                             },
                             enabled = !activeState,
