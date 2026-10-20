@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        overridePendingTransition(0, 0)
         val startRoute = intent.getStringExtra(EXTRA_ROUTE) ?: AppRoute.SPLASH
         setContent {
             navController = rememberNavController()
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        overridePendingTransition(0, 0)
         setIntent(intent)
         // This activity's `singleTop` launch mode delivers an intentForRoute Intent here
         // (instead of a fresh onCreate) whenever it's already on top, e.g. the app is already
