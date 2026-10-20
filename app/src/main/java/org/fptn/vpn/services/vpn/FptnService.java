@@ -1300,6 +1300,9 @@ public class FptnService extends VpnService {
             executorService.submit(() -> {
                 try {
                     resetSelectedServer();
+                    
+                    // Clear the ID of the last selected server so that the UI doesn't pull it again from SharedPreferences
+                    SharedPrefUtils.saveLastSelectedServerId(FptnService.this, Constants.SELECTED_SERVER_ID_AUTO);
 
                     //send to UI activity that state is disconnected.
                     setConnectionState(finalState, exception, disconnectReason);
