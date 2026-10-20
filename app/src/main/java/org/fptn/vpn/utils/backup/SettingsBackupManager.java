@@ -35,6 +35,8 @@ import org.fptn.vpn.utils.SharedPrefUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.fptn.vpn.enums.AppLogLevel;
+import org.fptn.vpn.enums.ConnectionStrategy;
 
 /**
  * Exports all user-configurable FPTN settings to JSON and applies them back.
@@ -82,6 +84,13 @@ public final class SettingsBackupManager {
         Boolean showSpeedInNotification;
         Boolean showTrafficChart;
         Boolean killSwitchEnabled;
+        Boolean splitTunnelDomainsAdvancedMode;
+        Boolean domainBlacklistAdvancedMode;
+        String connectionStrategy;
+        Boolean showTrafficInNotification;
+        Boolean connectFailedHelpEnabled;
+        Boolean allowLandscape;
+        String logLevel;
     }
 
     private static class BackupAppRule {
@@ -119,6 +128,14 @@ public final class SettingsBackupManager {
         settings.showSpeedInNotification = SharedPrefUtils.getShowSpeedInNotification(context);
         settings.showTrafficChart = SharedPrefUtils.getShowTrafficChart(context);
         settings.killSwitchEnabled = SharedPrefUtils.getKillSwitchEnabled(context);
+        settings.splitTunnelDomainsAdvancedMode = SharedPrefUtils.getSplitTunnelDomainsAdvancedModeEnabled(context);
+        settings.domainBlacklistAdvancedMode = SharedPrefUtils.getDomainBlacklistAdvancedModeEnabled(context);
+        settings.connectionStrategy = SharedPrefUtils.getConnectionStrategy(context).name();
+        settings.showTrafficInNotification = SharedPrefUtils.getShowTrafficInNotification(context);
+        settings.connectFailedHelpEnabled = SharedPrefUtils.getConnectFailedHelpEnabled(context);
+        settings.allowLandscape = SharedPrefUtils.getAllowLandscape(context);
+        settings.logLevel = SharedPrefUtils.getLogLevel(context).name();
+        
         backup.settings = settings;
 
         backup.perAppVpnApps = AppDatabase.getInstance(context).appInfoDAO().getAll().stream()
@@ -217,8 +234,32 @@ public final class SettingsBackupManager {
         if (settings.killSwitchEnabled != null) {
             SharedPrefUtils.saveKillSwitchEnabled(context, settings.killSwitchEnabled);
         }
+        if (settings.splitTunnelDomainsAdvancedMode != null) {
+            SharedPrefUtils.saveSplitTunnelDomainsAdvancedModeEnabled(context, settings.splitTunnelDomainsAdvancedMode);
+        }
+        if (settings.domainBlacklistAdvancedMode != null) {
+            SharedPrefUtils.saveDomainBlacklistAdvancedModeEnabled(context, settings.domainBlacklistAdvancedMode);
+        }
+        ConnectionStrategy connectionStrategy = parseEnum(ConnectionStrategy.class, settings.connectionStrategy);
+        if (connectionStrategy != null) {
+            SharedPrefUtils.saveConnectionStrategy(context, connectionStrategy);
+        }
+        if (settings.showTrafficInNotification != null) {
+            SharedPrefUtils.saveShowTrafficInNotification(context, settings.showTrafficInNotification);
+        }
+        if (settings.connectFailedHelpEnabled != null) {
+            SharedPrefUtils.saveConnectFailedHelpEnabled(context, settings.connectFailedHelpEnabled);
+        }
+        if (settings.allowLandscape != null) {
+            SharedPrefUtils.saveAllowLandscape(context, settings.allowLandscape);
+        }
+        AppLogLevel logLevel = parseEnum(AppLogLevel.class, settings.logLevel);
+        if (logLevel != null) {
+            SharedPrefUtils.saveLogLevel(context, logLevel);
+        }
 
         if (backup.perAppVpnApps != null) {
+
             List<AppInfoEntity> entities = backup.perAppVpnApps.stream()
                     .map(rule -> AppInfoEntity.builder()
                             .packageName(rule.packageName)
