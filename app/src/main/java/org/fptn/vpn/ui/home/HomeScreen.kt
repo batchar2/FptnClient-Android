@@ -336,30 +336,40 @@ fun HomeScreen(
         }
     }
 
-    // We note that when entering DISCONNECTED, the server needs to be reselected,
-    // but the reselection itself is done later — when the fresh list from the database arrives.
-    LaunchedEffect(connectionState) {
-        if (connectionState == ConnectionState.DISCONNECTED &&
+    // Universal server selection effect:
+    // 1. Initial selection — when the list is received for the first time (screen recreated/app launched)
+    // 2. Re-selection — when the service has disconnected and has already cleared the database
+    LaunchedEffect(connectionState, serverEntities.size) {
+        val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
             previousConnectionState != ConnectionState.DISCONNECTED
-        ) {
+        val isInitialSelection = !serverSelectionInitialized && serverEntities.isNotEmpty()
+        
+        if (enteringDisconnected) {
+            // Mark that a re-selection is required the next time the list is updated
             pendingReselect = true
         }
-        previousConnectionState = connectionState
-    }
-
-    // Rechecking is triggered on the first list update AFTER the service is disabled:
-    // by this point, the service has already reset the database and SharedPreferences.
-    LaunchedEffect(serverEntities, pendingReselect) {
-        if (!pendingReselect || serverEntities.isEmpty()) return@LaunchedEffect
-        pendingReselect = false
-        selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
-            serverEntities[0]
-        } else {
+        
+        if (isInitialSelection) {
+            // Initial selection: retrieve the server from SharedPreferences; do not touch the Reset flag
             val lastId = SharedPrefUtils.getLastSelectedServerId(context)
-            serverEntities.firstOrNull { it.isSelected }
-                ?: serverEntities.firstOrNull { it.id == lastId }
+            selectedServer = serverEntities.firstOrNull { it.id == lastId }
+                ?: serverEntities.firstOrNull { it.isSelected }
                 ?: serverEntities[0]
+            serverSelectionInitialized = true
+        } else if (pendingReselect && serverEntities.isNotEmpty()) {
+            // Re-selection after disconnection: take the Reset toggle switch into account
+            pendingReselect = false
+            selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
+                serverEntities[0]
+            } else {
+                val lastId = SharedPrefUtils.getLastSelectedServerId(context)
+                serverEntities.firstOrNull { it.isSelected }
+                    ?: serverEntities.firstOrNull { it.id == lastId }
+                    ?: serverEntities[0]
+            }
         }
+        
+        previousConnectionState = connectionState
     }
 
     LaunchedEffect(serviceState) {
