@@ -136,12 +136,15 @@ fun HomeScreen(
     val connectionState = serviceState.connectionState
     val serverEntities = remember { androidx.compose.runtime.mutableStateListOf<ServerEntity>() }
 
+    var serverListVersion by remember { mutableIntStateOf(0) }
+
     LaunchedEffect(Unit) {
         viewModel.serverDtoListLiveData.observeForever { list ->
             serverEntities.clear()
             if (list != null) {
                 serverEntities.addAll(list)
             }
+            serverListVersion++
         }
     }
     val timerText by viewModel.timerTextLiveData.observeAsState(stringResource(R.string.zero_time))
@@ -337,38 +340,44 @@ fun HomeScreen(
     }
 
     // Universal server selection effect:
-    // 1. Initial selection — when the list is received for the first time (screen recreated/app launched)
-    // 2. Re-selection — when the service has disconnected and has already cleared the database
-    LaunchedEffect(connectionState, serverEntities.size) {
+    // 1. Initial selection — when the list arrives for the first time (the screen is recreated / the app is launched)
+    // 2. Reselection — when the service disconnects and a FRESH list arrives from the database
+    LaunchedEffect(connectionState, serverListVersion) {
         val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
             previousConnectionState != ConnectionState.DISCONNECTED
         val isInitialSelection = !serverSelectionInitialized && serverEntities.isNotEmpty()
-        
+
         if (enteringDisconnected) {
-            // Mark that a re-selection is required the next time the list is updated
+            // The in-memory list is still OLD — just mark it and wait for the database update
             pendingReselect = true
+            previousConnectionState = connectionState
+            return@LaunchedEffect
         }
-        
+
         if (isInitialSelection) {
-            // Initial selection: retrieve the server from SharedPreferences; do not touch the Reset flag
+            // Initial selection: use the server from SharedPreferences without touching the Reset flag
             val lastId = SharedPrefUtils.getLastSelectedServerId(context)
             selectedServer = serverEntities.firstOrNull { it.id == lastId }
                 ?: serverEntities.firstOrNull { it.isSelected }
                 ?: serverEntities[0]
             serverSelectionInitialized = true
         } else if (pendingReselect && serverEntities.isNotEmpty()) {
-            // Re-selection after disconnection: take the Reset toggle switch into account
+            // Reselection after disconnection — use the fresh list
             pendingReselect = false
+            val lastId = SharedPrefUtils.getLastSelectedServerId(context)
             selectedServer = if (SharedPrefUtils.getResetSelectedServerEnabled(context)) {
                 serverEntities[0]
+            } else if (lastId == ServerEntity.AUTO.id) {
+                // The service reset the selection due to an error (or the user selected Auto) —
+                // do not trust stale isSelected flags; select Auto immediately
+                serverEntities[0]
             } else {
-                val lastId = SharedPrefUtils.getLastSelectedServerId(context)
                 serverEntities.firstOrNull { it.isSelected }
                     ?: serverEntities.firstOrNull { it.id == lastId }
                     ?: serverEntities[0]
             }
         }
-        
+
         previousConnectionState = connectionState
     }
 
