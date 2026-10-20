@@ -1,6 +1,8 @@
 <resources>
     <style name="Base.Theme.FptnClient" parent="@style/Theme.AppCompat.NoActionBar"/>
-    <style name="Theme.FptnClient" parent="Base.Theme.FptnClient" />
+    <style name="Theme.FptnClient" parent="Base.Theme.FptnClient">
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 <!--    <item name="android:windowIsTranslucent">true</item>-->
     <style name="Theme.Splash" parent="Base.Theme.FptnClient">
         <item name="android:windowBackground">@drawable/application_background</item>
