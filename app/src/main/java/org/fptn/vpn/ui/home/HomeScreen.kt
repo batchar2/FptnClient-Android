@@ -536,7 +536,7 @@ fun HomeScreen(
                                 selectedServer = server
                                 // Synchronize the 'selected' flag in the in-memory list
                                 // so that the recreated screen doesn't pull in the old server
-                                serverEntities.forEach { s -> s.setSelected(s.id == server.id) }
+                                serverEntities.forEach { s -> s.selected = (s.id == server.id) }
                                 viewModel.saveSelectedServerToDatabase(server.id)
                             },
                             enabled = !activeState,
