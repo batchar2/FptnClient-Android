@@ -1334,6 +1334,17 @@ public class FptnService extends VpnService {
         } else {
             startForeground(Constants.MAIN_CONNECTED_NOTIFICATION_ID, notification);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                if (manager != null) {
+                    manager.cancel(Constants.MAIN_CONNECTED_NOTIFICATION_ID);
+                    manager.notify(Constants.MAIN_CONNECTED_NOTIFICATION_ID, notification);
+                }
+            } catch (Exception e) {
+                XLog.tag(TAG).w("Failed to suppress notification animation: %s", e.getMessage());
+            }
+        }
     }
 
     private void updateNotificationWithMessage(String title, String message) {

@@ -30,8 +30,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        window.attributes.windowAnimations = 0
+        
         super.onCreate(savedInstanceState)
         overridePendingTransition(0, 0)
+        
         val startRoute = intent.getStringExtra(EXTRA_ROUTE) ?: AppRoute.SPLASH
         setContent {
             navController = rememberNavController()
