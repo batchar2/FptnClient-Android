@@ -1367,7 +1367,7 @@ public class FptnService extends VpnService {
                 .addAction(actionDisconnect)
                 .setContentIntent(launchMainActivityPendingIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE); // foreground service notification behavior
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_DEFERRED); // foreground service notification behavior
         }
         return builder.build();
     }

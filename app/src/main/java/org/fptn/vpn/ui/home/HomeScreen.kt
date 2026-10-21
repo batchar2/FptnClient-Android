@@ -185,6 +185,8 @@ fun HomeScreen(
     var connectFailedTokenStale by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
 
+    val toggleButtonOffPainter = painterResource(R.drawable.toggle_button_off)
+    val toggleButtonOnPainter = painterResource(R.drawable.toggle_button_on)
     val needsBackgroundSetup = !notificationsGranted || !batteryGranted
     val showPermissionWarning = connectionState == ConnectionState.CONNECTED && needsBackgroundSetup
     val activeState = connectionState.isActiveState
@@ -535,14 +537,14 @@ fun HomeScreen(
                                     ) { onToggleConnectClick() },
                             ) {
                                 Image(
-                                    painter = painterResource(R.drawable.toggle_button_off),
+                                    painter = toggleButtonOffPainter,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .matchParentSize()
                                         .alpha(if (activeState) 0f else 1f),
                                 )
                                 Image(
-                                    painter = painterResource(R.drawable.toggle_button_on),
+                                    painter = toggleButtonOnPainter,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .matchParentSize()
