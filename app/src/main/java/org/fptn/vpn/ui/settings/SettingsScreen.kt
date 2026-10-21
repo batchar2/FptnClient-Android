@@ -34,6 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -289,20 +291,34 @@ fun SettingsScreen(
         ShareDialog(onDismiss = { showShareDialog = false })
     }
 
+    val dialogDensity = LocalDensity.current
+
     if (showLogoutConfirm) {
         AlertDialog(
             onDismissRequest = { showLogoutConfirm = false },
-            title = { Text(stringResource(R.string.dialog_logout_title)) },
-            text = { Text(stringResource(R.string.dialog_logout_message)) },
+            title = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.dialog_logout_title))
+                }
+            },
+            text = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.dialog_logout_message))
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    showLogoutConfirm = false
-                    viewModel.deleteAllServers()
-                    onLoggedOut()
-                }) { Text(stringResource(R.string.yes)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = {
+                        showLogoutConfirm = false
+                        viewModel.deleteAllServers()
+                        onLoggedOut()
+                    }) { Text(stringResource(R.string.yes)) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutConfirm = false }) { Text(stringResource(R.string.no)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = { showLogoutConfirm = false }) { Text(stringResource(R.string.no)) }
+                }
             },
         )
     }
@@ -310,19 +326,31 @@ fun SettingsScreen(
     if (showBatteryOptimizationDialog) {
         AlertDialog(
             onDismissRequest = { showBatteryOptimizationDialog = false },
-            title = { Text(stringResource(R.string.battery_optimization_request_dialog_title)) },
-            text = { Text(stringResource(R.string.battery_optimization_request_dialog_text)) },
+            title = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.battery_optimization_request_dialog_title))
+                }
+            },
+            text = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.battery_optimization_request_dialog_text))
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    showBatteryOptimizationDialog = false
-                    requestBatteryOptimizationExemption(context)
-                }) { Text(stringResource(R.string.grant)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = {
+                        showBatteryOptimizationDialog = false
+                        requestBatteryOptimizationExemption(context)
+                    }) { Text(stringResource(R.string.grant)) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showBatteryOptimizationDialog = false
-                    XLog.tag(TAG).w("Battery optimization exemption denied by user")
-                }) { Text(stringResource(R.string.deny)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = {
+                        showBatteryOptimizationDialog = false
+                        XLog.tag(TAG).w("Battery optimization exemption denied by user")
+                    }) { Text(stringResource(R.string.deny)) }
+                }
             },
         )
     }
@@ -330,19 +358,31 @@ fun SettingsScreen(
     if (showBackgroundDataDialog) {
         AlertDialog(
             onDismissRequest = { showBackgroundDataDialog = false },
-            title = { Text(stringResource(R.string.background_data_request_dialog_title)) },
-            text = { Text(stringResource(R.string.background_data_request_dialog_text)) },
+            title = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.background_data_request_dialog_title))
+                }
+            },
+            text = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.background_data_request_dialog_text))
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    showBackgroundDataDialog = false
-                    requestBackgroundDataTransferPermission(context)
-                }) { Text(stringResource(R.string.grant)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = {
+                        showBackgroundDataDialog = false
+                        requestBackgroundDataTransferPermission(context)
+                    }) { Text(stringResource(R.string.grant)) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showBackgroundDataDialog = false
-                    XLog.tag(TAG).w("Background data transfer permission denied by user")
-                }) { Text(stringResource(R.string.deny)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = {
+                        showBackgroundDataDialog = false
+                        XLog.tag(TAG).w("Background data transfer permission denied by user")
+                    }) { Text(stringResource(R.string.deny)) }
+                }
             },
         )
     }
@@ -350,17 +390,29 @@ fun SettingsScreen(
     if (showClearLogsConfirm) {
         AlertDialog(
             onDismissRequest = { showClearLogsConfirm = false },
-            title = { Text(stringResource(R.string.dialog_clear_logs_title)) },
-            text = { Text(stringResource(R.string.dialog_clear_logs_message)) },
+            title = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.dialog_clear_logs_title))
+                }
+            },
+            text = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(stringResource(R.string.dialog_clear_logs_message))
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    showClearLogsConfirm = false
-                    XLogInitializer.clearLogs(context)
-                    Toast.makeText(context, R.string.logs_cleared, Toast.LENGTH_SHORT).show()
-                }) { Text(stringResource(R.string.yes)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = {
+                        showClearLogsConfirm = false
+                        XLogInitializer.clearLogs(context)
+                        Toast.makeText(context, R.string.logs_cleared, Toast.LENGTH_SHORT).show()
+                    }) { Text(stringResource(R.string.yes)) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showClearLogsConfirm = false }) { Text(stringResource(R.string.no)) }
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    TextButton(onClick = { showClearLogsConfirm = false }) { Text(stringResource(R.string.no)) }
+                }
             },
         )
     }

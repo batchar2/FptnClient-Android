@@ -89,6 +89,8 @@ public final class SettingsBackupManager {
         Boolean showTrafficInNotification;
         Boolean connectFailedHelpEnabled;
         Boolean allowLandscape;
+        Boolean useSystemFontSize;
+        Integer fontScaleIndex;
     }
 
     private static class BackupAppRule {
@@ -132,6 +134,8 @@ public final class SettingsBackupManager {
         settings.showTrafficInNotification = SharedPrefUtils.getShowTrafficInNotification(context);
         settings.connectFailedHelpEnabled = SharedPrefUtils.getConnectFailedHelpEnabled(context);
         settings.allowLandscape = SharedPrefUtils.getAllowLandscape(context);
+        settings.useSystemFontSize = SharedPrefUtils.getUseSystemFontSize(context);
+        settings.fontScaleIndex = SharedPrefUtils.getFontScaleIndex(context);
 
         backup.settings = settings;
 
@@ -249,6 +253,12 @@ public final class SettingsBackupManager {
         }
         if (settings.allowLandscape != null) {
             SharedPrefUtils.saveAllowLandscape(context, settings.allowLandscape);
+        }
+        if (settings.useSystemFontSize != null) {
+            SharedPrefUtils.saveUseSystemFontSize(context, settings.useSystemFontSize);
+        }
+        if (settings.fontScaleIndex != null) {
+            SharedPrefUtils.saveFontScaleIndex(context, settings.fontScaleIndex);
         }
 
         if (backup.perAppVpnApps != null) {

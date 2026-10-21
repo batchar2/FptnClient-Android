@@ -22,8 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.window.PopupProperties
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
@@ -51,32 +53,39 @@ fun AutoSelectSniDialog(
     var selected by remember(servers) { mutableStateOf(servers.firstOrNull() ?: ServerEntity.AUTO) }
     var resetChecked by remember { mutableStateOf(false) }
 
+    val dialogDensity = LocalDensity.current
     AlertDialog(
         onDismissRequest = onCancel,
         text = {
-            Column {
-                Text(stringResource(R.string.select_server_for_autoselect), modifier = Modifier.padding(bottom = 16.dp))
-                ServerDropdown(servers = servers, selected = selected, onSelect = { selected = it })
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clickable { resetChecked = !resetChecked },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(checked = resetChecked, onCheckedChange = { resetChecked = it })
-                    Text(stringResource(R.string.reset_checked_previously_checkbox_label))
+            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                Column {
+                    Text(stringResource(R.string.select_server_for_autoselect), modifier = Modifier.padding(bottom = 16.dp))
+                    ServerDropdown(servers = servers, selected = selected, onSelect = { selected = it })
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                            .clickable { resetChecked = !resetChecked },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(checked = resetChecked, onCheckedChange = { resetChecked = it })
+                        Text(stringResource(R.string.reset_checked_previously_checkbox_label))
+                    }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = { onStart(selected, resetChecked) }) {
-                Text(stringResource(R.string.start_sni_checking_button_label))
+            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                TextButton(onClick = { onStart(selected, resetChecked) }) {
+                    Text(stringResource(R.string.start_sni_checking_button_label))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onCancel) {
-                Text(stringResource(android.R.string.cancel))
+            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                TextButton(onClick = onCancel) {
+                    Text(stringResource(android.R.string.cancel))
+                }
             }
         },
     )
@@ -100,52 +109,61 @@ fun EditSniDialog(
         }
     }
 
+    val dialogDensity = LocalDensity.current
     AlertDialog(
         onDismissRequest = onDismiss,
         text = {
-            Box {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                        expanded = it.isNotEmpty()
-                    },
-                    label = { Text(stringResource(R.string.sni_text_view_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                DropdownMenu(
-                    expanded = expanded && filteredSuggestions.isNotEmpty(),
-                    onDismissRequest = { expanded = false },
-                    properties = PopupProperties(focusable = false),
-                    modifier = Modifier.heightIn(max = 250.dp),
-                ) {
-                    filteredSuggestions.forEach { suggestion ->
-                        DropdownMenuItem(
-                            text = { Text(suggestion) },
-                            onClick = {
-                                text = suggestion
-                                expanded = false
-                            },
-                        )
+            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                Box {
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = {
+                            text = it
+                            expanded = it.isNotEmpty()
+                        },
+                        label = { Text(stringResource(R.string.sni_text_view_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    DropdownMenu(
+                        expanded = expanded && filteredSuggestions.isNotEmpty(),
+                        onDismissRequest = { expanded = false },
+                        properties = PopupProperties(focusable = false),
+                        modifier = Modifier.heightIn(max = 250.dp),
+                    ) {
+                        CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                            filteredSuggestions.forEach { suggestion ->
+                                DropdownMenuItem(
+                                    text = { Text(suggestion) },
+                                    onClick = {
+                                        text = suggestion
+                                        expanded = false
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                onSave(text)
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.save_button))
+            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                TextButton(onClick = {
+                    onSave(text)
+                    onDismiss()
+                }) {
+                    Text(stringResource(R.string.save_button))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = {
-                onResetDefault()
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.reset_default_button))
+            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                TextButton(onClick = {
+                    onResetDefault()
+                    onDismiss()
+                }) {
+                    Text(stringResource(R.string.reset_default_button))
+                }
             }
         },
     )

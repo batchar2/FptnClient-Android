@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -60,22 +61,28 @@ fun ServerDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            // Remove exit animation — menu disappears instantly
+            // Remove the closing animation so the menu disappears instantly.
             modifier = Modifier
                 .width(with(density) { anchorWidthPx.toDp() })
                 .heightIn(max = 220.dp),
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.White,
         ) {
-            servers.forEach { server ->
-                key(server.id, server.pingMs) {
-                    DropdownMenuItem(
-                        text = { ServerRow(server = server, pingValue = server.pingMs) },
-                        onClick = {
-                            onSelect(server)
-                            expanded = false
-                        },
-                    )
+            // The popup opens in a separate window with its own composition.
+            // LocalDensity from MainActivity (with our custom fontScale override) is NOT passed
+            // to the popup automatically. Therefore, we explicitly provide the density captured
+            // above (which contains our custom fontScale) to the popup content.
+            CompositionLocalProvider(LocalDensity provides density) {
+                servers.forEach { server ->
+                    key(server.id, server.pingMs) {
+                        DropdownMenuItem(
+                            text = { ServerRow(server = server, pingValue = server.pingMs) },
+                            onClick = {
+                                onSelect(server)
+                                expanded = false
+                            },
+                        )
+                    }
                 }
             }
         }

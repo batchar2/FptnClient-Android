@@ -71,10 +71,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 import androidx.compose.runtime.rememberUpdatedState
-
+import androidx.compose.ui.draw.alpha
+import org.fptn.vpn.ui.theme.FontScaleState
 private const val TAG = "ExperimentalSettingsScreen"
 private val ATTEMPTS_COUNT_VALUES = intArrayOf(5, 15, 35, Int.MAX_VALUE)
 private val FALLBACK_THRESHOLD_VALUES = intArrayOf(3, 6, 10, 15)
+private val FONT_SCALE_LABELS = arrayOf("0.85×", "1.0×", "1.15×", "1.3×")
 
 /**
  * Compose port of the legacy `ExperimentalSettingsActivity` / `experimental_settings_layout.xml`.
@@ -114,6 +116,9 @@ fun ExperimentalSettingsScreen(
     var tileButtonEnabled by remember { mutableStateOf(true) }
     var tileButtonUsedUp by remember { mutableStateOf(false) }
 
+    var useSystemFontSize by remember { mutableStateOf(FontScaleState.useSystem) }
+    var fontScaleProgress by remember { mutableFloatStateOf(FontScaleState.index.toFloat()) }
+
     fun resetToDefault() {
         killSwitchEnabled = false
         customDnsEnabled = false
@@ -133,6 +138,11 @@ fun ExperimentalSettingsScreen(
         connectFailedHelpEnabled = true
         autoFallbackEnabled = true
         fallbackThresholdProgress = 3f
+        useSystemFontSize = true
+        fontScaleProgress = Constants.FONT_SCALE_DEFAULT_INDEX.toFloat()
+        // Synchronize global state — instant re-render
+        FontScaleState.setUseSystem(context, true)
+        FontScaleState.setIndex(context, Constants.FONT_SCALE_DEFAULT_INDEX)
 
         SharedPrefUtils.saveKillSwitchEnabled(context, false)
         SharedPrefUtils.saveCustomDnsEnabled(context, false)
@@ -465,6 +475,35 @@ fun ExperimentalSettingsScreen(
             }
 
             ExperimentalCard(paddingBottom = 8.dp) {
+                CardTitle(stringResource(R.string.font_scale_title))
+                CardDescription(stringResource(R.string.font_scale_description))
+
+                SwitchRow(
+                    text = stringResource(R.string.font_scale_use_system),
+                    checked = useSystemFontSize,
+                    onCheckedChange = {
+                        useSystemFontSize = it
+                        // Updating global state → instant re-rendering of the entire UI
+                        FontScaleState.setUseSystem(context, it)
+                    },
+                )
+
+                DiscreteSeekBar(
+                    label = stringResource(R.string.font_scale_custom_label),
+                    valueText = FONT_SCALE_LABELS[fontScaleProgress.toInt()],
+                    progress = fontScaleProgress,
+                    enabled = !useSystemFontSize,
+                    onProgressChange = {
+                        fontScaleProgress = it
+                        // Updating global state → instant re-rendering of the entire UI
+                        FontScaleState.setIndex(context, it.toInt())
+                        XLog.tag(TAG).i("Font scale changed [index=%d, value=%.2f]",
+                            it.toInt(), Constants.FONT_SCALE_VALUES[it.toInt()])
+                    },
+                )
+            }
+
+            ExperimentalCard(paddingBottom = 8.dp) {
                 CardTitle(stringResource(R.string.kill_switch_title))
                 CardDescription(stringResource(R.string.kill_switch_description))
                 SwitchRow(
@@ -630,11 +669,21 @@ private fun DiscreteSeekBar(
     valueText: String,
     progress: Float,
     onProgressChange: (Float) -> Unit,
+    enabled: Boolean = true,
 ) {
     Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 4.dp)) {
-            Text(text = label, color = White, fontSize = 14.sp)
-            Text(text = valueText, color = White, fontSize = 14.sp, modifier = Modifier.padding(start = 8.dp))
+            Text(
+                text = label,
+                color = if (enabled) White else White.copy(alpha = 0.5f),
+                fontSize = 14.sp,
+            )
+            Text(
+                text = valueText,
+                color = if (enabled) White else White.copy(alpha = 0.5f),
+                fontSize = 14.sp,
+                modifier = Modifier.padding(start = 8.dp),
+            )
         }
 
         val trackColor = Color(0xFF959292)
@@ -645,21 +694,23 @@ private fun DiscreteSeekBar(
         val maxStep = 3
         val tickFractions = (1 until maxStep).map { it.toFloat() / maxStep }
 
-        // CRITICAL: rememberUpdatedState gives a "live" reference to progress and onProgressChange,
-        // so pointerInput(Unit) below always sees their CURRENT values, not the ones captured
-        // at first composition. Without this, tapping at a position equal to the initial progress
-        // would never work (if (snapped != progress) would always be false).
         val currentProgress by rememberUpdatedState(progress)
         val currentOnProgressChange by rememberUpdatedState(onProgressChange)
+        val currentEnabled by rememberUpdatedState(enabled)
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
+                .alpha(if (enabled) 1f else 0.5f)
                 .pointerInput(Unit) {
+                    // Early check: if the slider is disabled, don't process gestures at all.
+                    if (!currentEnabled) return@pointerInput
+
                     val widthPx = size.width.toFloat()
 
                     fun snapToStep(x: Float) {
+                        if (!currentEnabled) return
                         val rawFraction = (x / widthPx).coerceIn(0f, 1f)
                         val snapped = (rawFraction * maxStep).roundToInt().coerceIn(0, maxStep).toFloat()
                         if (snapped != currentProgress) {
