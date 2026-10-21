@@ -1280,9 +1280,6 @@ public class FptnService extends VpnService {
                     exception.errorCode, failuresInRow);
         }
 
-        //send to UI activity that state is disconnected.
-        setConnectionState(finalState, exception, disconnectReason);
-
         if (errorText != null) {
             showErrorNotification(errorText);
         }
@@ -1299,22 +1296,22 @@ public class FptnService extends VpnService {
                 || (SharedPrefUtils.getResetSelectedServerOnExceptionEnabled(this) && exception != null));
 
         if (needResetServer) {
-            executorService.submit(() -> {
-                try {
-                    resetSelectedServer();
-                    // Очищаем ID последнего выбранного сервера
-                    SharedPrefUtils.saveLastSelectedServerId(FptnService.this, Constants.SELECTED_SERVER_ID_AUTO);
-                    
-                    // ✅ ДОПОЛНИТЕЛЬНО: Очищаем флаг "выбранности" в базе
-                    // Это гарантирует, что ни у одного сервера не останется isSelected=true
-                    appDatabase.serverDAO().resetSelected();
-                    
-                } catch (ExecutionException | InterruptedException e) {
-                    XLog.tag(TAG).e("Failed to reset selected server: %s", e.getMessage());
-                }
-                setConnectionState(finalState, exception, disconnectReason);
-            });
+            XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Выполняю сброс сервера в БД и SharedPreferences СИНХРОННО");
+            try {
+                // Вызываем синхронно, так как мы уже в фоновом потоке.
+                // Это гарантирует, что база очистится ДО того, как UI начнёт её читать.
+                resetSelectedServer();
+                SharedPrefUtils.saveLastSelectedServerId(this, Constants.SELECTED_SERVER_ID_AUTO);
+                XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Сброс выполнен успешно");
+            } catch (ExecutionException | InterruptedException e) {
+                XLog.tag(TAG).e("Failed to reset selected server: %s", e.getMessage());
+            }
+        } else {
+            XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Пропускаю сброс сервера (сохраняем текущий выбор)");
         }
+
+        // ✅ ТЕПЕРЬ отправляем состояние в UI. База и SharedPreferences уже чистые!
+        setConnectionState(finalState, exception, disconnectReason);
 
         if (!killSwitchHold) {
             // stop service

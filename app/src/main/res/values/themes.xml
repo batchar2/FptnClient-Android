@@ -1,21 +1,27 @@
 <resources>
-    <style name="Base.Theme.FptnClient" parent="@style/Theme.AppCompat.NoActionBar">
-        <!-- Отключаем все анимации переходов между окнами -->
-        <item name="android:windowAnimationStyle">@null</item>
+    <style name="NoAnimations">
         <item name="android:activityOpenEnterAnimation">@null</item>
         <item name="android:activityOpenExitAnimation">@null</item>
         <item name="android:activityCloseEnterAnimation">@null</item>
         <item name="android:activityCloseExitAnimation">@null</item>
     </style>
-    
+
+    <style name="Base.Theme.FptnClient" parent="@style/Theme.AppCompat.NoActionBar">
+        <item name="android:windowAnimationStyle">@style/NoAnimations</item>
+        <item name="android:windowBackground">@color/primary</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
     <style name="Theme.FptnClient" parent="Base.Theme.FptnClient">
-        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowAnimationStyle">@style/NoAnimations</item>
+        <item name="android:windowBackground">@color/primary</item>
     </style>
-    
+
     <style name="Theme.Splash" parent="Base.Theme.FptnClient">
-        <item name="android:windowBackground">@drawable/application_background</item>
+        <item name="android:windowBackground">@color/primary</item>
     </style>
-    
+
     <style name="Theme.RemoveSplashScreenTheme" parent="Base.Theme.FptnClient">
+        <item name="android:windowBackground">@color/primary</item>
     </style>
 </resources>

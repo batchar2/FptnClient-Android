@@ -19,7 +19,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -85,14 +84,15 @@ import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.ServerDropdown
 import org.fptn.vpn.ui.common.ShareDialog
 import org.fptn.vpn.ui.common.findActivity
-import org.fptn.vpn.ui.common.legacyDrawableBackground
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.ui.theme.Yellow
 import org.fptn.vpn.utils.PermissionsUtils
 import org.fptn.vpn.utils.SharedPrefUtils
 import org.fptn.vpn.vpnclient.exception.ErrorCode
 import androidx.core.net.toUri
-
+import androidx.compose.foundation.background
+import org.fptn.vpn.ui.theme.Primary
+import androidx.compose.foundation.interaction.MutableInteractionSource
 private const val TOKEN_MAX_AGE_MS = 14L * 24 * 60 * 60 * 1000
 private const val TOKEN_STALE_AGE_MS = 3L * 24 * 60 * 60 * 1000
 private const val CONNECT_FAILURES_BEFORE_HELP = 2
@@ -217,8 +217,11 @@ fun HomeScreen(
         if (intent != null) {
             vpnPermissionLauncher.launch(intent)
         } else {
-            viewModel.serviceStateMutableLiveData.postValue(FptnServiceState.FAKE_CONNECTING)
-            FptnService.startToConnect(context, selectedServer)
+            // Откладываем запуск сервиса на следующий цикл главного потока
+            // Это даёт Compose время завершить текущую отрисовку без перерисовки
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                FptnService.startToConnect(context, selectedServer)
+            }
         }
     }
 
@@ -339,46 +342,42 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(connectionState, serverEntities) {
-        val enteringDisconnected = connectionState == ConnectionState.DISCONNECTED &&
-            previousConnectionState != ConnectionState.DISCONNECTED
+    LaunchedEffect(connectionState, serverListVersion) {
         val isInitialSelection = !serverSelectionInitialized && serverEntities.isNotEmpty()
 
-        if (enteringDisconnected) {
-            pendingReselect = true
-            previousConnectionState = connectionState
-            return@LaunchedEffect
-        }
-
         if (isInitialSelection) {
-            // Первичный выбор при запуске
             val lastId = SharedPrefUtils.getLastSelectedServerId(context)
             selectedServer = serverEntities.firstOrNull { it.id == lastId }
                 ?: serverEntities.firstOrNull { it.isSelected }
-                ?: serverEntities[0]
+                  ?: serverEntities[0]
             serverSelectionInitialized = true
-        } else if (pendingReselect && serverEntities.isNotEmpty()) {
-            // Перевыбор после отключения
+            return@LaunchedEffect
+        }
+
+        // ✅ ИСПРАВЛЕНИЕ: Отслеживаем переход в DISCONNECTED именно из активного состояния
+        if (connectionState == ConnectionState.DISCONNECTED &&
+            (previousConnectionState == ConnectionState.CONNECTING || previousConnectionState == ConnectionState.CONNECTED)) {
+            pendingReselect = true
+        }
+
+        if (pendingReselect && serverEntities.isNotEmpty()) {
             pendingReselect = false
             val lastId = SharedPrefUtils.getLastSelectedServerId(context)
-            
-            // Проверяем, сбросил ли сервис выбор
             val anySelected = serverEntities.any { it.isSelected }
-            
+
+
             selectedServer = when {
-                // Пользователь включил "Сброс на Auto после ЛЮБОГО отключения"
                 SharedPrefUtils.getResetSelectedServerEnabled(context) -> {
                     serverEntities[0]
                 }
-                // Сервис сбросил из-за ошибки + в SharedPreferences Auto
                 !anySelected && lastId == ServerEntity.AUTO.id -> {
                     serverEntities[0]
                 }
-                // Иначе берём последний выбранный
                 else -> {
-                    serverEntities.firstOrNull { it.id == lastId }
+                    val chosen = serverEntities.firstOrNull { it.id == lastId }
                         ?: serverEntities.firstOrNull { it.isSelected }
                         ?: serverEntities[0]
+                    chosen
                 }
             }
         }
@@ -451,15 +450,11 @@ fun HomeScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Primary)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .legacyDrawableBackground(R.drawable.application_background)
-                // Excludes the bottom side deliberately: BottomNavBar consumes the navigation-bar
-                // inset itself so its background reaches the real screen edge instead of floating
-                // above it with the screen background showing through underneath (see
-                // BottomNavBar's window insets listener).
+                .background(Primary)   // ← Один слой, тот же цвет, что у темы
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
         ) {
             if (showPermissionWarning) {
@@ -490,110 +485,122 @@ fun HomeScreen(
                 }
             }
 
-            BoxWithConstraints(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(10.dp),
-            ) {
-                val availableHeight = maxHeight
-                val buttonSize = dimensionResource(R.dimen.toggle_button_size)
-                val density = LocalDensity.current
-                val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-                val verticalBias =
-                    if (isLandscape) CONNECT_BUTTON_VERTICAL_BIAS_LANDSCAPE else CONNECT_BUTTON_VERTICAL_BIAS
-                // Always composed (never conditionally removed) so it reserves the same layout
-                // space whether shown or not — otherwise the button below would jump down by the
-                // timer's height the moment it appears on connect. The legacy ConstraintLayout
-                // avoided this because the button's position came from its own bias against the
-                // parent, independent of the timer view above it; here the timer's measured
-                // height is subtracted from the spacer below instead, so the button still lands
-                // at the same bias-determined position either way.
-                var timerHeight by remember { mutableStateOf(0.dp) }
-                val spacerHeight = ((availableHeight - buttonSize) * verticalBias - timerHeight)
-                    .coerceAtLeast(0.dp)
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    Spacer(modifier = Modifier.height(spacerHeight))
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    BoxWithConstraints(
                         modifier = Modifier
-                            .alpha(if (showConnectedUi) 1f else 0f)
-                            .then(if (showConnectedUi) Modifier else Modifier.semantics { hideFromAccessibility() })
-                            .onSizeChanged { size -> timerHeight = with(density) { size.height.toDp() } },
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(10.dp),
                     ) {
-                        Text(text = stringResource(R.string.connection_time), color = White)
-                        Text(text = timerText, color = White, modifier = Modifier.padding(bottom = 4.dp))
-                    }
+                        val availableHeight = maxHeight
+                        val buttonSize = dimensionResource(R.dimen.toggle_button_size)
+                        val density = LocalDensity.current
+                        val isLandscape =
+                            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+                        val verticalBias =
+                            if (isLandscape) CONNECT_BUTTON_VERTICAL_BIAS_LANDSCAPE else CONNECT_BUTTON_VERTICAL_BIAS
 
-                    Image(
-                        painter = painterResource(if (activeState) R.drawable.toggle_button_on else R.drawable.toggle_button_off),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(buttonSize)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) { onToggleConnectClick() },
-                    )
+                        var timerHeight by remember { mutableStateOf(0.dp) }
+                        val spacerHeight = ((availableHeight - buttonSize) * verticalBias - timerHeight)
+                            .coerceAtLeast(0.dp)
 
-                    Text(
-                        text = statusText,
-                        color = Yellow,
-                        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
-                    )
-
-                    if (showConnectedUi) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 6.dp),
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                         ) {
-                            Text(
-                                text = stringResource(R.string.server_label),
-                                color = White,
-                                modifier = Modifier.padding(end = 5.dp)
-                            )
-                            Text(text = connectedServerInfo.orEmpty(), color = White, maxLines = 2)
-                        }
-                    } else {
-                        ServerDropdown(
-                            servers = serverEntities,
-                            selected = selectedServer,
-                            onSelect = { server ->
-                                selectedServer = server
-                                pendingReselect = false
-                                SharedPrefUtils.saveLastSelectedServerId(context, server.id)
-                                viewModel.saveSelectedServerToDatabase(server.id)
-                            },
-                            enabled = !activeState,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 36.dp)
-                                .padding(top = 16.dp),
-                        )
-                    }
+                            Spacer(modifier = Modifier.height(spacerHeight))
 
-                    if (showConnectedUi) {
-                        TrafficCard(
-                            downloadSpeed = downloadSpeed,
-                            uploadSpeed = uploadSpeed,
-                            downloadTraffic = downloadTraffic,
-                            uploadTraffic = uploadTraffic,
-                            showChart = showTrafficChart,
-                            speedSample = speedSample,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp),
-                        )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .alpha(if (showConnectedUi) 1f else 0f)
+                                    .then(if (showConnectedUi) Modifier else Modifier.semantics { hideFromAccessibility() })
+                                    .onSizeChanged { size -> timerHeight = with(density) { size.height.toDp() } },
+                            ) {
+                                Text(text = stringResource(R.string.connection_time), color = White)
+                                Text(text = timerText, color = White, modifier = Modifier.padding(bottom = 4.dp))
+                            }
+
+                            // Держим ОБЕ картинки кнопки в композиции постоянно.
+                            // PNG декодируется один раз при старте — переключение мгновенное.
+                            // pointerInput вместо clickable полностью убирает ripple-эффект
+                            Box(
+                                modifier = Modifier
+                                    .size(buttonSize)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) { onToggleConnectClick() },
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.toggle_button_off),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .alpha(if (activeState) 0f else 1f),
+                                )
+                                Image(
+                                    painter = painterResource(R.drawable.toggle_button_on),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .alpha(if (activeState) 1f else 0f),
+                                )
+                            }
+
+                            Text(
+                                text = statusText,
+                                color = Yellow,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                            )
+
+                            if (showConnectedUi) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(bottom = 6.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.server_label),
+                                        color = White,
+                                        modifier = Modifier.padding(end = 5.dp)
+                                    )
+                                    Text(text = connectedServerInfo.orEmpty(), color = White, maxLines = 2)
+                                }
+                            } else {
+                                ServerDropdown(
+                                    servers = serverEntities,
+                                    selected = selectedServer,
+                                    onSelect = { server ->
+                                        selectedServer = server
+                                        pendingReselect = false
+                                        SharedPrefUtils.saveLastSelectedServerId(context, server.id)
+                                        viewModel.saveSelectedServerToDatabase(server.id)
+                                    },
+                                    enabled = !activeState,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 36.dp)
+                                        .padding(top = 16.dp),
+                                )
+                            }
+
+                            if (showConnectedUi) {
+                                TrafficCard(
+                                    downloadSpeed = downloadSpeed,
+                                    uploadSpeed = uploadSpeed,
+                                    downloadTraffic = downloadTraffic,
+                                    uploadTraffic = uploadTraffic,
+                                    showChart = showTrafficChart,
+                                    speedSample = speedSample,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
+                                )
+                            }
+                        }
                     }
-                }
-            }
 
             BottomNavBar(
                 isHomeScreen = true,
