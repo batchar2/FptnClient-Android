@@ -1296,21 +1296,21 @@ public class FptnService extends VpnService {
                 || (SharedPrefUtils.getResetSelectedServerOnExceptionEnabled(this) && exception != null));
 
         if (needResetServer) {
-            XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Выполняю сброс сервера в БД и SharedPreferences СИНХРОННО");
+            XLog.tag(TAG).i("Resetting selected server in DB and SharedPreferences synchronously");
             try {
-                // Вызываем синхронно, так как мы уже в фоновом потоке.
-                // Это гарантирует, что база очистится ДО того, как UI начнёт её читать.
+                // Call synchronously since we're already on a background thread.
+                // This ensures the DB is cleared BEFORE the UI starts reading it.
                 resetSelectedServer();
                 SharedPrefUtils.saveLastSelectedServerId(this, Constants.SELECTED_SERVER_ID_AUTO);
-                XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Сброс выполнен успешно");
+                XLog.tag(TAG).i("Server reset completed successfully");
             } catch (ExecutionException | InterruptedException e) {
                 XLog.tag(TAG).e("Failed to reset selected server: %s", e.getMessage());
             }
         } else {
-            XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Пропускаю сброс сервера (сохраняем текущий выбор)");
+            XLog.tag(TAG).i("Skipping server reset (preserving current selection)");
         }
 
-        // ✅ ТЕПЕРЬ отправляем состояние в UI. База и SharedPreferences уже чистые!
+        // Now send state to UI. DB and SharedPreferences are already clean!
         setConnectionState(finalState, exception, disconnectReason);
 
         if (!killSwitchHold) {

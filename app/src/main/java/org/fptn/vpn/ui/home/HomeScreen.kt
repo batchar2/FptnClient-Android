@@ -219,11 +219,12 @@ fun HomeScreen(
         if (intent != null) {
             vpnPermissionLauncher.launch(intent)
         } else {
-            // Откладываем запуск сервиса на следующий цикл главного потока
-            // Это даёт Compose время завершить текущую отрисовку без перерисовки
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                FptnService.startToConnect(context, selectedServer)
-            }
+            // Switch UI to CONNECTING instantly — don't wait for the service to start and send
+            // the state back via IPC. Without this, there's a 1-2 frame gap between the tap and
+            // the first FptnService update, during which vpnState.isActiveState is still false
+            // and the LaunchedEffect in AppNavHost could reset the composition.
+            viewModel.serviceStateMutableLiveData.postValue(FptnServiceState.FAKE_CONNECTING)
+            FptnService.startToConnect(context, selectedServer)
         }
     }
 
@@ -356,7 +357,7 @@ fun HomeScreen(
             return@LaunchedEffect
         }
 
-        // ✅ ИСПРАВЛЕНИЕ: Отслеживаем переход в DISCONNECTED именно из активного состояния
+        // Track transitions into DISCONNECTED specifically from an active state
         if (connectionState == ConnectionState.DISCONNECTED &&
             (previousConnectionState == ConnectionState.CONNECTING || previousConnectionState == ConnectionState.CONNECTED)) {
             pendingReselect = true
@@ -525,9 +526,8 @@ fun HomeScreen(
                                 Text(text = timerText, color = White, modifier = Modifier.padding(bottom = 4.dp))
                             }
 
-                            // Держим ОБЕ картинки кнопки в композиции постоянно.
-                            // PNG декодируется один раз при старте — переключение мгновенное.
-                            // pointerInput вместо clickable полностью убирает ripple-эффект
+                            // Keep BOTH button images in composition at all times.
+                            // PNGs are decoded once at startup — switching is instant.
                             Box(
                                 modifier = Modifier
                                     .size(buttonSize)

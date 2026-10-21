@@ -60,6 +60,17 @@ import org.fptn.vpn.ui.common.findActivity
 import org.fptn.vpn.ui.common.legacyDrawableBackground
 import org.fptn.vpn.ui.theme.White
 import org.fptn.vpn.utils.SharedPrefUtils
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import kotlin.math.roundToInt
+import androidx.compose.runtime.rememberUpdatedState
 
 private const val TAG = "ExperimentalSettingsScreen"
 private val ATTEMPTS_COUNT_VALUES = intArrayOf(5, 15, 35, Int.MAX_VALUE)
@@ -614,18 +625,97 @@ private fun SwitchRow(text: String, checked: Boolean, enabled: Boolean = true, o
 }
 
 @Composable
-private fun DiscreteSeekBar(label: String, valueText: String, progress: Float, onProgressChange: (Float) -> Unit) {
+private fun DiscreteSeekBar(
+    label: String,
+    valueText: String,
+    progress: Float,
+    onProgressChange: (Float) -> Unit,
+) {
     Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 4.dp)) {
             Text(text = label, color = White, fontSize = 14.sp)
             Text(text = valueText, color = White, fontSize = 14.sp, modifier = Modifier.padding(start = 8.dp))
         }
-        androidx.compose.material3.Slider(
-            value = progress,
-            onValueChange = onProgressChange,
-            valueRange = 0f..3f,
-            steps = 2,
-        )
+
+        val trackColor = Color(0xFF959292)
+        val activeColor = Color(0xFF03DAC5)
+        val tickColor = Color(0xFF03DAC5).copy(alpha = 0.7f)
+        val thumbColor = Color(0xFFFFFFFF)
+
+        val maxStep = 3
+        val tickFractions = (1 until maxStep).map { it.toFloat() / maxStep }
+
+        // CRITICAL: rememberUpdatedState gives a "live" reference to progress and onProgressChange,
+        // so pointerInput(Unit) below always sees their CURRENT values, not the ones captured
+        // at first composition. Without this, tapping at a position equal to the initial progress
+        // would never work (if (snapped != progress) would always be false).
+        val currentProgress by rememberUpdatedState(progress)
+        val currentOnProgressChange by rememberUpdatedState(onProgressChange)
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .pointerInput(Unit) {
+                    val widthPx = size.width.toFloat()
+
+                    fun snapToStep(x: Float) {
+                        val rawFraction = (x / widthPx).coerceIn(0f, 1f)
+                        val snapped = (rawFraction * maxStep).roundToInt().coerceIn(0, maxStep).toFloat()
+                        if (snapped != currentProgress) {
+                            currentOnProgressChange(snapped)
+                        }
+                    }
+
+                    detectTapGestures { offset -> snapToStep(offset.x) }
+                    detectHorizontalDragGestures(
+                        onDragStart = { offset -> snapToStep(offset.x) },
+                        onHorizontalDrag = { change, _ ->
+                            snapToStep(change.position.x)
+                            change.consume()
+                        },
+                    )
+                }
+        ) {
+            Canvas(modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                val trackY = size.height / 2f
+                val trackHeightPx = 8.dp.toPx()
+                val trackStart = 12.dp.toPx()
+                val trackEnd = size.width - 12.dp.toPx()
+                val trackWidth = trackEnd - trackStart
+
+                drawRoundRect(
+                    color = trackColor,
+                    topLeft = Offset(trackStart, trackY - trackHeightPx / 2),
+                    size = androidx.compose.ui.geometry.Size(trackWidth, trackHeightPx),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackHeightPx / 2),
+                )
+
+                val activeEnd = trackStart + trackWidth * (progress / maxStep)
+                drawRoundRect(
+                    color = activeColor,
+                    topLeft = Offset(trackStart, trackY - trackHeightPx / 2),
+                    size = androidx.compose.ui.geometry.Size(activeEnd - trackStart, trackHeightPx),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackHeightPx / 2),
+                )
+
+                tickFractions.forEach { fraction ->
+                    val cx = trackStart + trackWidth * fraction
+                    drawCircle(
+                        color = tickColor,
+                        radius = 3.dp.toPx(),
+                        center = Offset(cx, trackY),
+                    )
+                }
+
+                val thumbX = trackStart + trackWidth * (progress / maxStep)
+                drawCircle(
+                    color = thumbColor,
+                    radius = 10.dp.toPx(),
+                    center = Offset(thumbX, trackY),
+                )
+            }
+        }
     }
 }
 

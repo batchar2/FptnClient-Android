@@ -1,7 +1,5 @@
 package org.fptn.vpn.ui.common
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,7 +36,7 @@ fun ServerDropdown(
     var anchorWidthPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 
-    // Мгновенно закрываем меню БЕЗ анимации, когда enabled становится false
+    // Close menu instantly (no animation) when enabled becomes false
     LaunchedEffect(enabled) {
         if (!enabled) {
             expanded = false
@@ -62,7 +60,7 @@ fun ServerDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            // Убираем анимацию закрытия — меню исчезает мгновенно
+            // Remove exit animation — menu disappears instantly
             modifier = Modifier
                 .width(with(density) { anchorWidthPx.toDp() })
                 .heightIn(max = 220.dp),

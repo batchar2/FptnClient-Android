@@ -10,7 +10,6 @@ import androidx.navigation.compose.rememberNavController
 import org.fptn.vpn.ui.navigation.AppNavHost
 import org.fptn.vpn.ui.navigation.AppRoute
 import org.fptn.vpn.ui.theme.FptnTheme
-import android.view.WindowManager
 /**
  * The single entry-point activity hosting the whole Compose UI. Every screen is a Compose
  * destination in [AppNavHost], and screen-to-screen navigation goes straight through the
@@ -30,16 +29,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Полностью отключаем все анимации окна на уровне WindowManager
-        window.setWindowAnimations(0)
-        
         super.onCreate(savedInstanceState)
         overridePendingTransition(0, 0)
 
-        // Если Activity пересоздаётся (savedInstanceState != null) — НЕ показываем
-        // Splash-экран повторно, сразу идём на Home. Иначе будет фиолетовая вспышка.
-        val startRoute = intent.getStringExtra(EXTRA_ROUTE)
-            ?: if (savedInstanceState != null) AppRoute.HOME else AppRoute.SPLASH
+        val startRoute = intent.getStringExtra(EXTRA_ROUTE) ?: AppRoute.SPLASH
         setContent {
             navController = rememberNavController()
             FptnTheme {
@@ -53,7 +46,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        overridePendingTransition(0, 0)
         setIntent(intent)
         // This activity's `singleTop` launch mode delivers an intentForRoute Intent here
         // (instead of a fresh onCreate) whenever it's already on top, e.g. the app is already
