@@ -35,7 +35,6 @@ import org.fptn.vpn.utils.SharedPrefUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.fptn.vpn.enums.AppLogLevel;
 import org.fptn.vpn.enums.ConnectionStrategy;
 
 /**
@@ -90,7 +89,6 @@ public final class SettingsBackupManager {
         Boolean showTrafficInNotification;
         Boolean connectFailedHelpEnabled;
         Boolean allowLandscape;
-        String logLevel;
     }
 
     private static class BackupAppRule {
@@ -134,8 +132,7 @@ public final class SettingsBackupManager {
         settings.showTrafficInNotification = SharedPrefUtils.getShowTrafficInNotification(context);
         settings.connectFailedHelpEnabled = SharedPrefUtils.getConnectFailedHelpEnabled(context);
         settings.allowLandscape = SharedPrefUtils.getAllowLandscape(context);
-        settings.logLevel = SharedPrefUtils.getLogLevel(context).name();
-        
+
         backup.settings = settings;
 
         backup.perAppVpnApps = AppDatabase.getInstance(context).appInfoDAO().getAll().stream()
@@ -252,10 +249,6 @@ public final class SettingsBackupManager {
         }
         if (settings.allowLandscape != null) {
             SharedPrefUtils.saveAllowLandscape(context, settings.allowLandscape);
-        }
-        AppLogLevel logLevel = parseEnum(AppLogLevel.class, settings.logLevel);
-        if (logLevel != null) {
-            SharedPrefUtils.saveLogLevel(context, logLevel);
         }
 
         if (backup.perAppVpnApps != null) {

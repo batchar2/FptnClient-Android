@@ -47,7 +47,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
-import org.fptn.vpn.enums.AppLogLevel
 import org.fptn.vpn.ui.common.BottomNavBar
 import org.fptn.vpn.ui.common.HtmlLinkText
 import org.fptn.vpn.ui.common.LegacySpinner
@@ -91,7 +90,6 @@ fun SettingsScreen(
 
     var batteryOptimizationGranted by remember { mutableStateOf(PermissionsUtils.checkBatteryOptimizations(context)) }
     var backgroundDataGranted by remember { mutableStateOf(PermissionsUtils.checkBackgroundDataTransferRestrictions(context)) }
-    var logLevel by remember { mutableStateOf(SharedPrefUtils.getLogLevel(context)) }
 
     val appVersion = remember {
         try {
@@ -224,41 +222,15 @@ fun SettingsScreen(
                 description = stringResource(R.string.view_and_copy_application_logs),
                 onClick = onNavigateLogs,
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.log_level_title),
-                            color = White,
-                            fontSize = 14.sp,
-                            modifier = Modifier.weight(1f),
-                        )
-                        LegacySpinner(
-                            items = AppLogLevel.entries,
-                            selected = logLevel,
-                            label = { logLevelLabel(it) },
-                            onSelect = {
-                                logLevel = it
-                                SharedPrefUtils.saveLogLevel(context, it)
-                                XLogInitializer.init(context)
-                                XLog.tag(TAG).i("Log level changed [level=%s]", it)
-                            },
-                            width = 200.dp,
-                            maxVisibleItems = 3,
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.clear_logs_button),
-                        color = Gray,
-                        fontSize = 13.sp,
-                        textDecoration = TextDecoration.Underline,
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .clickable { showClearLogsConfirm = true },
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.clear_logs_button),
+                    color = Gray,
+                    fontSize = 13.sp,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .clickable { showClearLogsConfirm = true },
+                )
             }
 
             SettingsNavRow(
@@ -504,14 +476,4 @@ private fun PermissionRow(icon: Int, label: String, granted: Boolean, onRequest:
             onCheckedChange = { if (!granted) onRequest() },
         )
     }
-}
-
-@Composable
-private fun logLevelLabel(level: AppLogLevel): String = when (level) {
-    AppLogLevel.VERBOSE -> stringResource(R.string.log_level_verbose)
-    AppLogLevel.DEBUG -> stringResource(R.string.log_level_debug)
-    AppLogLevel.INFO -> stringResource(R.string.log_level_info)
-    AppLogLevel.WARN -> stringResource(R.string.log_level_warn)
-    AppLogLevel.ERROR -> stringResource(R.string.log_level_error)
-    AppLogLevel.NONE -> stringResource(R.string.log_level_none)
 }
