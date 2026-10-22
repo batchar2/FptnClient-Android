@@ -482,6 +482,7 @@ fun HomeScreen(
                         text = stringResource(R.string.permission_warning_text),
                         color = White,
                         fontSize = 12.sp,
+                        lineHeight = 17.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(start = 6.dp),
                     )

@@ -150,6 +150,7 @@ fun BackgroundSetupDialog(
                     Text(
                         text = stringResource(R.string.background_setup_text),
                         fontSize = 13.sp,
+                        lineHeight = 18.sp,
                         modifier = Modifier.padding(bottom = 14.dp),
                     )
                     SetupChecklistRow(
@@ -208,7 +209,7 @@ private fun SetupChecklistRow(icon: Int, title: String, description: String? = n
         Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
             Text(text = title, fontSize = 14.sp)
             if (description != null) {
-                Text(text = description, fontSize = 11.sp, modifier = Modifier.padding(top = 1.dp))
+                Text(text = description, fontSize = 11.sp, lineHeight = 15.sp, modifier = Modifier.padding(top = 1.dp))
             }
         }
         Image(
@@ -242,6 +243,7 @@ fun ConnectFailedHelpDialog(
                             if (tokenIsStale) R.string.connect_failed_help_message_token_stale else R.string.connect_failed_help_message,
                         ),
                         fontSize = 13.sp,
+                        lineHeight = 18.sp,
                         modifier = Modifier.padding(bottom = 14.dp),
                     )
                     ConnectFailedHelpRow(text = stringResource(R.string.connect_failed_help_bypass), onClick = onBypass)

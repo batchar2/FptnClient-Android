@@ -492,6 +492,7 @@ private fun SettingsNavRow(
                 text = description,
                 color = Gray,
                 fontSize = 12.sp,
+                lineHeight = 17.sp,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
             )
         }

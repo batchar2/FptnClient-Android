@@ -290,7 +290,12 @@ private fun CenteredMessage(modifier: Modifier = Modifier, content: @Composable 
 
 @Composable
 private fun PlaceholderText(text: String) {
-    Text(text = text, color = White, fontSize = 13.sp)
+    Text(
+        text = text,
+        color = White,
+        fontSize = 13.sp,
+        lineHeight = 18.sp,
+    )
 }
 
 private fun sendLogFile(context: Context, file: File?) {

@@ -60,6 +60,9 @@ public interface ServerDAO {
     @Query("DELETE FROM server_table")
     void deleteAll();
 
+    @Query("UPDATE server_table SET countryCode = :code WHERE id = :id")
+    void updateCountryCode(int id, String code);
+
     @Transaction
     default void deleteAndInsert(List<ServerEntity> servers) {
         deleteAll();

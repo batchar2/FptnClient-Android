@@ -296,6 +296,22 @@ public class HomeActivityViewModel extends AndroidViewModel {
 
     public void refreshServerListFromDB() {
         executorService.submit(() -> {
+            // One-time migration: recalculate countryCode for all servers in the database.
+            // This is needed for servers saved before the CountryFlags.kt update, as their countryCode
+            // in the database may be empty or outdated (e.g., Turkey → null instead of TR).
+            // Runs in the background without blocking the user.
+            try {
+                List<ServerEntity> existing = appDatabase.serverDAO().getServerList();
+                for (ServerEntity server : existing) {
+                    String freshCode = org.fptn.vpn.utils.CountryFlags.getCountryCodeFromHostName(server.getName());
+                    if (freshCode != null && !freshCode.isEmpty() && !freshCode.equals(server.getCountryCode())) {
+                        appDatabase.serverDAO().updateCountryCode(server.getId(), freshCode);
+                    }
+                }
+            } catch (Exception e) {
+                android.util.Log.w("HomeActivityViewModel", "Failed to migrate country codes: " + e.getMessage());
+            }
+
             List<ServerEntity> serverList = new ArrayList<>();
             serverList.add(ServerEntity.AUTO);
             serverList.addAll(appDatabase.serverDAO().getServerList());

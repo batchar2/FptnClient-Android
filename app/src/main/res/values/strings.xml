@@ -40,17 +40,16 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="info_message_html">
         <![CDATA[
         FPTN is a fully custom-built VPN technology — developed from scratch, including the core protocol, server implementation, and cross-platform clients. It is a non-commercial, open-source project developed by volunteers and designed to bypass censorship.
-        <br/>
-        <br/>
+        <br/><br/>
         Our <a href="https://storage.googleapis.com/fptn.org/index.html">website</a>
-        <br/>
+        <br/><br/>
         Our communities:<br/>
         - <a href="https://t.me/fpnt_project_global">English Community</a><br/>
         - <a href="https://t.me/fptn_project">Russian Community</a><br/>
         - <a href="https://t.me/fptn_project_iran">Persian Community</a>
-        <br/>
+        <br/><br/>
         App on <a href="https://play.google.com/store/apps/details?id=org.fptn.vpn">Google Play Market</a>
-        <br/>
+        <br/><br/>
         You can support us on <a href="https://boosty.to/fptn/donate">Boosty</a>
         ]]>
     </string>

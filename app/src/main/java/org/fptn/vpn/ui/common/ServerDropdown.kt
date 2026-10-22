@@ -62,9 +62,10 @@ fun ServerDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             // Remove the closing animation so the menu disappears instantly.
+            // Approximately 60dp per server (flag + name + ping row + padding), 6 servers + 16dp vertical padding.
             modifier = Modifier
                 .width(with(density) { anchorWidthPx.toDp() })
-                .heightIn(max = 220.dp),
+                .heightIn(max = 400.dp),
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.White,
         ) {

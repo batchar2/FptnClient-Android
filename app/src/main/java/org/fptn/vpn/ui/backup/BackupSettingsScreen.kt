@@ -124,6 +124,7 @@ fun BackupSettingsScreen(
                 color = White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
+                lineHeight = 22.sp,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 10.dp, bottom = 10.dp),
@@ -142,12 +143,14 @@ fun BackupSettingsScreen(
                     color = White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
+                    lineHeight = 22.sp,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
                 Text(
                     text = stringResource(R.string.backup_save_description),
                     color = White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
+                    lineHeight = 17.sp,
                     modifier = Modifier.padding(bottom = 6.dp),
                 )
                 Row(
@@ -192,12 +195,14 @@ fun BackupSettingsScreen(
                     color = White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
+                    lineHeight = 22.sp,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
                 Text(
                     text = stringResource(R.string.backup_restore_description),
                     color = White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
+                    lineHeight = 17.sp,
                     modifier = Modifier.padding(bottom = 6.dp),
                 )
                 LegacyPillButton(
