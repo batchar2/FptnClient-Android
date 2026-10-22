@@ -41,7 +41,7 @@ public class NotificationUtils {
                 Constants.MAIN_NOTIFICATION_CHANNEL_VERSION_NUM,
                 Constants.MAIN_NOTIFICATION_CHANNEL_GROUP_ID,
                 context.getString(R.string.notification_group_name),
-                NotificationManager.IMPORTANCE_LOW, true);
+                NotificationManager.IMPORTANCE_DEFAULT, true);
 
         // create error notification channel
         createOrUpdateNotificationChannel(context, notificationManager,

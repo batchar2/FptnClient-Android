@@ -131,6 +131,9 @@ public class HomeActivityViewModel extends AndroidViewModel {
     }
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    // One pool for all ping-cycle batches — do not create new pools for each cycle.
+    // Previously, 5 pools of 8 threads were created for each ping cycle, resulting in ~40 threads.
+    private final ExecutorService batchPingExecutor = Executors.newFixedThreadPool(BATCH_SIZE);
     private final AppDatabase appDatabase = AppDatabase.getInstance(getApplication());
 
     // observers
@@ -149,6 +152,7 @@ public class HomeActivityViewModel extends AndroidViewModel {
     private final ConnectivityManager connectivityManager;
     private final ExecutorService pingExecutorService = Executors.newSingleThreadExecutor();
     private volatile boolean isPingCheckingActive = false;
+    private java.util.concurrent.Future<?> pingFuture = null;
     public static final int PING_DELAY_MILLIS = 1000;
     public static final int BATCH_SIZE = 8;
     private static final long PING_CYCLE_INTERVAL_MILLIS = 5 * 60 * 1000L;
@@ -199,7 +203,10 @@ public class HomeActivityViewModel extends AndroidViewModel {
 
         XLog.tag(TAG).i("Ping check loop started");
 
-        pingExecutorService.submit(() -> {
+        // Save the Future so that stopCheckingPing() can actually interrupt the thread.
+        // Without this, the thread continues running until the next flag check,
+        // and a new startCheckingPing() call starts a parallel thread, causing a leak.
+        pingFuture = pingExecutorService.submit(() -> {
             while (isPingCheckingActive) {
                 List<ServerEntity> servers = serverDtoListLiveData.getValue();
                 if (servers == null || servers.isEmpty()) {
@@ -242,8 +249,8 @@ public class HomeActivityViewModel extends AndroidViewModel {
                         int end = Math.min(i + BATCH_SIZE, targets.size());
                         List<ServerEntity> batch = targets.subList(i, end);
 
-                        // Use a temporary executor for the current batch
-                        ExecutorService batchPingExecutor = Executors.newFixedThreadPool(batch.size());
+                        // Reuse the shared batchPingExecutor instead of creating a new pool for each batch.
+                        // Do not call shutdown(); the pool lives as long as the ViewModel.
                         try {
                             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -265,14 +272,14 @@ public class HomeActivityViewModel extends AndroidViewModel {
                             // Wait for the current batch to finish before starting the next
                             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
                         } finally {
-                            batchPingExecutor.shutdown();
+                            // No shutdown — the pool is reused for subsequent batches
                         }
 
                         // Update the UI with new ping values
                         lastPingedServers = new ArrayList<>(servers);
                         serverDtoListLiveData.postValue(new ArrayList<>(servers));
 
-                        // Wait before take nest batch
+                        // Wait before taking the next batch
                         try {
                             Thread.sleep(PING_DELAY_MILLIS);
                         } catch (InterruptedException e) {
@@ -292,6 +299,13 @@ public class HomeActivityViewModel extends AndroidViewModel {
 
     public void stopCheckingPing() {
         isPingCheckingActive = false;
+        // Actually cancel the task and interrupt the thread.
+        // cancel(true) sends an interrupt signal — the thread will exit Thread.sleep()
+        // and socket.connect() immediately instead of waiting for the next iteration.
+        if (pingFuture != null) {
+            pingFuture.cancel(true);
+            pingFuture = null;
+        }
     }
 
     public void refreshServerListFromDB() {
@@ -361,10 +375,18 @@ public class HomeActivityViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
 
+        // Stop the ping loop first and interrupt the thread.
+        isPingCheckingActive = false;
+        if (pingFuture != null) {
+            pingFuture.cancel(true);
+            pingFuture = null;
+        }
+
         serviceStateMutableLiveData.removeObserver(serviceStateObserver);
         unsubscribe();
         executorService.shutdown();
         pingExecutorService.shutdown();
+        batchPingExecutor.shutdown();   //clean up the batch executor
     }
 
     public void subscribeService(FptnService service) {

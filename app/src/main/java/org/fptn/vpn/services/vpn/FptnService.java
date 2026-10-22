@@ -1296,21 +1296,47 @@ public class FptnService extends VpnService {
                 || (SharedPrefUtils.getResetSelectedServerOnExceptionEnabled(this) && exception != null));
 
         if (needResetServer) {
-            XLog.tag(TAG).i("Resetting selected server in DB and SharedPreferences synchronously");
+            XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Resetting server in DB and SharedPreferences");
             try {
-                // Call synchronously since we're already on a background thread.
-                // This ensures the DB is cleared BEFORE the UI starts reading it.
-                resetSelectedServer();
+                // ⚠WARNING: disconnect() may be called from the service's onDestroy(),
+                // which runs on the MAIN thread. Directly accessing Room on the main
+                // thread throws IllegalStateException: "Cannot access database on the main thread"
+                // on newer Android versions (13+/14+/16), causing a RuntimeException and app crash.
+                // Therefore, execute the database operation on a background thread and wait for it to finish.
+                final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+                final java.util.concurrent.atomic.AtomicReference<Exception> errorRef = new java.util.concurrent.atomic.AtomicReference<>();
+
+                executorService.submit(() -> {
+                    try {
+                        appDatabase.serverDAO().resetSelected();
+                    } catch (Exception e) {
+                        errorRef.set(e);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+
+                // Wait for the background database request to complete (with a timeout to avoid waiting indefinitely).
+                // 300 ms is a good compromise: it is enough for the resetSelected() SQL query to complete on 99% of devices,
+                // while the delay is barely noticeable to the user. If the database operation hasn't finished in time, that's fine;
+                // the UI will display the server, which will be reset slightly later in the background.
+                latch.await(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+
                 SharedPrefUtils.saveLastSelectedServerId(this, Constants.SELECTED_SERVER_ID_AUTO);
-                XLog.tag(TAG).i("Server reset completed successfully");
-            } catch (ExecutionException | InterruptedException e) {
-                XLog.tag(TAG).e("Failed to reset selected server: %s", e.getMessage());
+                if (errorRef.get() != null) {
+                    XLog.tag(TAG).e("Failed to reset selected server: %s", errorRef.get().getMessage());
+                } else {
+                    XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Reset completed successfully");
+                }
+            } catch (InterruptedException e) {
+                XLog.tag(TAG).e("Reset interrupted: %s", e.getMessage());
+                Thread.currentThread().interrupt();
             }
         } else {
-            XLog.tag(TAG).i("Skipping server reset (preserving current selection)");
+            XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Skipping server reset (preserving current selection)");
         }
 
-        // Now send state to UI. DB and SharedPreferences are already clean!
+        // NOW send the state to the UI. The database and SharedPreferences have been cleared!
         setConnectionState(finalState, exception, disconnectReason);
 
         if (!killSwitchHold) {

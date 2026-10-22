@@ -229,7 +229,9 @@ fun SettingsScreen(
                     color = Gray,
                     fontSize = 13.sp,
                     textDecoration = TextDecoration.Underline,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(top = 10.dp)
                         .clickable { showClearLogsConfirm = true },
                 )
