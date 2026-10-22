@@ -76,7 +76,7 @@ import org.fptn.vpn.ui.theme.FontScaleState
 private const val TAG = "ExperimentalSettingsScreen"
 private val ATTEMPTS_COUNT_VALUES = intArrayOf(5, 15, 35, Int.MAX_VALUE)
 private val FALLBACK_THRESHOLD_VALUES = intArrayOf(3, 6, 10, 15)
-private val FONT_SCALE_LABELS = arrayOf("0.85×", "1.0×", "1.15×", "1.3×")
+private val FONT_SCALE_LABELS = arrayOf("0.85×", "1.0×", "1.1×", "1.2×")
 
 /**
  * Compose port of the legacy `ExperimentalSettingsActivity` / `experimental_settings_layout.xml`.
@@ -768,8 +768,8 @@ private fun DiscreteSeekBar(
                 tickFractions.forEach { fraction ->
                     val cx = trackStart + trackWidth * fraction
                     drawCircle(
-                        color = tickColor,
-                        radius = 3.dp.toPx(),
+                        color = Color.White,
+                        radius = 5.dp.toPx(),
                         center = Offset(cx, trackY),
                     )
                 }

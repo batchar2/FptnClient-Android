@@ -328,7 +328,7 @@ public class HomeActivityViewModel extends AndroidViewModel {
 
             List<ServerEntity> serverList = new ArrayList<>();
             serverList.add(ServerEntity.AUTO);
-            serverList.addAll(appDatabase.serverDAO().getServerList());
+            serverList.addAll(appDatabase.serverDAO().getVisibleServerList());
 
             // copy previous pings
             if (lastPingedServers != null) {

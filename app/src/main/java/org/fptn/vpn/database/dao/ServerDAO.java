@@ -60,6 +60,20 @@ public interface ServerDAO {
     @Query("DELETE FROM server_table")
     void deleteAll();
 
+    /**
+     * Deletes all servers belonging to a specific token.
+     * Used when updating or deleting a token in Token Management.
+     */
+    @Query("DELETE FROM server_table WHERE tokenId = :tokenId")
+    void deleteByTokenId(int tokenId);
+
+    /**
+     * Returns all servers belonging to tokens where isVisible = true.
+     * Used in HomeActivityViewModel to populate the dropdown list.
+     */
+    @Query("SELECT server_table.* FROM server_table INNER JOIN token_table ON server_table.tokenId = token_table.id WHERE token_table.isVisible = 1")
+    List<ServerEntity> getVisibleServerList();
+
     @Query("UPDATE server_table SET countryCode = :code WHERE id = :id")
     void updateCountryCode(int id, String code);
 

@@ -25,7 +25,7 @@ import org.fptn.vpn.ui.settings.SettingsScreen
 import org.fptn.vpn.ui.splash.SplashRoute
 import org.fptn.vpn.ui.splash.SplashScreen
 import org.fptn.vpn.ui.updatetoken.UpdateTokenScreen
-
+import org.fptn.vpn.ui.tokens.TokenManagementScreen
 /**
  * Route constants for the single-activity Compose navigation graph.
  *
@@ -45,6 +45,7 @@ object AppRoute {
     const val EXPERIMENTAL_SETTINGS = "experimental_settings"
     const val SETTINGS = "settings"
     const val HOME = "home"
+    const val TOKEN_MANAGEMENT = "token_management"
 }
 
 @Composable
@@ -194,6 +195,12 @@ fun AppNavHost(
                 },
             )
         }
+        composable(AppRoute.TOKEN_MANAGEMENT) {
+            TokenManagementScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
         composable(AppRoute.SETTINGS) {
             // Reachable from every sub-screen's BottomNavBar, including HomeScreen's.
             SettingsScreen(
@@ -222,6 +229,9 @@ fun AppNavHost(
                 },
                 onNavigateBackup = {
                     navController.navigate(AppRoute.BACKUP) { launchSingleTop = true }
+                },
+                onNavigateTokenManagement = {
+                    navController.navigate(AppRoute.TOKEN_MANAGEMENT) { launchSingleTop = true }
                 },
             )
         }

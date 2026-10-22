@@ -54,6 +54,13 @@ public class ServerEntity {
     private String md5ServerFingerprint;
     private boolean censured;
 
+    /**
+     * ID of the token (TokenEntity.id) this server belongs to.
+     * For AUTO servers, the value is 0 (no token).
+     * During migration 2→3, all existing servers are linked to the default token.
+     */
+    private int tokenId;
+
     @Ignore // not save in DB (Room ORM annotation)
     @Getter
     @Setter
@@ -102,6 +109,15 @@ public class ServerEntity {
         return flag != null ? name + " " + flag : name;
     }
 
+    // Explicit getter/setter for tokenId for Kotlin interop
+    public int getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(int tokenId) {
+        this.tokenId = tokenId;
+    }
+
     public static final ServerEntity AUTO = ServerEntity.builder()
             .id(Constants.SELECTED_SERVER_ID_AUTO)
             .selected(false)
@@ -113,5 +129,6 @@ public class ServerEntity {
             .countryCode(null)
             .md5ServerFingerprint(null)
             .censured(false)
+            .tokenId(0)
             .build();
 }

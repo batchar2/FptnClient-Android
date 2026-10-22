@@ -330,7 +330,7 @@ public class SharedPrefUtils {
         XLog.tag(TAG).d("Saved " + Constants.LAST_SELECTED_SERVER_ID_PREF_KEY + " = " + serverId);
     }
 
-    /* App-wide font scale override (active only when useSystemFontSize == false) */
+    /* App-wide font scale override (null = use system font scale) */
     public static boolean getUseSystemFontSize(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.APPLICATION_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(Constants.USE_SYSTEM_FONT_SIZE_PREF_KEY, true);

@@ -91,7 +91,7 @@ object Constants {
 
     // App-wide font scale override (active only when USE_SYSTEM_FONT_SIZE_PREF_KEY == false).
     // Index into FONT_SCALE_VALUES; default = 1 (= 1.0f, matches system).
-    val FONT_SCALE_VALUES: FloatArray = floatArrayOf(0.85f, 1.0f, 1.15f, 1.3f)
+    val FONT_SCALE_VALUES: FloatArray = floatArrayOf(0.85f, 1.0f, 1.1f, 1.2f)
     const val FONT_SCALE_DEFAULT_INDEX: Int = 1
     
     // Default matches blacklist_domains in the fptn desktop client (settingsmodel.cpp)

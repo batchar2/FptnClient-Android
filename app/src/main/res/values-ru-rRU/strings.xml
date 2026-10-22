@@ -354,4 +354,15 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="connection_strategy_rolling">Скользящий туннель</string>
     <string name="connection_strategy_dual">Двойной скользящий туннель</string>
     <string name="connection_strategy_triple">Тройной скользящий туннель</string>
+    <string name="token_management_title">Управление токенами</string>
+    <string name="token_management_description">Управляйте вашими FPTN-токенами. Включайте видимость серверов.</string>
+    <string name="token_add">Добавить токен</string>
+    <string name="token_add_hint">Вставьте токен сюда</string>
+    <string name="token_delete">Удалить</string>
+    <string name="token_delete_title">Удалить токен</string>
+    <string name="token_delete_confirmation">Вы уверены, что хотите удалить токен \"%1$s\" и все его серверы?</string>
+    <string name="token_updated_at">Обновлён: %1$s</string>
+    <string name="token_error_exists">Токен с таким username уже существует. Обновите его в разделе Обновить токен.</string>
+    <string name="token_error_invalid">Неверный формат токена.</string>
+    <string name="token_error_unknown">Произошла неизвестная ошибка.</string>
 </resources>

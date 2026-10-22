@@ -99,7 +99,7 @@ private const val CONNECT_FAILURES_BEFORE_HELP = 2
 
 // Matches home_layout.xml's `app:layout_constraintVertical_bias="0.38"` on the connect button,
 // which is constant — it does not vary by screen height.
-private const val CONNECT_BUTTON_VERTICAL_BIAS = 0.38f
+private const val CONNECT_BUTTON_VERTICAL_BIAS = 0.25f
 
 // In landscape the available height is much smaller, so the same bias would leave no room for
 // the status text / server dropdown / traffic card below the button — pin the button near the
@@ -307,6 +307,7 @@ fun HomeScreen(
                     notificationsGranted = PermissionsUtils.checkNotificationEnabled(context)
                     batteryGranted = PermissionsUtils.checkBatteryOptimizations(context)
                     showTrafficChart = SharedPrefUtils.getShowTrafficChart(context)
+                    viewModel.refreshServerListFromDB()
                 }
 
                 Lifecycle.Event.ON_PAUSE -> {

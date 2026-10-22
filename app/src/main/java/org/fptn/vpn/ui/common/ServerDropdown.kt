@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
+import androidx.compose.foundation.layout.height
 
 @Composable
 fun ServerDropdown(
@@ -82,6 +83,7 @@ fun ServerDropdown(
                                 onSelect(server)
                                 expanded = false
                             },
+                            modifier = Modifier.height(42.dp)
                         )
                     }
                 }
