@@ -74,9 +74,9 @@ public abstract class AppDatabase extends RoomDatabase {
                     "CREATE TABLE IF NOT EXISTS token_table (" +
                             "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                             "serviceName TEXT, " +
-                            "rawToken TEXT NOT NULL DEFAULT '', " +
-                            "username TEXT NOT NULL DEFAULT '', " +
-                            "password TEXT NOT NULL DEFAULT '', " +
+                            "rawToken TEXT DEFAULT '', " +
+                            "username TEXT DEFAULT '', " +
+                            "password TEXT DEFAULT '', " +
                             "isVisible INTEGER NOT NULL DEFAULT 1, " +
                             "createdAt INTEGER NOT NULL DEFAULT 0, " +
                             "updatedAt INTEGER NOT NULL DEFAULT 0" +
