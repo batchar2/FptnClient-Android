@@ -1,6 +1,5 @@
 package org.fptn.vpn.ui.tokens
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -33,13 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.TokenEntity
 import org.fptn.vpn.ui.common.LegacyPillButton
@@ -55,6 +56,7 @@ import java.util.Locale
 @Composable
 fun TokenManagementScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToUpdateToken: () -> Unit,
     viewModel: TokenManagementViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -62,16 +64,32 @@ fun TokenManagementScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var tokenToDelete by remember { mutableStateOf<TokenEntity?>(null) }
 
+    // State for the error dialog
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorType by remember { mutableStateOf<String?>(null) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(R.string.token_management_title),
-                        color = White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_baseline_key_24),
+                            contentDescription = null,
+                            tint = White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.token_management_title),
+                            color = White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Primary
@@ -91,16 +109,15 @@ fun TokenManagementScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                items(tokens) { token ->
-                    // Is this the last VISIBLE token?
-                    // If so, it cannot be hidden or deleted.
+                itemsIndexed(tokens) { index, token ->
                     val visibleCount = tokens.count { it.isVisible }
                     val isLastVisibleToken = token.isVisible && visibleCount == 1
 
                     TokenCard(
                         token = token,
-                        isLastToken = tokens.size == 1, // The last token cannot be deleted
-                        isLastVisibleToken = isLastVisibleToken, // The last visible token cannot be hidden or deleted
+                        number = if (tokens.size > 1) index + 1 else null,
+                        isLastToken = tokens.size == 1,
+                        isLastVisibleToken = isLastVisibleToken,
                         onVisibilityChange = { isVisible ->
                             viewModel.setTokenVisible(token, isVisible)
                         },
@@ -136,15 +153,8 @@ fun TokenManagementScreen(
                 onSave = { tokenStr ->
                     viewModel.addToken(tokenStr) { success, error ->
                         if (!success) {
-                            val message = when (error) {
-                                "TOKEN_EXISTS" -> context.getString(R.string.token_error_exists)
-                                "INVALID_TOKEN" -> context.getString(R.string.token_error_invalid)
-                                else -> context.getString(R.string.token_error_unknown)
-                            }
-                            // Switch to the main thread to display the Toast
-                            kotlinx.coroutines.MainScope().launch {
-                                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                            }
+                            errorType = error
+                            showErrorDialog = true
                         }
                     }
                     showAddDialog = false
@@ -152,6 +162,63 @@ fun TokenManagementScreen(
                 onDismiss = { showAddDialog = false }
             )
         }
+    }
+
+    if (showErrorDialog) {
+        val dialogDensity = LocalDensity.current
+        val errorMessage = when (errorType) {
+            "TOKEN_EXISTS" -> context.getString(R.string.token_error_exists)
+            "INVALID_TOKEN" -> context.getString(R.string.token_error_invalid)
+            else -> context.getString(R.string.token_error_unknown)
+        }
+
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(
+                        text = stringResource(R.string.token_error_title),
+                        color = White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            text = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    Text(
+                        text = errorMessage,
+                        color = White,
+                        fontSize = 14.sp,
+                        lineHeight = 17.sp // Single line spacing
+                    )
+                }
+            },
+            confirmButton = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    if (errorType == "TOKEN_EXISTS") {
+                        TextButton(onClick = {
+                            showErrorDialog = false
+                            onNavigateToUpdateToken() // Navigate to the Update Token section
+                        }) {
+                            Text(stringResource(R.string.update_token_button), color = White)
+                        }
+                    } else {
+                        TextButton(onClick = { showErrorDialog = false }) {
+                            Text(stringResource(android.R.string.ok), color = White)
+                        }
+                    }
+                }
+            },
+            dismissButton = {
+                CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                    if (errorType == "TOKEN_EXISTS") {
+                        TextButton(onClick = { showErrorDialog = false }) {
+                            Text(stringResource(R.string.cancel_button), color = White)
+                        }
+                    }
+                }
+            }
+        )
     }
 
     tokenToDelete?.let { token ->
@@ -197,6 +264,7 @@ fun TokenManagementScreen(
 @Composable
 private fun TokenCard(
     token: TokenEntity,
+    number: Int?,
     isLastToken: Boolean,
     isLastVisibleToken: Boolean,
     onVisibilityChange: (Boolean) -> Unit,
@@ -215,7 +283,7 @@ private fun TokenCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = token.serviceName,
+                        text = if (number != null) "$number. ${token.serviceName}" else token.serviceName,
                         color = White,
                         fontSize = 16.sp,
                         lineHeight = 22.sp,
@@ -235,7 +303,7 @@ private fun TokenCard(
                 Switch(
                     checked = token.isVisible,
                     onCheckedChange = onVisibilityChange,
-                    enabled = !isLastVisibleToken // Disable if this is the last visible token
+                    enabled = !isLastVisibleToken
                 )
             }
 
@@ -254,7 +322,6 @@ private fun TokenCard(
                     .padding(top = 12.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                // Deletion is disabled if this is the only token OR the last visible token
                 val isDeleteDisabled = isLastToken || isLastVisibleToken
                 Text(
                     text = stringResource(R.string.token_delete),

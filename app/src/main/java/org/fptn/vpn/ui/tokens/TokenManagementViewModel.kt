@@ -46,18 +46,18 @@ class TokenManagementViewModel(application: Application) : AndroidViewModel(appl
 
     fun deleteToken(token: TokenEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Deletion is not allowed if:
-            // 1. This is the only token.
-            // 2. OR this is the last VISIBLE token (to avoid leaving the user without servers).
-            val visibleTokens = appDatabase.tokenDAO().getAll().filter { it.isVisible }
-            val canDelete = appDatabase.tokenDAO().getCount() > 1 &&
-              (token.isVisible && visibleTokens.size > 1 || !token.isVisible)
+            appDatabase.runInTransaction {
+                val tokens = appDatabase.tokenDAO().getAll()
+                val visibleTokens = tokens.filter { it.isVisible }
+                val canDelete = tokens.size > 1 &&
+                  (token.isVisible && visibleTokens.size > 1 || !token.isVisible)
 
-            if (canDelete) {
-                appDatabase.serverDAO().deleteByTokenId(token.id)
-                appDatabase.tokenDAO().deleteById(token.id)
-                loadTokens()
+                if (canDelete) {
+                    appDatabase.serverDAO().deleteByTokenId(token.id)
+                    appDatabase.tokenDAO().deleteById(token.id)
+                }
             }
+            loadTokens()
         }
     }
 

@@ -83,7 +83,7 @@ fun ServerDropdown(
                                 onSelect(server)
                                 expanded = false
                             },
-                            modifier = Modifier.height(42.dp)
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 2.dp, horizontal = 16.dp)
                         )
                     }
                 }

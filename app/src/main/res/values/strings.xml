@@ -454,4 +454,5 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="token_error_exists">A token with this username already exists. Please update it in the Update Token section.</string>
     <string name="token_error_invalid">Invalid token format.</string>
     <string name="token_error_unknown">An unknown error occurred.</string>
+    <string name="token_error_title">Error</string>
 </resources>

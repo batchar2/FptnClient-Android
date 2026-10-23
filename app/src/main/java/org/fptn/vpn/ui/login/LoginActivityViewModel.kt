@@ -27,20 +27,24 @@ class LoginActivityViewModel(application: Application) : AndroidViewModel(applic
             val password = parsed.password
             val serviceName = parsed.serviceName ?: username
 
-            val newToken = TokenEntity(
-                0,               // id
-                serviceName,     // serviceName
-                token,           // rawToken
-                username,        // username
-                password,        // password
-                true,            // isVisible
-                now,             // createdAt
-                now              // updatedAt
-            )
-            val newTokenId = appDatabase.tokenDAO().insert(newToken).toInt()
+            var newTokenId = 0
 
-            parsed.servers.forEach { it.tokenId = newTokenId }
-            appDatabase.serverDAO().insertAll(parsed.servers)
+            appDatabase.runInTransaction {
+                val newToken = TokenEntity(
+                    0,               // id
+                    serviceName,     // serviceName
+                    token,           // rawToken
+                    username,        // username
+                    password,        // password
+                    true,            // isVisible
+                    now,             // createdAt
+                    now              // updatedAt
+                )
+
+                newTokenId = appDatabase.tokenDAO().insert(newToken).toInt()
+                parsed.servers.forEach { it.tokenId = newTokenId }
+                appDatabase.serverDAO().insertAll(parsed.servers)
+            }
 
             SharedPrefUtils.saveTokenUpdatedDate(getApplication(), now)
 

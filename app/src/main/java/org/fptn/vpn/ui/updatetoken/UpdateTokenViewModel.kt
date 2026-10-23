@@ -30,13 +30,14 @@ class UpdateTokenViewModel(application: Application) : AndroidViewModel(applicat
             val existingToken = appDatabase.tokenDAO().findByUsername(username)
 
             if (existingToken != null) {
-                appDatabase.tokenDAO().updateTokenData(
-                    existingToken.id, serviceName, token, username, password, now
-                )
-
-                appDatabase.serverDAO().deleteByTokenId(existingToken.id)
-                parsed.servers.forEach { it.tokenId = existingToken.id }
-                appDatabase.serverDAO().insertAll(parsed.servers)
+                appDatabase.runInTransaction {
+                    appDatabase.tokenDAO().updateTokenData(
+                        existingToken.id, serviceName, token, username, password, now
+                    )
+                    appDatabase.serverDAO().deleteByTokenId(existingToken.id)
+                    parsed.servers.forEach { it.tokenId = existingToken.id }
+                    appDatabase.serverDAO().insertAll(parsed.servers)
+                }
 
                 XLog.tag("UpdateTokenViewModel").i("Token updated [id=%d, serviceName=%s, servers=%d]",
                     existingToken.id, serviceName, parsed.servers.size)

@@ -367,4 +367,5 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="token_error_exists">توکن با این نام کاربری از قبل وجود دارد. لطفاً آن را در بخش به‌روزرسانی توکن به‌روزرسانی کنید.</string>
     <string name="token_error_invalid">فرمت توکن نامعتبر است.</string>
     <string name="token_error_unknown">یک خطای ناشناخته رخ داد.</string>
+    <string name="token_error_title">خطا</string>
 </resources>

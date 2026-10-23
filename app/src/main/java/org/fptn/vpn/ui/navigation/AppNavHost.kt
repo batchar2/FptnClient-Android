@@ -197,7 +197,10 @@ fun AppNavHost(
         }
         composable(AppRoute.TOKEN_MANAGEMENT) {
             TokenManagementScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToUpdateToken = {
+                    navController.navigate(AppRoute.UPDATE_TOKEN) { launchSingleTop = true }
+                }
             )
         }
 
