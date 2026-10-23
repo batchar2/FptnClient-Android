@@ -366,4 +366,5 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="token_error_invalid">Неверный формат токена.</string>
     <string name="token_error_unknown">Произошла неизвестная ошибка.</string>
     <string name="token_error_title">Ошибка</string>
+    <string name="token_error_not_found">Токен не найден. Добавление новых токенов доступно в разделе Управление токенами.</string>
 </resources>

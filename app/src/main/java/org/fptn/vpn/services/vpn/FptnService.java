@@ -748,7 +748,7 @@ public class FptnService extends VpnService {
                     try {
                         XLog.tag(TAG).i("Auto-selecting fastest server via login");
                         updateNotificationWithMessage(getString(R.string.connecting_auto), "");
-                        List<ServerEntity> serverEntities = appDatabase.serverDAO().getServerList(false);
+                        List<ServerEntity> serverEntities = appDatabase.serverDAO().getVisibleServerList(false);
                         SpeedTestResult loginResult = SpeedTestUtils.findServerByLogin(serverEntities, sniHostname, bypassCensorshipMethod, sniSpoofingMode);
                         if (loginResult == null || Thread.currentThread().isInterrupted()) {
                             return;
@@ -1059,7 +1059,7 @@ public class FptnService extends VpnService {
                         .serverInfo(getString(R.string.connecting_auto))
                         .build());
 
-                List<ServerEntity> serverEntities = appDatabase.serverDAO().getServerList(false);
+                List<ServerEntity> serverEntities = appDatabase.serverDAO().getVisibleServerList(false);
                 try {
                     SpeedTestResult loginResult = SpeedTestUtils.findServerByLogin(serverEntities, sniHostname, bypassCensorshipMethod, sniSpoofingMode);
                     if (loginResult == null || Thread.currentThread().isInterrupted()) {

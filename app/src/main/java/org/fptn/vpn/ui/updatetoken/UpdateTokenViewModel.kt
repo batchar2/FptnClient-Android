@@ -7,7 +7,6 @@ import com.elvishew.xlog.XLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.fptn.vpn.database.AppDatabase
-import org.fptn.vpn.database.entity.TokenEntity
 import org.fptn.vpn.utils.SharedPrefUtils
 import org.fptn.vpn.utils.token.TokenUtils
 import org.fptn.vpn.vpnclient.exception.PVNClientException
@@ -19,9 +18,9 @@ class UpdateTokenViewModel(application: Application) : AndroidViewModel(applicat
     private val appDatabase = AppDatabase.getInstance(application)
 
     @Throws(PVNClientException::class)
-    suspend fun parseAndSaveToken(token: String) {
+    suspend fun parseAndSaveToken(token: String): Boolean {
         val parsed = TokenUtils.parseToken(token)
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
             val username = parsed.username
             val password = parsed.password
@@ -39,29 +38,13 @@ class UpdateTokenViewModel(application: Application) : AndroidViewModel(applicat
                     appDatabase.serverDAO().insertAll(parsed.servers)
                 }
 
+                SharedPrefUtils.saveTokenUpdatedDate(getApplication(), now)
                 XLog.tag("UpdateTokenViewModel").i("Token updated [id=%d, serviceName=%s, servers=%d]",
                     existingToken.id, serviceName, parsed.servers.size)
+                true
             } else {
-                val newToken = TokenEntity(
-                    0,               // id
-                    serviceName,     // serviceName
-                    token,           // rawToken
-                    username,        // username
-                    password,        // password
-                    true,            // isVisible
-                    now,             // createdAt
-                    now              // updatedAt
-                )
-                val newTokenId = appDatabase.tokenDAO().insert(newToken).toInt()
-
-                parsed.servers.forEach { it.tokenId = newTokenId }
-                appDatabase.serverDAO().insertAll(parsed.servers)
-
-                XLog.tag("UpdateTokenViewModel").i("New token created [id=%d, serviceName=%s, servers=%d]",
-                    newTokenId, serviceName, parsed.servers.size)
+                false
             }
-
-            SharedPrefUtils.saveTokenUpdatedDate(getApplication(), now)
         }
     }
 }

@@ -126,17 +126,17 @@ fun AppNavHost(
             )
         }
         composable(AppRoute.UPDATE_TOKEN) {
-            // Reachable from Settings/HomeScreen's nav rows.
             UpdateTokenScreen(
-                onNavigateHome = {
-                    navController.navigate(AppRoute.HOME) { launchSingleTop = true }
-                },
+                onNavigateHome = { navController.navigate(AppRoute.HOME) { launchSingleTop = true } },
                 onDoneNavigateSettings = {
                     navController.navigate(AppRoute.SETTINGS) {
                         launchSingleTop = true
                         popUpTo(AppRoute.UPDATE_TOKEN) { inclusive = true }
                     }
                 },
+                onNavigateToTokenManagement = {
+                    navController.navigate(AppRoute.TOKEN_MANAGEMENT) { launchSingleTop = true }
+                }
             )
         }
         composable(AppRoute.LOGS) {

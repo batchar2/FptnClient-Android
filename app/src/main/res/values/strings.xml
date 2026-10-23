@@ -455,4 +455,5 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="token_error_invalid">Invalid token format.</string>
     <string name="token_error_unknown">An unknown error occurred.</string>
     <string name="token_error_title">Error</string>
+    <string name="token_error_not_found">Token not found. Adding new tokens is available in the Token Management section.</string>
 </resources>

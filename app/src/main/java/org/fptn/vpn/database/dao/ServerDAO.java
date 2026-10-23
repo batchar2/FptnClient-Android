@@ -69,9 +69,9 @@ public interface ServerDAO {
 
     /**
      * Returns all servers belonging to tokens where isVisible = true.
-     * Used in HomeActivityViewModel to populate the dropdown list.
+     * Sorts by token ID (insertion order), then by sortIndex (order in the JSON token).
      */
-    @Query("SELECT server_table.* FROM server_table INNER JOIN token_table ON server_table.tokenId = token_table.id WHERE token_table.isVisible = 1")
+    @Query("SELECT server_table.* FROM server_table INNER JOIN token_table ON server_table.tokenId = token_table.id WHERE token_table.isVisible = 1 ORDER BY token_table.id ASC, server_table.sortIndex ASC")
     List<ServerEntity> getVisibleServerList();
 
     @Query("UPDATE server_table SET countryCode = :code WHERE id = :id")
@@ -85,4 +85,11 @@ public interface ServerDAO {
 
     @Query("SELECT * FROM server_table WHERE id = :serverId")
     ServerEntity getById(int serverId);
+
+    /**
+     * Returns all VISIBLE servers (isVisible = 1), filtered by censured.
+     * Sorts by token ID (insertion order), then by sortIndex (order in the JSON token).
+     */
+    @Query("SELECT server_table.* FROM server_table INNER JOIN token_table ON server_table.tokenId = token_table.id WHERE token_table.isVisible = 1 AND server_table.censured = :censured ORDER BY token_table.id ASC, server_table.sortIndex ASC")
+    List<ServerEntity> getVisibleServerList(boolean censured);
 }

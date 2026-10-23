@@ -77,16 +77,16 @@ public final class TokenUtils {
 
             List<ServerFromToken> servers = fptnToken.getServers();
             if (servers != null && !servers.isEmpty()) {
-                for (ServerFromToken server : servers) {
-                    ServerEntity serverEntity = createServerEntity(server, username, password, false);
+                for (int i = 0; i < servers.size(); i++) {
+                    ServerEntity serverEntity = createServerEntity(servers.get(i), username, password, false, i);
                     serverDtoList.add(serverEntity);
                     XLog.tag(TAG).d("Server parsed from token [server=%s]", serverEntity.getServerInfo());
                 }
             }
             List<ServerFromToken> censoredServers = fptnToken.getCensoredServers();
             if (censoredServers != null && !censoredServers.isEmpty()) {
-                for (ServerFromToken server : censoredServers) {
-                    ServerEntity serverEntity = createServerEntity(server, username, password, true);
+                for (int i = 0; i < censoredServers.size(); i++) {
+                    ServerEntity serverEntity = createServerEntity(censoredServers.get(i), username, password, true, i);
                     serverDtoList.add(serverEntity);
                     XLog.tag(TAG).d("Censored server parsed from token [server=%s]", serverEntity.getServerInfo());
                 }
@@ -99,7 +99,7 @@ public final class TokenUtils {
         }
     }
 
-    private static ServerEntity createServerEntity(ServerFromToken server, String username, String password, boolean censured) {
+    private static ServerEntity createServerEntity(ServerFromToken server, String username, String password, boolean censured, int sortIndex) {
         String countryCode = Optional.ofNullable(server.getCountryCode())
                 .orElse(CountryFlags.getCountryCodeFromHostName(server.getName()));
 
@@ -114,6 +114,7 @@ public final class TokenUtils {
                 .md5ServerFingerprint(server.getMd5Fingerprint())
                 .selected(false)
                 .censured(censured)
+                .sortIndex(sortIndex)
                 .build();
     }
 }

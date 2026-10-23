@@ -1,23 +1,3 @@
-/*
- * FPTN Android Client
- * Copyright (C) 2026  Skokov Stanislav, Enin Sergey
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Website: https://fptn.org
- */
-
 package org.fptn.vpn.database.entity;
 
 import androidx.room.Entity;
@@ -53,13 +33,8 @@ public class ServerEntity {
     private String countryCode;
     private String md5ServerFingerprint;
     private boolean censured;
-
-    /**
-     * ID of the token (TokenEntity.id) this server belongs to.
-     * For AUTO servers, the value is 0 (no token).
-     * During migration 2→3, all existing servers are linked to the default token.
-     */
     private int tokenId;
+    private int sortIndex;
 
     @Ignore // not save in DB (Room ORM annotation)
     @Getter
@@ -81,9 +56,6 @@ public class ServerEntity {
         return Objects.equals(name, "Auto");
     }
 
-    // Written out explicitly (instead of relying on Lombok's @Data) for the subset of
-    // accessors Compose screens need: Kotlin's Java-interop stub generation runs before the
-    // Lombok annotation processor, so Kotlin call sites can't see Lombok-generated members.
     public int getId() {
         return id;
     }
@@ -109,13 +81,20 @@ public class ServerEntity {
         return flag != null ? name + " " + flag : name;
     }
 
-    // Explicit getter/setter for tokenId for Kotlin interop
     public int getTokenId() {
         return tokenId;
     }
 
     public void setTokenId(int tokenId) {
         this.tokenId = tokenId;
+    }
+
+    public int getSortIndex() {
+        return sortIndex;
+    }
+
+    public void setSortIndex(int sortIndex) {
+        this.sortIndex = sortIndex;
     }
 
     public static final ServerEntity AUTO = ServerEntity.builder()
@@ -130,5 +109,6 @@ public class ServerEntity {
             .md5ServerFingerprint(null)
             .censured(false)
             .tokenId(0)
+            .sortIndex(0)
             .build();
 }

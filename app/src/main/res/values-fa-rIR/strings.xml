@@ -368,4 +368,5 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="token_error_invalid">فرمت توکن نامعتبر است.</string>
     <string name="token_error_unknown">یک خطای ناشناخته رخ داد.</string>
     <string name="token_error_title">خطا</string>
+    <string name="token_error_not_found">توکن یافت نشد. افزودن توکن‌های جدید در بخش مدیریت توکن‌ها در دسترس است.</string>
 </resources>

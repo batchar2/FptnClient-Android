@@ -15,10 +15,10 @@ public interface TokenDAO {
     @Insert
     long insert(TokenEntity token);
 
-    @Query("SELECT * FROM token_table ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM token_table ORDER BY id ASC")
     List<TokenEntity> getAll();
 
-    @Query("SELECT * FROM token_table ORDER BY updatedAt DESC")
+    @Query("SELECT * FROM token_table ORDER BY id ASC")
     ListenableFuture<List<TokenEntity>> getAllAsync();
 
     @Query("SELECT * FROM token_table WHERE id = :id")

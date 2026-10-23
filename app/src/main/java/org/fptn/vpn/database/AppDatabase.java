@@ -40,7 +40,7 @@ import org.fptn.vpn.database.entity.TokenEntity;
 
 @Database(
         entities = {ServerEntity.class, AppInfoEntity.class, SniEntity.class, TokenEntity.class},
-        version = 3,
+        version = 4,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -100,10 +100,21 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    /**
+     * Migration 3 → 4: adds the sortIndex column to server_table.
+     * Used to preserve the original server order from the JSON token.
+     */
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE server_table ADD COLUMN sortIndex INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, FPTN_DATABASE)
-                    .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .build();
         }
         return instance;

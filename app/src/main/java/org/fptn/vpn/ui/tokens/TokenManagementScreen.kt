@@ -198,13 +198,13 @@ fun TokenManagementScreen(
                     if (errorType == "TOKEN_EXISTS") {
                         TextButton(onClick = {
                             showErrorDialog = false
-                            onNavigateToUpdateToken() // Navigate to the Update Token section
+                            onNavigateToUpdateToken()
                         }) {
-                            Text(stringResource(R.string.update_token_button), color = White)
+                            Text(stringResource(R.string.update_token_button))
                         }
                     } else {
                         TextButton(onClick = { showErrorDialog = false }) {
-                            Text(stringResource(android.R.string.ok), color = White)
+                            Text(stringResource(android.R.string.ok))
                         }
                     }
                 }
@@ -213,7 +213,7 @@ fun TokenManagementScreen(
                 CompositionLocalProvider(LocalDensity provides dialogDensity) {
                     if (errorType == "TOKEN_EXISTS") {
                         TextButton(onClick = { showErrorDialog = false }) {
-                            Text(stringResource(R.string.cancel_button), color = White)
+                            Text(stringResource(R.string.cancel_button))
                         }
                     }
                 }
@@ -246,14 +246,14 @@ fun TokenManagementScreen(
                         viewModel.deleteToken(token)
                         tokenToDelete = null
                     }) {
-                        Text(stringResource(R.string.token_delete), color = White)
+                        Text(stringResource(R.string.token_delete))
                     }
                 }
             },
             dismissButton = {
                 CompositionLocalProvider(LocalDensity provides dialogDensity) {
                     TextButton(onClick = { tokenToDelete = null }) {
-                        Text(stringResource(R.string.cancel_button), color = White)
+                        Text(stringResource(R.string.cancel_button))
                     }
                 }
             }
