@@ -85,6 +85,7 @@ fun SettingsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     var showShareDialog by remember { mutableStateOf(false) }
+    var showLogoutConfirm by remember { mutableStateOf(false) }
     var showClearLogsConfirm by remember { mutableStateOf(false) }
     var sponsorsExpanded by remember { mutableStateOf(false) }
     var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
@@ -279,6 +280,12 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            SettingsNavRow(
+                icon = R.drawable.ic_baseline_logout_24,
+                title = stringResource(R.string.logout_button),
+                onClick = { showLogoutConfirm = true },
+            )
         }
 
         BottomNavBar(
@@ -292,6 +299,49 @@ fun SettingsScreen(
 
     if (showShareDialog) {
         ShareDialog(onDismiss = { showShareDialog = false })
+    }
+
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            title = {
+                CompositionLocalProvider(LocalDensity provides LocalDensity.current) {
+                    Text(
+                        stringResource(R.string.dialog_logout_title),
+                        color = White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            text = {
+                CompositionLocalProvider(LocalDensity provides LocalDensity.current) {
+                    Text(
+                        stringResource(R.string.dialog_logout_message),
+                        color = White,
+                        fontSize = 14.sp,
+                        lineHeight = 17.sp
+                    )
+                }
+            },
+            confirmButton = {
+                CompositionLocalProvider(LocalDensity provides LocalDensity.current) {
+                    TextButton(onClick = {
+                        showLogoutConfirm = false
+                        viewModel.deleteAllServers()
+                        onLoggedOut()
+                    }) {
+                        Text(stringResource(R.string.yes))
+                    }
+                }
+            },
+            dismissButton = {
+                CompositionLocalProvider(LocalDensity provides LocalDensity.current) {
+                    TextButton(onClick = { showLogoutConfirm = false }) {
+                        Text(stringResource(R.string.no))
+                    }
+                }
+            },
+        )
     }
 
     val dialogDensity = LocalDensity.current

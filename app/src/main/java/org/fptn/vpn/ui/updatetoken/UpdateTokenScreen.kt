@@ -108,6 +108,10 @@ fun UpdateTokenScreen(
     fun onCancel() = onDoneNavigateSettings()
 
     fun onSave() {
+        // Do not save if the field is empty
+        if (tokenText.text.isBlank()) {
+            return
+        }
         coroutineScope.launch {
             try {
                 val isUpdated = viewModel.parseAndSaveToken(tokenText.text)
@@ -124,7 +128,7 @@ fun UpdateTokenScreen(
                 } else {
                     e.message.orEmpty()
                 }
-                Toast.makeText(context, localizedMessage, Toast.LENGTH_SHORT).show()
+                // Display the error only below the field (without a Toast)
                 viewModel.errorTextLiveData.postValue(localizedMessage)
             }
         }
@@ -172,7 +176,13 @@ fun UpdateTokenScreen(
             ) {
                 BasicTextField(
                     value = tokenText,
-                    onValueChange = { tokenText = it },
+                    onValueChange = {
+                        tokenText = it
+                        // Clear the error when typing
+                        if (errorText.isNotEmpty()) {
+                            viewModel.errorTextLiveData.postValue("")
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.TopStart)

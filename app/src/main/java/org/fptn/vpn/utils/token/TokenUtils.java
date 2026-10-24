@@ -93,7 +93,7 @@ public final class TokenUtils {
             }
 
             return new ParsedToken(serviceName, username, password, serverDtoList);
-        } catch (IOException e) {
+        } catch (Exception e) {
             XLog.tag(TAG).e("Failed to decode/parse FPTN token: %s", e.getMessage());
             throw new PVNClientException(ErrorCode.ACCESS_TOKEN_FORMAT_ERROR);
         }

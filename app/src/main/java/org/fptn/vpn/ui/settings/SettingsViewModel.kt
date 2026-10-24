@@ -34,6 +34,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun deleteAllServers() {
         viewModelScope.launch(Dispatchers.IO) {
             appDatabase.serverDAO().deleteAll()
+            appDatabase.tokenDAO().deleteAll()
         }
     }
 }

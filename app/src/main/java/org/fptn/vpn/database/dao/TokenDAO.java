@@ -41,4 +41,7 @@ public interface TokenDAO {
 
     @Query("DELETE FROM token_table WHERE id = :id")
     void deleteById(int id);
+
+    @Query("DELETE FROM token_table")
+    void deleteAll();
 }

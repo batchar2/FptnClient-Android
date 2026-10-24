@@ -71,7 +71,7 @@ public interface ServerDAO {
      * Returns all servers belonging to tokens where isVisible = true.
      * Sorts by token ID (insertion order), then by sortIndex (order in the JSON token).
      */
-    @Query("SELECT server_table.* FROM server_table INNER JOIN token_table ON server_table.tokenId = token_table.id WHERE token_table.isVisible = 1 ORDER BY token_table.id ASC, server_table.sortIndex ASC")
+    @Query("SELECT server_table.* FROM server_table INNER JOIN token_table ON server_table.tokenId = token_table.id WHERE token_table.isVisible = 1 ORDER BY token_table.id ASC, server_table.censured ASC, server_table.sortIndex ASC")
     List<ServerEntity> getVisibleServerList();
 
     @Query("UPDATE server_table SET countryCode = :code WHERE id = :id")
