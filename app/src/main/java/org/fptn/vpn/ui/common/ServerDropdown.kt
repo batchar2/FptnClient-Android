@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
 fun ServerDropdown(
@@ -62,8 +64,6 @@ fun ServerDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            // Remove the closing animation so the menu disappears instantly.
-            // Approximately 60dp per server (flag + name + ping row + padding), 6 servers + 16dp vertical padding.
             modifier = Modifier
                 .width(with(density) { anchorWidthPx.toDp() })
                 .heightIn(max = 400.dp),
@@ -74,7 +74,11 @@ fun ServerDropdown(
             // LocalDensity from MainActivity (with our custom fontScale override) is NOT passed
             // to the popup automatically. Therefore, we explicitly provide the density captured
             // above (which contains our custom fontScale) to the popup content.
-            CompositionLocalProvider(LocalDensity provides density) {
+            // Also force LTR layout direction so the flag doesn't overlap the text in RTL languages.
+            CompositionLocalProvider(
+                LocalDensity provides density,
+                LocalLayoutDirection provides LayoutDirection.Ltr
+            ) {
                 servers.forEach { server ->
                     key(server.id, server.pingMs) {
                         DropdownMenuItem(
