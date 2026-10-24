@@ -115,7 +115,10 @@ fun AppNavHost(
         composable(AppRoute.HOME) {
             HomeScreen(
                 onNavigateSettings = {
-                    navController.navigate(AppRoute.SETTINGS) { launchSingleTop = true }
+                    navController.navigate(AppRoute.SETTINGS) {
+                        launchSingleTop = true
+                        popUpTo(AppRoute.HOME) { inclusive = false }
+                    }
                 },
                 onNavigateUpdateToken = {
                     navController.navigate(AppRoute.UPDATE_TOKEN) { launchSingleTop = true }

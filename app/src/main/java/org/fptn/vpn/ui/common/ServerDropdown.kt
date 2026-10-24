@@ -51,7 +51,7 @@ fun ServerDropdown(
                 .fillMaxWidth()
                 .onGloballyPositioned { anchorWidthPx = it.size.width }
                 .legacyDrawableBackground(
-                    if (expanded) R.drawable.spinner_background_up else R.drawable.spinner_background_down,
+                    if (expanded) R.drawable.spinner_background_down else R.drawable.spinner_background_up,
                 )
                 .clickable(enabled = enabled) { expanded = true },
         ) {

@@ -93,6 +93,7 @@ import androidx.core.net.toUri
 import androidx.compose.foundation.background
 import org.fptn.vpn.ui.theme.Primary
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.activity.compose.BackHandler
 private const val TOKEN_MAX_AGE_MS = 14L * 24 * 60 * 60 * 1000
 private const val TOKEN_STALE_AGE_MS = 3L * 24 * 60 * 60 * 1000
 private const val CONNECT_FAILURES_BEFORE_HELP = 2
@@ -190,6 +191,11 @@ fun HomeScreen(
     val needsBackgroundSetup = !notificationsGranted || !batteryGranted
     val showPermissionWarning = connectionState == ConnectionState.CONNECTED && needsBackgroundSetup
     val activeState = connectionState.isActiveState
+
+    // Intercept the system Back button — minimize the app instead of opening Settings
+    BackHandler {
+        context.findActivity()?.moveTaskToBack(true)
+    }
 
     val vpnPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
