@@ -64,7 +64,6 @@ fun ShareDialog(onDismiss: () -> Unit) {
                             .fillMaxWidth()
                             .padding(16.dp),
                     )
-                    Text(stringResource(R.string.menu_share))
                 }
             }
         },
