@@ -230,15 +230,14 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="allow_landscape_label">چرخش خودکار صفحه</string>
 
     <string name="kill_switch_title">کلید قطع (Kill-switch):</string>
-    <string name="kill_switch_description">اگر اتصال VPN قطع شود، تا زمانی که VPN را به‌صورت دستی خاموش نکنید اینترنت کار نخواهد کرد.</string>
-    <string name="kill_switch_enable">مسدود کردن ترافیک بدون VPN</string>
+    <string name="kill_switch_description">ترافیک را بدون VPN مسدود می‌کند. هنگام اتمام تلاش‌های اتصال مجدد یا قطع غیرمنتظره ارتباط فعال می‌شود.</string>    <string name="kill_switch_enable">مسدود کردن ترافیک بدون VPN</string>
     <string name="kill_switch_system_hint">تا زمانی کار می‌کند که فرایند برنامه زنده باشد: اگر اندروید فرایند را ببندد، رابط TUN برداشته می‌شود و ترافیک مستقیم عبور می‌کند. Always-on VPN (VPN دائمی) را خود اندروید اعمال می‌کند — آن را در تنظیمات همراه با مسدودسازی ترافیک فعال کنید.</string>
     <string name="kill_switch_system_button">باز کردن تنظیمات VPN اندروید</string>
     <string name="kill_switch_blocked">Kill-switch فعال شد: ترافیک مسدود است</string>
     <string name="kill_switch_network_change_enable">مسدود کردن ترافیک هنگام جابجایی Wi-Fi/موبایل</string>
-    <string name="kill_switch_network_change_description">هنگام جابجایی بین Wi-Fi و اینترنت موبایل، تمام ترافیک را فورا مسدود می‌کند تا زمانی که VPN دوباره وصل شود.</string>
+    <string name="kill_switch_network_change_description">هنگام جابجایی بین Wi-Fi و اینترنت موبایل، تمام ترافیک را فورا مسدود می‌کند.</string>
     <string name="kill_switch_infinite_warning">هشدار: با تلاش‌های نامحدود برای اتصال مجدد، Kill-switch اصلی در قطع‌های معمولی فعال نخواهد شد. فقط مسدودسازی جابجایی Wi-Fi/موبایل فعال می‌ماند تا از مسدود شدن دائمی اینترنت جلوگیری شود.</string>
-
+    <string name="reconnect_attempts_description">Kill-switch زمانی فعال می‌شود که این تلاش‌ها به پایان برسند.</string>
     <string name="auto_fallback_title">تغییر خودکار به سرورهای موجود:</string>
     <string name="auto_fallback_enable">تغییر سرور در صورت قطع ارتباط</string>
     <string name="auto_fallback_threshold_label">تلاش‌ها قبل از تغییر سرور:</string>

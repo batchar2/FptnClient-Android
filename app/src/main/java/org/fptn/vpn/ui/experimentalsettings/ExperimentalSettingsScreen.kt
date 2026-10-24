@@ -431,6 +431,7 @@ fun ExperimentalSettingsScreen(
 
             ExperimentalCard {
                 CardTitle(stringResource(R.string.reconnection_on_failure_attempts))
+                CardDescription(stringResource(R.string.reconnect_attempts_description))
                 val attemptsValue = ATTEMPTS_COUNT_VALUES[attemptsCountProgress.toInt()]
                 DiscreteSeekBar(
                     label = stringResource(R.string.attempts_count),
@@ -539,6 +540,13 @@ fun ExperimentalSettingsScreen(
                     onCheckedChange = {
                         killSwitchOnNetworkChange = it
                         SharedPrefUtils.saveKillSwitchOnNetworkChangeEnabled(context, it)
+
+                        // If Network Kill Switch is enabled, force-enable
+                        // "Reconnect on network change"; otherwise, protection will not take effect immediately.
+                        if (it && !reconnectOnChangeNetworkType) {
+                            reconnectOnChangeNetworkType = true
+                            SharedPrefUtils.saveReconnectOnChangeNetworkTypeEnabled(context, true)
+                        }
                     },
                 )
                 Text(
