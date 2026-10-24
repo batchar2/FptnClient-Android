@@ -11,6 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -58,22 +61,26 @@ fun ServerRow(server: ServerEntity, pingValue: Long, modifier: Modifier = Modifi
                 )
                 return@Row
             }
-            Box(modifier = Modifier.size(width = 32.dp, height = 38.dp), contentAlignment = Alignment.Center) {
-                val flag = CountryFlags.getCountryFlagByCountryCode(server.countryCode)
-                if (!flag.isNullOrEmpty()) {
-                    Text(text = flag, fontSize = 20.sp, textAlign = TextAlign.Center)
+            // Force LTR (left-to-right) layout direction for the flag and server name,
+            // so that in RTL languages (Persian, Arabic) the flag does not overlap the text and remains on the left.
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Box(modifier = Modifier.size(width = 32.dp, height = 38.dp), contentAlignment = Alignment.Center) {
+                    val flag = CountryFlags.getCountryFlagByCountryCode(server.countryCode)
+                    if (!flag.isNullOrEmpty()) {
+                        Text(text = flag, fontSize = 20.sp, textAlign = TextAlign.Center)
+                    }
                 }
+                Text(
+                    text = server.name,
+                    color = Primary,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 5.dp),
+                )
             }
-            Text(
-                text = server.name,
-                color = Primary,
-                fontSize = 16.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 5.dp),
-            )
             if (server.isCensured) {
                 Image(
                     painter = painterResource(R.drawable.ic_logo),
