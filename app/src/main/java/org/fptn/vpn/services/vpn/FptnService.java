@@ -1227,11 +1227,6 @@ public class FptnService extends VpnService {
                 || sessionEstablished
                 || restoringSession;
 
-        // Reset session flags so that repeated calls to disconnect()
-        // (e.g., when the user presses "Disconnect" while the Kill Switch is triggered)
-        // do not cause another attempt to reset the server in the database.
-        sessionEstablished = false;
-
         // Cancel any pending restore work so a scheduled retry can't resurrect a torn-down session.
         restoringSession = false;
         restoreRetryCount.set(0);
@@ -1256,6 +1251,13 @@ public class FptnService extends VpnService {
                 || DISCONNECT_REASON_CLOSED_UNEXPECTEDLY.equals(disconnectReasonKey)
                 || DISCONNECT_REASON_UNEXPECTED_ERROR.equals(disconnectReasonKey);
         boolean blockTraffic = involuntary && SharedPrefUtils.getKillSwitchEnabled(this);
+        // Explicitly raise the blocking TUN for Kill Switch if needed.
+        // Important: call this BEFORE setActiveConnection, because raiseBlockingTun()
+        // checks sessionEstablished, and setActiveConnection may not invoke it
+        // if activeConnection is already null (e.g., after a failed reconnection).
+        if (blockTraffic) {
+            raiseBlockingTun();
+        }
         // stop and null existed connection
         setActiveConnection(null, blockTraffic);
         boolean killSwitchHold = blockTraffic && hasBlockingTun();
@@ -1341,8 +1343,13 @@ public class FptnService extends VpnService {
             XLog.tag(TAG).i("🔍 DISCONNECT DEBUG: Skipping server reset (preserving current selection)");
         }
 
-        // NOW send the state to the UI. The database and SharedPreferences have been cleared!
+        // NOW update the UI with the state. The database and SharedPreferences are already cleared!
         setConnectionState(finalState, exception, disconnectReason);
+
+        // Reset the session flag AT THE VERY END so that raiseBlockingTun() above can complete.
+        // This also prevents the server from being reset in the database again if disconnect() is called repeatedly
+        // (for example, when the user presses "Disconnect" after the Kill Switch has been triggered).
+        sessionEstablished = false;
 
         if (!killSwitchHold) {
             // stop service
