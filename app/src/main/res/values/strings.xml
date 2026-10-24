@@ -323,6 +323,9 @@ https://play.google.com/store/apps/details?id=org.fptn.vpn
     <string name="kill_switch_system_hint">Works while the app process is alive: if Android terminates the process, the TUN interface goes down and traffic flows directly. Always-on VPN is enforced by Android itself — enable it in settings together with blocking traffic without VPN.</string>
     <string name="kill_switch_system_button">Open Android VPN settings</string>
     <string name="kill_switch_blocked">Kill-switch triggered: traffic is blocked</string>
+    <string name="kill_switch_network_change_enable">Block traffic on Wi-Fi/Cellular switch</string>
+    <string name="kill_switch_network_change_description">Instantly blocks all traffic when switching between Wi-Fi and mobile internet until the VPN reconnects.</string>
+    <string name="kill_switch_infinite_warning">Warning: With infinite reconnect attempts, the main Kill-switch will not trigger on standard disconnects. Only the Wi-Fi/Cellular switch block will remain active to prevent infinite internet blocking.</string>
 
     <string name="auto_fallback_title">Auto-fallback to available servers:</string>
     <string name="auto_fallback_enable">Switch server on connection loss</string>

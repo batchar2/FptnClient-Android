@@ -584,6 +584,11 @@ public class FptnService extends VpnService {
                         }
 
                         if (needReconnectByNetworkType || needReconnectByIp) {
+                            // If Kill Switch on network change is enabled, bring up the blocking TUN
+                            // before the old connection is disconnected.
+                            if (SharedPrefUtils.getKillSwitchOnNetworkChangeEnabled(FptnService.this)) {
+                                raiseBlockingTun();
+                            }
                             currentConnection.onNetworkChanged();
                         }
                     }

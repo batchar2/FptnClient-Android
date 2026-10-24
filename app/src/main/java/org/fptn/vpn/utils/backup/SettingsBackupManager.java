@@ -83,6 +83,7 @@ public final class SettingsBackupManager {
         Boolean showSpeedInNotification;
         Boolean showTrafficChart;
         Boolean killSwitchEnabled;
+        Boolean killSwitchOnNetworkChange;
         Boolean splitTunnelDomainsAdvancedMode;
         Boolean domainBlacklistAdvancedMode;
         String connectionStrategy;
@@ -128,6 +129,7 @@ public final class SettingsBackupManager {
         settings.showSpeedInNotification = SharedPrefUtils.getShowSpeedInNotification(context);
         settings.showTrafficChart = SharedPrefUtils.getShowTrafficChart(context);
         settings.killSwitchEnabled = SharedPrefUtils.getKillSwitchEnabled(context);
+        settings.killSwitchOnNetworkChange = SharedPrefUtils.getKillSwitchOnNetworkChangeEnabled(context);
         settings.splitTunnelDomainsAdvancedMode = SharedPrefUtils.getSplitTunnelDomainsAdvancedModeEnabled(context);
         settings.domainBlacklistAdvancedMode = SharedPrefUtils.getDomainBlacklistAdvancedModeEnabled(context);
         settings.connectionStrategy = SharedPrefUtils.getConnectionStrategy(context).name();
@@ -234,6 +236,9 @@ public final class SettingsBackupManager {
         }
         if (settings.killSwitchEnabled != null) {
             SharedPrefUtils.saveKillSwitchEnabled(context, settings.killSwitchEnabled);
+        }
+        if (settings.killSwitchOnNetworkChange != null) {
+            SharedPrefUtils.saveKillSwitchOnNetworkChangeEnabled(context, settings.killSwitchOnNetworkChange);
         }
         if (settings.splitTunnelDomainsAdvancedMode != null) {
             SharedPrefUtils.saveSplitTunnelDomainsAdvancedModeEnabled(context, settings.splitTunnelDomainsAdvancedMode);
