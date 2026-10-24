@@ -364,9 +364,11 @@ fun HomeScreen(
             return@LaunchedEffect
         }
 
-        // Track transitions into DISCONNECTED specifically from an active state
+        // Track transitions into DISCONNECTED specifically from an active or blocked state
         if (connectionState == ConnectionState.DISCONNECTED &&
-            (previousConnectionState == ConnectionState.CONNECTING || previousConnectionState == ConnectionState.CONNECTED)) {
+            (previousConnectionState == ConnectionState.CONNECTING ||
+              previousConnectionState == ConnectionState.CONNECTED ||
+              previousConnectionState == ConnectionState.BLOCKED)) {
             pendingReselect = true
         }
 

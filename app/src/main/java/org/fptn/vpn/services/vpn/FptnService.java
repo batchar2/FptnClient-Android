@@ -1226,7 +1226,12 @@ public class FptnService extends VpnService {
         final boolean hadSession = activeConnection.get() != null
                 || sessionEstablished
                 || restoringSession;
-        
+
+        // Reset session flags so that repeated calls to disconnect()
+        // (e.g., when the user presses "Disconnect" while the Kill Switch is triggered)
+        // do not cause another attempt to reset the server in the database.
+        sessionEstablished = false;
+
         // Cancel any pending restore work so a scheduled retry can't resurrect a torn-down session.
         restoringSession = false;
         restoreRetryCount.set(0);
