@@ -16,6 +16,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,9 +24,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.window.PopupProperties
 import com.elvishew.xlog.XLog
 import org.fptn.vpn.R
@@ -38,12 +40,6 @@ import java.util.Locale
 private const val TAG = "SniDialogs"
 private const val MIN_SNI_SUGGESTION_LENGTH = 3
 
-/**
- * The two dialogs `BypassMethodsScreen` uses to manage SNI values: picking a server to
- * auto-scan against, and manually editing the SNI text (with autocomplete suggestions loaded
- * from the bundled SNI lists). Extracted out of the screen file since this is a self-contained
- * "SNI picker" feature rather than part of the screen's own layout.
- */
 @Composable
 fun AutoSelectSniDialog(
     servers: List<ServerEntity>,
@@ -113,7 +109,10 @@ fun EditSniDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         text = {
-            CompositionLocalProvider(LocalDensity provides dialogDensity) {
+            CompositionLocalProvider(
+                LocalDensity provides dialogDensity,
+                LocalLayoutDirection provides LayoutDirection.Ltr // Force LTR for the whole dialog content
+            ) {
                 Box {
                     OutlinedTextField(
                         value = text,
@@ -131,7 +130,10 @@ fun EditSniDialog(
                         properties = PopupProperties(focusable = false),
                         modifier = Modifier.heightIn(max = 250.dp),
                     ) {
-                        CompositionLocalProvider(LocalDensity provides dialogDensity) {
+                        CompositionLocalProvider(
+                            LocalDensity provides dialogDensity,
+                            LocalLayoutDirection provides LayoutDirection.Ltr
+                        ) {
                             filteredSuggestions.forEach { suggestion ->
                                 DropdownMenuItem(
                                     text = { Text(suggestion) },

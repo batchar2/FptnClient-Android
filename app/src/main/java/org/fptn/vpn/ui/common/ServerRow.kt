@@ -34,36 +34,35 @@ import org.fptn.vpn.utils.CountryFlags
  */
 @Composable
 fun ServerRow(server: ServerEntity, pingValue: Long, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 3.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (server.IsAuto()) {
-                Box(modifier = Modifier.size(width = 40.dp, height = 62.dp), contentAlignment = Alignment.Center) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_logo),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(Primary),
-                        modifier = Modifier.size(40.dp),
+    // Force LTR for the whole composable to prevent emoji/text overlap in RTL languages
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 3.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (server.IsAuto()) {
+                    Box(modifier = Modifier.size(width = 40.dp, height = 62.dp), contentAlignment = Alignment.Center) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_logo),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Primary),
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
+                    Text(
+                        text = server.name,
+                        color = Primary,
+                        fontSize = 22.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 5.dp),
                     )
+                    return@Row
                 }
-                Text(
-                    text = server.name,
-                    color = Primary,
-                    fontSize = 22.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 5.dp),
-                )
-                return@Row
-            }
-            // Force LTR (left-to-right) layout direction for the flag and server name,
-            // so that in RTL languages (Persian, Arabic) the flag does not overlap the text and remains on the left.
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Box(modifier = Modifier.size(width = 32.dp, height = 38.dp), contentAlignment = Alignment.Center) {
                     val flag = CountryFlags.getCountryFlagByCountryCode(server.countryCode)
                     if (!flag.isNullOrEmpty()) {
@@ -80,26 +79,26 @@ fun ServerRow(server: ServerEntity, pingValue: Long, modifier: Modifier = Modifi
                         .weight(1f)
                         .padding(start = 5.dp),
                 )
+                if (server.isCensured) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_logo),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(Primary),
+                        modifier = Modifier
+                            .padding(start = 4.dp, end = 20.dp)
+                            .size(40.dp),
+                    )
+                }
             }
-            if (server.isCensured) {
-                Image(
-                    painter = painterResource(R.drawable.ic_logo),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(Primary),
-                    modifier = Modifier
-                        .padding(start = 4.dp, end = 20.dp)
-                        .size(40.dp),
-                )
-            }
-        }
-        val ping = if (server.IsAuto()) 0L else pingValue
-        if (ping != 0L) {
-            Row(modifier = Modifier.padding(start = 38.dp)) {
-                if (ping > 0) {
-                    Text(text = pingEmoji(ping), fontSize = 11.sp, modifier = Modifier.padding(end = 8.dp))
-                    Text(text = "${ping}ms", color = Primary, fontSize = 12.sp)
-                } else {
-                    Text(text = "---  ---  ---", color = Primary, fontSize = 12.sp)
+            val ping = if (server.IsAuto()) 0L else pingValue
+            if (ping != 0L) {
+                Row(modifier = Modifier.padding(start = 38.dp)) {
+                    if (ping > 0) {
+                        Text(text = pingEmoji(ping), fontSize = 11.sp, modifier = Modifier.padding(end = 8.dp))
+                        Text(text = "${ping}ms", color = Primary, fontSize = 12.sp)
+                    } else {
+                        Text(text = "---  ---  ---", color = Primary, fontSize = 12.sp)
+                    }
                 }
             }
         }

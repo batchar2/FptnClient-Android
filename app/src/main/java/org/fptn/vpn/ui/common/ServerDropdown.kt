@@ -25,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import org.fptn.vpn.R
 import org.fptn.vpn.database.entity.ServerEntity
 import androidx.compose.foundation.layout.height
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
 fun ServerDropdown(
@@ -70,15 +68,7 @@ fun ServerDropdown(
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.White,
         ) {
-            // The popup opens in a separate window with its own composition.
-            // LocalDensity from MainActivity (with our custom fontScale override) is NOT passed
-            // to the popup automatically. Therefore, we explicitly provide the density captured
-            // above (which contains our custom fontScale) to the popup content.
-            // Also force LTR layout direction so the flag doesn't overlap the text in RTL languages.
-            CompositionLocalProvider(
-                LocalDensity provides density,
-                LocalLayoutDirection provides LayoutDirection.Ltr
-            ) {
+            CompositionLocalProvider(LocalDensity provides density) {
                 servers.forEach { server ->
                     key(server.id, server.pingMs) {
                         DropdownMenuItem(
